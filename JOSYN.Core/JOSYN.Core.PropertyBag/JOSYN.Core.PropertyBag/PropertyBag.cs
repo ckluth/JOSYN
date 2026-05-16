@@ -1,0 +1,239 @@
+﻿using System.Globalization;
+using System.Reflection;
+using JOSYN.Core.ResultPattern;
+
+#pragma warning disable IDE0130
+namespace JOSYN.Core.PropertyBag;
+#pragma warning restore IDE0130
+
+public static class PropertyBag
+{
+    static PropertyBag()
+    {
+        var culture = new CultureInfo("de-DE");
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+    }
+
+    #region Serializer
+
+    public static Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString) where TRecord : class
+    {
+        var getDict = SerializeToDictionary(record, typeof(TRecord));
+        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+    }
+
+    public static Result<string> Serialize(object record, Type recordType, DictionaryToStringSerializer serializeToString)
+    {
+        var getDict = SerializeToDictionary(record, recordType);
+        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+    }
+
+    #endregion
+
+    #region Deserializer
+
+    public static Result<object> Deserialize(string raw, Type recordType )
+    {
+        var serializer = DetectRequiredDeserializer(raw);
+        return Deserialize(raw, recordType, serializer);
+    }
+
+    public static Result<TRecord> Deserialize<TRecord>(string raw) where TRecord : class
+    {
+        var serializer = DetectRequiredDeserializer(raw);
+        return Deserialize<TRecord>(raw, serializer);
+    }
+
+    public static Result<object[]> Deserialize(string raw, ParameterInfo[] parameters)
+    {
+        var serializer = DetectRequiredDeserializer(raw);
+        return DeserializeParameters(parameters, raw, serializer);
+
+        static Result<object[]> DeserializeParameters(ParameterInfo[] parameters, string raw, StringToDictionarySerializer deserializeToDictionary)
+        {
+            var getDict = deserializeToDictionary(raw);
+            return getDict.Succeeded ? CreateInvocationArguments(parameters, getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+
+            static Result<object[]> CreateInvocationArguments(ParameterInfo[] parameters, Dictionary<string, string> arguments)
+            {
+                try
+                {
+                    var getArguments = parameters
+                        .Select(p =>
+                        {
+                            var (found, rawValue) = TryGetArgumentCaseInsensitiveFirstChar(arguments, p.Name! /*double-checked safe!*/);
+                            if (!found)
+                                return Result.Failure($"CreateInvocationArguments: Missing argument in Dictionary: {p.Name}");
+                            var targetType = Nullable.GetUnderlyingType(p.ParameterType) ?? p.ParameterType;
+                            return ConvertFromString(rawValue! /*safe!*/ , targetType);
+                        })
+                        .ToArray();
+                    var fail = getArguments.FirstOrDefault(r => !r.Succeeded);
+
+                    if (fail != null)
+                        return Result.Failure(fail.ErrorMessage!, fail.Exception);
+
+                    return getArguments.Select(r => r.Value! /*double-checked safe!*/).ToArray();
+                }
+                catch (Exception ex) { return ex; }
+
+
+                static (bool found, string? rawValue) TryGetArgumentCaseInsensitiveFirstChar(Dictionary<string, string> arguments, string name)
+                {
+                    if (name == string.Empty)
+                        return (false, null);
+
+                    if (arguments.TryGetValue(name, out var value))
+                        return (true, value);
+
+                    var toggled = char.IsUpper(name[0])
+                        ? char.ToLower(name[0]) + name[1..]
+                        : char.ToUpper(name[0]) + name[1..];
+
+                    return arguments.TryGetValue(toggled, out value)
+                        ? (true, value)
+                        : (false, null);
+                }
+            }
+        }
+    }
+
+    #endregion
+
+    #region private
+
+    private static Result<Dictionary<string, string>> SerializeToDictionary(object record, Type recordType)
+    {
+        try
+        {
+            if (!IsRecord(recordType))
+                return Result.Failure($"{recordType.Name} must be a class record.");
+
+            var properties = recordType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var unsupported = properties.Where(p => !SupportedPropertyTypes.IsMatch(p.PropertyType)).Select(p => $"{p.Name}: {p.PropertyType.Name}").ToList();
+
+            if (unsupported.Count > 0)
+                return Result.Failure($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
+
+            var result = properties.ToDictionary(
+                p => p.Name,
+                p =>
+                {
+                    var value = p.GetValue(record);
+                    return value switch
+                    {
+                        null => string.Empty,
+                        _ => Convert.ToString(value, CultureInfo.CurrentCulture) ?? string.Empty
+                    };
+                });
+            return result;
+        }
+        catch (Exception ex) { return ex; }
+    }
+
+    private static Result<object> DeserializeFromDictionary(Dictionary<string, string> raw, Type recordType)
+    {
+        if (!IsRecord(recordType))
+            return Result.Failure($"{recordType.Name} must be a class record.");
+        try
+        {
+            var instance = Activator.CreateInstance(recordType);
+            if (instance == null)
+                return Result.Failure($"Could not create instance of {recordType.Name}.");
+
+            var properties = recordType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var unsupported = properties.Where(p => !SupportedPropertyTypes.IsMatch(p.PropertyType)).Select(p => $"{p.Name}: {p.PropertyType.Name}").ToList();
+            if (unsupported.Count > 0) return Result.Failure($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
+
+            foreach (var prop in properties)
+            {
+                var (targetType, isNullable) = GetNullableTypeInfo(prop);
+                object? converted = null;
+                if (!raw.TryGetValue(prop.Name, out var rawValue))
+                {
+                    if (isNullable)
+                        continue;
+                    return Result.Failure($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
+                }
+                rawValue = rawValue.Trim();
+                if (isNullable && rawValue == string.Empty)
+                    converted = null;
+                else
+                {
+                    var conversion = ConvertFromString(rawValue, targetType);
+                    if (conversion.Succeeded)
+                        converted = conversion.Value;
+                    else
+                        return Result.Failure(conversion.ErrorMessage, conversion.Exception);
+                }
+
+                prop.SetValue(instance, converted);
+            }
+            return instance;
+        }
+        catch (Exception ex) { return ex; }
+
+
+        static (Type targetType, bool isNullable) GetNullableTypeInfo(PropertyInfo property)
+        {
+            var type = property.PropertyType;
+            var underlying = Nullable.GetUnderlyingType(type);
+            if (underlying != null) return (underlying, true);
+            if (type.IsValueType) return (type, false);
+            var ctx = new NullabilityInfoContext();
+            var info = ctx.Create(property);
+            var isNullable = info.WriteState == NullabilityState.Nullable || info.ReadState == NullabilityState.Nullable;
+            return (type, isNullable);
+        }
+    }
+
+    private static Result<object> Deserialize(string raw, Type recordType, StringToDictionarySerializer deserializeToDictionary)
+    {
+        var getDict = deserializeToDictionary(raw);
+        return getDict.Succeeded ? DeserializeFromDictionary(getDict.Value, recordType) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+    }
+
+    private static Result<TRecord> Deserialize<TRecord>(string raw, StringToDictionarySerializer deserializeToDictionary) where TRecord : class
+    {
+        var getDict = deserializeToDictionary(raw);
+        return getDict.Succeeded
+            ? (DeserializeFromDictionary(getDict.Value, typeof(TRecord)).Value as TRecord)! // Dieser Cast ist safe, wenn Succeeded!
+            : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+    }
+
+    private static bool IsRecord(Type type) => type.GetMethod("<Clone>$") is not null;
+
+    private static Result<object?> ConvertFromString(string rawValue, Type targetType)
+    {
+        try
+        {
+            if (targetType.IsEnum)
+                return Enum.Parse(targetType, rawValue, ignoreCase: true);
+            if (targetType == typeof(DateOnly))
+                return DateOnly.Parse(rawValue);
+            if (targetType == typeof(TimeOnly))
+                return TimeOnly.Parse(rawValue);
+            if (targetType == typeof(Guid))
+                return Guid.Parse(rawValue);
+            if (targetType == typeof(TimeSpan))
+                return TimeSpan.Parse(rawValue);
+
+            return Convert.ChangeType(rawValue, targetType);
+
+        }
+        catch (Exception ex) { return ex; }
+    }
+
+    private static StringToDictionarySerializer DetectRequiredDeserializer(string raw)
+    {
+        // a little bit lazy - but for now...
+
+        if (raw.Trim().StartsWith('{'))
+            return JsonDictionarySerializer.Deserialize;
+
+        return IniDictionarySerializer.DeserializeSingleSection;
+    }
+    
+    #endregion
+}
