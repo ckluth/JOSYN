@@ -16,7 +16,7 @@ internal static class ResultHelper
             LineNumber = lineNumber,
         };
     }
-
+    
     internal static string CallStackToString(IReadOnlyList<CallerInfo> callers) =>
         callers.Count == 0
             ? "(kein Callstack)"

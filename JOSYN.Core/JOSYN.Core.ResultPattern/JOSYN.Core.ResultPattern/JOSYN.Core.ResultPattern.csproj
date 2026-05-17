@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>	
+	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
@@ -9,28 +9,31 @@
 		<LangVersion>latest</LangVersion>
 		<AssemblyName>JOSYN.Core.ResultPattern</AssemblyName>
 		<RootNamespace>JOSYN.Core.ResultPattern</RootNamespace>
-		<PlatformTarget>AnyCPU</PlatformTarget>			
-		<Version>1.0.0</Version>	
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Version>1.0.0</Version>
 		<Company>HAEVG</Company>
 		<Authors>HAEVG SWE</Authors>
 		<Description>Das zentralste JOSYN-Paket. Implementiert das Result-Pattern, das im gesamten System genutzt wird.</Description>
-        <PackageId>JOSYN.Core.ResultPattern</PackageId>			
+		<PackageId>JOSYN.Core.ResultPattern</PackageId>
 		<RepositoryType>git</RepositoryType>
 		<PackageProjectUrl>https://github.com/ckluth/JOSYN3</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/ckluth/JOSYN3</RepositoryUrl>					
-		<PackageTags>genesis;poc</PackageTags>		
+		<RepositoryUrl>https://github.com/ckluth/JOSYN3</RepositoryUrl>
+		<PackageTags>genesis;poc</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © 2026 HAEVG AG</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageReleaseNotes>- Erste Fassung
 - Alles neu</PackageReleaseNotes>
-		<PackageIcon>icon.png</PackageIcon>										
-	</PropertyGroup>	
+		<PackageIcon>icon.png</PackageIcon>
+	</PropertyGroup>
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-		<None Include="icon.png" Pack="true" PackagePath="\" />
-	</ItemGroup>	
+		<None Include="README.md" Pack="true" PackagePath="\"/>
+		<None Include="icon.png" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 	<PropertyGroup>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+	<PropertyGroup>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 </Project>

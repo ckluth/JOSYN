@@ -1,2 +1,2 @@
-dotnet pack --output "..\..\Local Packages"
+dotnet pack JOSYN.Core.IPC --output "..\..\Local Packages"
 pause

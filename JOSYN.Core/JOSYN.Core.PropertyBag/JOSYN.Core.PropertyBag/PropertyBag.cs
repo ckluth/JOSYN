@@ -20,13 +20,13 @@ public static class PropertyBag
     public static Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString) where TRecord : class
     {
         var getDict = SerializeToDictionary(record, typeof(TRecord));
-        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
     public static Result<string> Serialize(object record, Type recordType, DictionaryToStringSerializer serializeToString)
     {
         var getDict = SerializeToDictionary(record, recordType);
-        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+        return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
     #endregion
@@ -53,7 +53,7 @@ public static class PropertyBag
         static Result<object[]> DeserializeParameters(ParameterInfo[] parameters, string raw, StringToDictionarySerializer deserializeToDictionary)
         {
             var getDict = deserializeToDictionary(raw);
-            return getDict.Succeeded ? CreateInvocationArguments(parameters, getDict.Value) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+            return getDict.Succeeded ? CreateInvocationArguments(parameters, getDict.Value) : Result.Error(getDict.ErrorMessage, getDict.Exception);
 
             static Result<object[]> CreateInvocationArguments(ParameterInfo[] parameters, Dictionary<string, string> arguments)
             {
@@ -64,7 +64,7 @@ public static class PropertyBag
                         {
                             var (found, rawValue) = TryGetArgumentCaseInsensitiveFirstChar(arguments, p.Name! /*double-checked safe!*/);
                             if (!found)
-                                return Result.Failure($"CreateInvocationArguments: Missing argument in Dictionary: {p.Name}");
+                                return Result.Error($"CreateInvocationArguments: Missing argument in Dictionary: {p.Name}");
                             var targetType = Nullable.GetUnderlyingType(p.ParameterType) ?? p.ParameterType;
                             return ConvertFromString(rawValue! /*safe!*/ , targetType);
                         })
@@ -72,7 +72,7 @@ public static class PropertyBag
                     var fail = getArguments.FirstOrDefault(r => !r.Succeeded);
 
                     if (fail != null)
-                        return Result.Failure(fail.ErrorMessage!, fail.Exception);
+                        return Result.Error(fail.ErrorMessage!, fail.Exception);
 
                     return getArguments.Select(r => r.Value! /*double-checked safe!*/).ToArray();
                 }
@@ -108,13 +108,13 @@ public static class PropertyBag
         try
         {
             if (!IsRecord(recordType))
-                return Result.Failure($"{recordType.Name} must be a class record.");
+                return Result.Error($"{recordType.Name} must be a class record.");
 
             var properties = recordType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var unsupported = properties.Where(p => !SupportedPropertyTypes.IsMatch(p.PropertyType)).Select(p => $"{p.Name}: {p.PropertyType.Name}").ToList();
 
             if (unsupported.Count > 0)
-                return Result.Failure($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
+                return Result.Error($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
 
             var result = properties.ToDictionary(
                 p => p.Name,
@@ -135,16 +135,16 @@ public static class PropertyBag
     private static Result<object> DeserializeFromDictionary(Dictionary<string, string> raw, Type recordType)
     {
         if (!IsRecord(recordType))
-            return Result.Failure($"{recordType.Name} must be a class record.");
+            return Result.Error($"{recordType.Name} must be a class record.");
         try
         {
             var instance = Activator.CreateInstance(recordType);
             if (instance == null)
-                return Result.Failure($"Could not create instance of {recordType.Name}.");
+                return Result.Error($"Could not create instance of {recordType.Name}.");
 
             var properties = recordType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var unsupported = properties.Where(p => !SupportedPropertyTypes.IsMatch(p.PropertyType)).Select(p => $"{p.Name}: {p.PropertyType.Name}").ToList();
-            if (unsupported.Count > 0) return Result.Failure($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
+            if (unsupported.Count > 0) return Result.Error($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
 
             foreach (var prop in properties)
             {
@@ -154,7 +154,7 @@ public static class PropertyBag
                 {
                     if (isNullable)
                         continue;
-                    return Result.Failure($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
+                    return Result.Error($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
                 }
                 rawValue = rawValue.Trim();
                 if (isNullable && rawValue == string.Empty)
@@ -165,7 +165,7 @@ public static class PropertyBag
                     if (conversion.Succeeded)
                         converted = conversion.Value;
                     else
-                        return Result.Failure(conversion.ErrorMessage, conversion.Exception);
+                        return Result.Error(conversion.ErrorMessage, conversion.Exception);
                 }
 
                 prop.SetValue(instance, converted);
@@ -191,7 +191,7 @@ public static class PropertyBag
     private static Result<object> Deserialize(string raw, Type recordType, StringToDictionarySerializer deserializeToDictionary)
     {
         var getDict = deserializeToDictionary(raw);
-        return getDict.Succeeded ? DeserializeFromDictionary(getDict.Value, recordType) : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+        return getDict.Succeeded ? DeserializeFromDictionary(getDict.Value, recordType) : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
     private static Result<TRecord> Deserialize<TRecord>(string raw, StringToDictionarySerializer deserializeToDictionary) where TRecord : class
@@ -199,7 +199,7 @@ public static class PropertyBag
         var getDict = deserializeToDictionary(raw);
         return getDict.Succeeded
             ? (DeserializeFromDictionary(getDict.Value, typeof(TRecord)).Value as TRecord)! // Dieser Cast ist safe, wenn Succeeded!
-            : Result.Failure(getDict.ErrorMessage, getDict.Exception);
+            : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
     private static bool IsRecord(Type type) => type.GetMethod("<Clone>$") is not null;

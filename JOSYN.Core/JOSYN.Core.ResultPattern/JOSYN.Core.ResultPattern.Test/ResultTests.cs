@@ -115,37 +115,37 @@ public class ResultTests
     {
         var result = Result.Fail(new Exception("x"));
         // The call stack should contain the class/method name of the caller
-        Assert.That(result.CallStackToString(), Does.Contain(nameof(ResultTests)));
+        Assert.That(result.CallStackAsString, Does.Contain(nameof(ResultTests)));
     }
 
-    // ── Result.Failure(string) → Failure struct → implicit to Result ─────────
+    // ── Result.Error(string) → Error struct → implicit to Result ─────────
 
     [Test]
-    public void Failure_Factory_ReturnsFailureStruct()
+    public void Error_Factory_ReturnsErrorStruct()
     {
-        var failure = Result.Failure("err");
-        Assert.That(failure.ErrorMessage, Is.EqualTo("err"));
+        var Error = Result.Error("err");
+        Assert.That(Error.ErrorMessage, Is.EqualTo("err"));
     }
 
     [Test]
-    public void Failure_ImplicitToResult_Succeeded_IsFalse()
+    public void Error_ImplicitToResult_Succeeded_IsFalse()
     {
-        Result result = Result.Failure("err");
+        Result result = Result.Error("err");
         Assert.That(result.Succeeded, Is.False);
     }
 
     [Test]
-    public void Failure_ImplicitToResult_ErrorMessage_IsPreserved()
+    public void Error_ImplicitToResult_ErrorMessage_IsPreserved()
     {
-        Result result = Result.Failure("err");
+        Result result = Result.Error("err");
         Assert.That(result.ErrorMessage, Is.EqualTo("err"));
     }
 
     [Test]
-    public void Failure_WithException_ExceptionIsPreserved()
+    public void Error_WithException_ExceptionIsPreserved()
     {
         var ex = new Exception("ex");
-        Result result = Result.Failure("err", ex);
+        Result result = Result.Error("err", ex);
         Assert.That(result.Exception, Is.SameAs(ex));
     }
 

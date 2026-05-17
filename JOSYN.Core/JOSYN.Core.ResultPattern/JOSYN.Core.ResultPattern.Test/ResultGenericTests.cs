@@ -125,7 +125,7 @@ public class ResultGenericTests
     public void Fail_Exception_ErrorMessage_ContainsCallerInfo()
     {
         var result = Result<int>.Fail(new Exception("x"));
-        Assert.That(result.CallStackToString(), Does.Contain(nameof(ResultGenericTests)));
+        Assert.That(result.CallStackAsString, Does.Contain(nameof(ResultGenericTests)));
     }
 
     // ── Implicit conversion from Exception ───────────────────────────────────
@@ -163,58 +163,58 @@ public class ResultGenericTests
     public void ImplicitConversion_FromException_ErrorMessage_ContainsCallerInfo()
     {
         Result<int> result = new Exception("x");
-        Assert.That(result.CallStackToString(), Does.Contain(nameof(ResultGenericTests)));
+        Assert.That(result.CallStackAsString, Does.Contain(nameof(ResultGenericTests)));
     }
 
-    // ── Implicit conversion from Failure ─────────────────────────────────────
+    // ── Implicit conversion from Error ─────────────────────────────────────
 
     [Test]
-    public void ImplicitConversion_FromFailure_Succeeded_IsFalse()
+    public void ImplicitConversion_FromError_Succeeded_IsFalse()
     {
-        Failure failure = Result.Failure("err");
-        Result<int> result = failure;
+        Error error = Result.Error("err");
+        Result<int> result = error;
         Assert.That(result.Succeeded, Is.False);
     }
 
     [Test]
-    public void ImplicitConversion_FromFailure_ErrorMessage_IsPreserved()
+    public void ImplicitConversion_FromError_ErrorMessage_IsPreserved()
     {
-        Result<int> result = Result.Failure("err");
+        Result<int> result = Result.Error("err");
         Assert.That(result.ErrorMessage, Is.EqualTo("err"));
     }
 
     [Test]
-    public void ImplicitConversion_FromFailure_Value_IsDefault()
+    public void ImplicitConversion_FromError_Value_IsDefault()
     {
-        Result<int> result = Result.Failure("err");
+        Result<int> result = Result.Error("err");
         Assert.That(result.Value, Is.EqualTo(0));
     }
 
     [Test]
-    public void ImplicitConversion_FromFailure_WithException_ExceptionIsPreserved()
+    public void ImplicitConversion_FromError_WithException_ExceptionIsPreserved()
     {
         var ex = new Exception("ex");
-        Result<int> result = Result.Failure("err", ex);
+        Result<int> result = Result.Error("err", ex);
         Assert.That(result.Exception, Is.SameAs(ex));
     }
 
-    // ── Failure struct ────────────────────────────────────────────────────────
+    // ── Error struct ────────────────────────────────────────────────────────
 
     [Test]
-    public void Failure_ImplicitConversion_FromString()
+    public void Error_ImplicitConversion_FromString()
     {
-        Failure failure = "something went wrong";
-        Assert.That(failure.ErrorMessage, Is.EqualTo("something went wrong"));
-        Assert.That(failure.Exception, Is.Null);
+        Error error = "something went wrong";
+        Assert.That(error.ErrorMessage, Is.EqualTo("something went wrong"));
+        Assert.That(error.Exception, Is.Null);
     }
 
     [Test]
-    public void Failure_ImplicitConversion_FromException()
+    public void Error_ImplicitConversion_FromException()
     {
         var ex = new InvalidOperationException("oops");
-        Failure failure = ex;
-        Assert.That(failure.ErrorMessage, Is.EqualTo("oops"));
-        Assert.That(failure.Exception, Is.SameAs(ex));
+        Error error = ex;
+        Assert.That(error.ErrorMessage, Is.EqualTo("oops"));
+        Assert.That(error.Exception, Is.SameAs(ex));
     }
 
     // ── record equality ───────────────────────────────────────────────────────
@@ -243,10 +243,10 @@ public class ResultGenericTests
         Assert.That(success, Is.Not.EqualTo(fail));
     }
 
-    // ── Typical usage pattern (propagating failures) ──────────────────────────
+    // ── Typical usage pattern (propagating Errors) ──────────────────────────
 
     [Test]
-    public void TypicalPattern_PropagateFailure()
+    public void TypicalPattern_PropagateError()
     {
         static Result<int> Inner() => Result<int>.Fail("inner failed");
 
@@ -254,7 +254,7 @@ public class ResultGenericTests
         {
             var r = Inner();
             if (!r.Succeeded)
-                return Result.Failure(r.ErrorMessage, r.Exception);
+                return Result.Error(r.ErrorMessage, r.Exception);
             return r.Value.ToString();
         }
 
@@ -271,17 +271,17 @@ public class ResultGenericTests
         Assert.That(result.Value, Is.EqualTo(42));
         return;
 
-        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Failure($"Not a number: {s}");
+        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Error($"Not a number: {s}");
     }
 
     [Test]
-    public void TypicalPattern_FailurePath()
+    public void TypicalPattern_ErrorPath()
     {
         var result = Parse("abc");
         Assert.That(result.Succeeded, Is.False);
         Assert.That(result.ErrorMessage, Does.Contain("abc"));
         return;
 
-        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Failure($"Not a number: {s}");
+        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Error($"Not a number: {s}");
     }
 }

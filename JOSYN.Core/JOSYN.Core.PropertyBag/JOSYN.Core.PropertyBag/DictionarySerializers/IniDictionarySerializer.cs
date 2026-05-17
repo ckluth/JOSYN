@@ -43,12 +43,12 @@ public class IniDictionarySerializer
         var d = Deserialize(raw);
         
         if (!d.Succeeded)
-            return Result.Failure(d.ErrorMessage, d.Exception);
+            return Result.Error(d.ErrorMessage, d.Exception);
         
         return d.Value.Count switch
         {
-            0 => Result.Failure("No sections found."),
-            > 1 => Result.Failure("Multiple sections found."),
+            0 => Result.Error("No sections found."),
+            > 1 => Result.Error("Multiple sections found."),
             _ => d.Value.First().Value
         };
     }
@@ -87,8 +87,8 @@ public class IniDictionarySerializer
                     if (data[currentSection].ContainsKey(key))
                     {
                         return string.IsNullOrEmpty(currentSection) 
-                            ? Result.Failure($"Duplicate key '{key}'.") 
-                            : Result.Failure($"Duplicate key '{key}' in section '[{currentSection}]'.");
+                            ? Result.Error($"Duplicate key '{key}'.") 
+                            : Result.Error($"Duplicate key '{key}' in section '[{currentSection}]'.");
                     }
 
                     data[currentSection][key] = value;

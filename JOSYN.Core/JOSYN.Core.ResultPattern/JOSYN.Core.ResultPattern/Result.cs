@@ -9,24 +9,36 @@ using System.Runtime.CompilerServices;
 namespace JOSYN.Core.ResultPattern;
 #pragma warning restore IDE0130
 
+
+/// <summary>
+/// TODO: decribe Result
+/// </summary>>
 public sealed record Result : IResult<Result>
 {
-
+    /// <inheritdoc />
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
     public bool Succeeded => ErrorMessage == null;
+    
+    /// <inheritdoc />
     public string? ErrorMessage { get; init; }
+    
+    /// <inheritdoc /> 
     public Exception? Exception { get; init; }
     private Result(string? error = null, Exception? exception = null)
     {
         ErrorMessage = error;
         Exception = exception;
     }
+    /// <inheritdoc />
     public static Result Success => default(ResultSuccess);
 
+    /// <inheritdoc />
     public IReadOnlyList<CallerInfo> Callers { get; init; } = [];
 
+    /// <inheritdoc />
     public static implicit operator Result(ResultSuccess _) => new();
 
+    /// <inheritdoc />
     public static implicit operator Result(Exception exception)
     {
         var frame = new StackFrame(1);
@@ -39,7 +51,8 @@ public sealed record Result : IResult<Result>
         return new Result(ResultHelper.FormatExceptionMessage(exception), exception) with { Callers = [caller] };
     }
 
-    public static implicit operator Result(Failure failure)
+    /// <inheritdoc />
+    public static implicit operator Result(Error error)
     {
         var frame = new StackFrame(1);
         var method = frame.GetMethod();
@@ -50,26 +63,28 @@ public sealed record Result : IResult<Result>
             FilePath = "",
             LineNumber = 0,
         };
-        return new Result(failure.ErrorMessage, failure.Exception) with { Callers = [caller] };
+        return new Result(error.ErrorMessage, error.Exception) with { Callers = [caller] };
     }
-    
+
+    /// <inheritdoc />
     public static Result Fail(string error, Exception? exception = null, [CallerMemberName] string internal_ignore_callermembername = "", [CallerFilePath] string internal_ignore_callerfilepath = "", [CallerLineNumber] int internal_ignore_callerlinenumber = 0)
     {
         var caller = ResultHelper.CreateCallerInfo(internal_ignore_callermembername, internal_ignore_callerfilepath, internal_ignore_callerlinenumber, new StackFrame(1).GetMethod()?.DeclaringType?.Name ?? "");
         return new Result(error, exception) with { Callers = [caller] };
     }
 
-    [EditorBrowsable(EditorBrowsableState.Never)]    
+    /// <inheritdoc />
     public static Result Fail(Exception exception, [CallerMemberName] string internal_ignore_callermembername = "", [CallerFilePath] string internal_ignore_callerfilepath = "", [CallerLineNumber] int internal_ignore_callerlinenumber = 0)
     {
-        if (internal_ignore_callermembername == null) throw new ArgumentNullException(nameof(internal_ignore_callermembername));
         var className = new StackFrame(1).GetMethod()?.DeclaringType?.Name ?? "";
         var caller = ResultHelper.CreateCallerInfo(internal_ignore_callermembername, internal_ignore_callerfilepath, internal_ignore_callerlinenumber , className);
         return new Result(ResultHelper.FormatExceptionMessage(exception), exception) with { Callers = [caller] };
     }
-    public static Failure Failure(string error, Exception? exception = null) => new(error, exception);
 
-    [EditorBrowsable(EditorBrowsableState.Never)]
+    /// <inheritdoc />
+    public static Error Error(string error, Exception? exception = null) => new(error, exception);
+
+    /// <inheritdoc />
     public static Result Propagate(Result result, [CallerMemberName] string internal_ignore_callermembername = "", [CallerFilePath] string internal_ignore_callerfilepath = "", [CallerLineNumber] int internal_ignore_callerlinenumber = 0)
     {
         if (result.Succeeded) return result;
@@ -78,8 +93,10 @@ public sealed record Result : IResult<Result>
         return result with { Callers = [.. result.Callers, caller] };
     }
 
-    public string CallStackToString() => ResultHelper.CallStackToString(Callers);
+    /// <inheritdoc />
+    public string CallStackAsString => ResultHelper.CallStackToString(Callers);
 
+    /// <inheritdoc />
     public Result<TValue> ToResult<TValue>()
     {
         if (Succeeded) return Result<TValue>.FailSilent("Kein Wert vorhanden");

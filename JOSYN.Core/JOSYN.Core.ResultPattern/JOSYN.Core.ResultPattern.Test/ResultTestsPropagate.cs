@@ -19,7 +19,7 @@ public class ResultTestsPropagate
         Console.WriteLine(result.ErrorMessage);
         Console.WriteLine();
         Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackToString());
+        Console.WriteLine(result.CallStackAsString);
         if (result.Exception == null) return;
         Console.WriteLine();
         Console.WriteLine("[Exception]");
@@ -78,7 +78,7 @@ public class ResultTestsPropagate
         Console.WriteLine(result.ErrorMessage);
         Console.WriteLine();
         Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackToString());
+        Console.WriteLine(result.CallStackAsString);
         if (result.Exception == null) return;
         Console.WriteLine();
         Console.WriteLine("[Exception]");
@@ -136,7 +136,7 @@ public class ResultTestsPropagate
         Console.WriteLine(result.ErrorMessage);
         Console.WriteLine();
         Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackToString());
+        Console.WriteLine(result.CallStackAsString);
         if (result.Exception == null) return;
         Console.WriteLine();
         Console.WriteLine("[Exception]");
