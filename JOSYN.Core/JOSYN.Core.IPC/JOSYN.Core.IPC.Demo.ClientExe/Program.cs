@@ -12,7 +12,7 @@ internal class Program
         var sessionKey = PipesProtocol.ParseSessionKeyFromCLIArguments(args);
         
         if (string.IsNullOrEmpty(sessionKey))
-            return LogError("Es wurde kein Pipes-SessionKey übergeben", 1);
+            return LogError("Es wurde kein Pipes-SessionKey übergeben ", 1);
         
         
         Console.WriteLine("SessionKey: " + sessionKey);
