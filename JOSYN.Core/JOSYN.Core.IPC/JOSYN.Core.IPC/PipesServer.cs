@@ -99,9 +99,9 @@ public class PipesServer : IPipesServer
 
     #region private
 
-    internal class RawRequestHandler
+    private class RawRequestHandler
     {
-        internal required Func<string, Task<string>> ProcessStrings { get; set; }
+        internal required Func<string, Task<string>> ProcessStrings { get; init; }
 
         internal async Task<byte[]> ProcessRawRequest(byte[] requestBytes)
         {
@@ -181,7 +181,7 @@ public class PipesServer : IPipesServer
             // would create a double-prefix bug. The correct overload is Write(byte[], 0, n),
             // which writes raw bytes only — matching BinaryReader.ReadBytes(n) on the client.
             using var reader = new BinaryReader(reqPipe,  Encoding.UTF8, leaveOpen: true);
-            using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
+            await using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
 
             while (reqPipe.IsConnected && !cancellationToken.IsCancellationRequested)
             {
@@ -209,7 +209,7 @@ public class PipesServer : IPipesServer
             }
             return Result.Success;
         }
-        catch (Exception ex) { return Result.Fail(ex); }
+        catch (Exception ex) { return ex; }
     }
 
 

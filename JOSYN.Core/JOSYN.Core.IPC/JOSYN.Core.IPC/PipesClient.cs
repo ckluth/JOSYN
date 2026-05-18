@@ -32,14 +32,14 @@ public class PipesClient : IPipesClient
             // Write request: explicit length prefix then raw bytes (no BinaryWriter.Write(byte[])
             // which would emit a second length prefix). Mirrors BinaryReader.ReadBytes() on the
             // server side.
-            var writer = new BinaryWriter(pipes.RequestPipe, Encoding.UTF8, leaveOpen: true);
+            await using var writer = new BinaryWriter(pipes.RequestPipe, Encoding.UTF8, leaveOpen: true);
             writer.Write(requestBytes.Length);
             writer.Write(requestBytes, 0, requestBytes.Length);
             await pipes.RequestPipe.FlushAsync();
 
             // Read response: BinaryReader mirrors the explicit Write(int)/Write(byte[],0,n) the
             // server now uses, giving a single consistent framing contract on both sides.
-            var reader = new BinaryReader(pipes.ResponsePipe, Encoding.UTF8, leaveOpen: true);
+            using var reader = new BinaryReader(pipes.ResponsePipe, Encoding.UTF8, leaveOpen: true);
             var responseLength = reader.ReadInt32();
             var responseBytes  = reader.ReadBytes(responseLength);
 
