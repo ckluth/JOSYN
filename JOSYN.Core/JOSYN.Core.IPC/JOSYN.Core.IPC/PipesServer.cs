@@ -55,11 +55,11 @@ public class PipesServer : IPipesServer
         disposeHandler?.Invoke();
         return res;
     }
-    
+ 
     /// <inheritdoc/>   
     public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
     {
-        // Die eigentliche Implementierug.
+	    // Die eigentliche Implementierug.
         // Alle anderen public Überladungen delegieren hierhin...
         try
         {
@@ -157,7 +157,17 @@ public class PipesServer : IPipesServer
         }
         catch (Exception ex) { return ex; }
     }
-
+	
+	//----------------------------------------------------------------------------------------
+	// DISCLAIMER: Single-in-flight — kein Multiplexing im zentralen Request-Loop!
+	//
+	// Wie in der Spec des JOSYN-IPC-Protocols als design-basierte Limitierung beschrieben:
+	// Der Request-Loop verarbeitet Anfragen strikt sequenziell.
+	// Parallele Requests könne zu undefiniertem Verhalten führen.
+    //
+	// CALM DOWN: "Will never happen" in der internen JOSYN-Implementierung. ;)		
+	//----------------------------------------------------------------------------------------
+	
     private static async Task<Result> RequestLoopAsync(
         NamedPipeServerStream reqPipe,
         NamedPipeServerStream resPipe,
@@ -180,9 +190,10 @@ public class PipesServer : IPipesServer
                 {
                     var messageLength = reader.ReadInt32();
                     requestBytes = reader.ReadBytes(messageLength);
-                }
+                }				
                 catch (OperationCanceledException)
                 {
+					// can't happen in the current design - but, paranoia...
                     return Result.Error("Request-Loop durch Aufrufer abgebrochen.");
                 }
                 catch (EndOfStreamException)
@@ -191,8 +202,10 @@ public class PipesServer : IPipesServer
                 }
 
                 var response = await processRequest(requestBytes);
+				
                 writer.Write(response.Length);
                 writer.Write(response, 0, response.Length); // raw bytes only — no extra length prefix
+				writer.Flush();
             }
             return Result.Success;
         }
