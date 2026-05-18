@@ -9,25 +9,44 @@ internal class Program
 {
     private static async Task<int> Main(string[] args)
     {
-        var sessionKey = PipesProtocol.ParseSessionKeyFromClientCLIArguments(args);
+        var sessionKey = PipesProtocol.ParseSessionKeyFromCLIArguments(args);
         
         if (string.IsNullOrEmpty(sessionKey))
             return LogError("Es wurde kein Pipes-SessionKey übergeben", 1);
-
+        
+        
         Console.WriteLine("SessionKey: " + sessionKey);
+
+        Console.WriteLine("[PRESS KEY TO CONNECT]");
+        Console.ReadKey(true);
 
         var getPipes = await PipesClient.ConnectAsync(sessionKey);
         if (!getPipes.Succeeded)
             return LogErrorResult(getPipes.ToResult(), 1);
 
+        Console.WriteLine("Connected.");
+
         var pipes = getPipes.Value;
+
+        Console.WriteLine("\nSending Request...");
         
-        var getResponse = await PipesClient.SendRequestAsync("GET-SOMETHING", pipes);
+        const string myRequest = "GET-CONFIG";
+        Console.WriteLine($"CLI|SENDING>{myRequest}");
+        var getResponse = await PipesClient.SendRequestAsync(myRequest, pipes);
         if (!getResponse.Succeeded)
             return LogErrorResult(getResponse.ToResult(), 1);
+        Console.WriteLine( $"CLI|RECEIVED>{getResponse.Value}");
         
-        Console.WriteLine(getResponse.Value);
-        Console.ReadKey();
+        Console.WriteLine("\nStill Connected.");
+        Console.WriteLine("[PRESS KEY TO DISCONNECT]");
+        Console.ReadKey(true);
+
+        await PipesClient.DisconnectAsync(pipes);
+        
+        Console.WriteLine("\nDisconnected.");
+        Console.WriteLine("[PRESS KEY TO EXIT]");
+        Console.ReadKey(true);
+
         return 0;
     }
 

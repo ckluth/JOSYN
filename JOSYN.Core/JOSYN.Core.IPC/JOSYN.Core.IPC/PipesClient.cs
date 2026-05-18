@@ -17,32 +17,49 @@ public class PipesClient : IPipesClient
     }
 
     /// <inheritdoc /> 
-    public static async Task<Result<string>> SendRequestAsync(string request, ClientPipes serverPipes)
+    public static async Task<Result<string>> SendRequestAsync(string request, ClientPipes pipes)
     {
-        var result = await SendRequestAsync(Encoding.UTF8.GetBytes(request), serverPipes);
+        var result = await SendRequestAsync(Encoding.UTF8.GetBytes(request), pipes);
         if (!result.Succeeded) return Result<string>.Propagate(result.ToResult<string>());
         return Encoding.UTF8.GetString(result.Value);
     }
 
     /// <inheritdoc /> 
-    public static async Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes serverPipes)
+    public static async Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes pipes)
     {
         try
         {
             var lengthPrefix = BitConverter.GetBytes(requestBytes.Length);
-            await serverPipes.RequestPipe.WriteAsync(lengthPrefix);
-            await serverPipes.RequestPipe.WriteAsync(requestBytes);
-            await serverPipes.RequestPipe.FlushAsync();
+            await pipes.RequestPipe.WriteAsync(lengthPrefix);
+            await pipes.RequestPipe.WriteAsync(requestBytes);
+            await pipes.RequestPipe.FlushAsync();
             var responseLengthBytes = new byte[4];
-            await serverPipes.ResponsePipe.ReadExactlyAsync(responseLengthBytes, 0, 4);
+            await pipes.ResponsePipe.ReadExactlyAsync(responseLengthBytes, 0, 4);
             var responseLength = BitConverter.ToInt32(responseLengthBytes, 0);
             var responseBytes = new byte[responseLength];
-            await serverPipes.ResponsePipe.ReadExactlyAsync(responseBytes, 0, responseLength);
+            await pipes.ResponsePipe.ReadExactlyAsync(responseBytes, 0, responseLength);
 
             return responseBytes;
 
         }
         catch (Exception ex) { return ex; }
+    }
+
+    /// <inheritdoc /> 
+    public static async Task<Result> DisconnectAsync(ClientPipes pipes)
+    {
+        try
+        {
+            pipes.RequestPipe.Close();
+            pipes.ResponsePipe.Close();
+
+            return await Task.FromResult(Result.Success);
+        }
+        catch (Exception ex)
+        {
+            return await Task.FromResult(ex);
+        }
+
     }
 
     #region private

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "JOSYN.Core.IPC.Demo.ClientExe": {
+      "commandName": "Project",
+      "commandLineArgs": "JOSYN-IPC my-session-key"
+    }
+  }
+}

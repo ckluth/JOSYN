@@ -17,10 +17,15 @@ public interface IPipesClient
     /// <summary>
     /// TODO
     /// </summary>
-    static abstract Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes clientPipes);
+    static abstract Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes pipes);
 
     /// <summary>
     /// TODO
     /// </summary>
-    static abstract Task<Result<string>> SendRequestAsync(string request, ClientPipes clientPipes);
+    static abstract Task<Result<string>> SendRequestAsync(string request, ClientPipes pipes);
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    static abstract Task<Result> DisconnectAsync(ClientPipes pipes);
 }

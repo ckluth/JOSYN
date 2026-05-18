@@ -1,8 +1,8 @@
 ﻿{
   "profiles": {
-    "Run-Demo": {
+    "Run-Demo-Client": {
       "commandName": "Project",      
-	  "commandLineArgs": "JOSYN-IPC \"C:\\Temp\\VS.OUT\\JOSYN\\JOSYN.Core.IPC.Demo.ClientExe\\bin\\Debug\\JOSYN.Core.IPC.Demo.ClientExe.exe\" my-session-key"
+	  "commandLineArgs": "JOSYN-IPC my-session-key"
     }
   }
 }

@@ -17,12 +17,12 @@ public interface IPipesProtocol
     /// <summary>
     /// TODO
     /// </summary>    
-    static abstract Result<(string clientExePath, string sessionKey)> ParseServerCLIArguments(string[] args);
+    static abstract Result<(string sessionKey, string clientExePath)> ParseServerCLIArguments(string[] args);
 
     /// <summary>
     /// TODO
     /// </summary>        
-    static abstract string? ParseSessionKeyFromClientCLIArguments(string[] args);
+    static abstract string? ParseSessionKeyFromCLIArguments(string[] args);
 
     /// <summary>
     /// TODO

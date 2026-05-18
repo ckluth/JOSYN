@@ -11,21 +11,14 @@ namespace JOSYN.Core.IPC;
 public class PipesServer : IPipesServer
 {
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<string, string> processRequest, TimeSpan connectTimeout, string? sessionKey = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<string, string> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
     {
         var handler = new RawRequestHandler{ ProcessStrings = processRequest };
-        return await RunAsync(clientExePath, handler.ProcessRawRequest, connectTimeout, sessionKey);
+        return await RunAsync(clientExePath, handler.ProcessRawRequest, connectTimeout, sessionKey, shouldCancel);
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<string, string> processRequest, TimeSpan connectTimeout, string sessionKey)
-    {
-        var handler = new RawRequestHandler { ProcessStrings = processRequest };
-        return await RunAsync(handler.ProcessRawRequest, connectTimeout, sessionKey);
-    }
-
-    /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string? sessionKey = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
     {
         try
         {
@@ -35,14 +28,39 @@ public class PipesServer : IPipesServer
             if (!startClient.Succeeded)
                 return Result.Propagate(startClient);
 
-            return await RunAsync(processRequest, connectTimeout, sessionKey);
+            var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
+            var res = await RunAsync(processRequest, connectTimeout, sessionKey, cancellationToken);
+            disposeHandler?.Invoke();
+            return res;
+
         }
         catch (Exception ex) { return ex; }
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string sessionKey)
+    public static async Task<Result> RunAsync(Func<string, string> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
     {
+        var handler = new RawRequestHandler { ProcessStrings = processRequest };
+        var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
+        var res = await RunAsync(handler.ProcessRawRequest, connectTimeout, sessionKey, cancellationToken);
+        disposeHandler?.Invoke();
+        return res;
+    }
+    
+    /// <inheritdoc/>   
+    public static async Task<Result> RunAsync(Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
+    {
+        var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
+        var res = await RunAsync(processRequest, connectTimeout, sessionKey, cancellationToken);
+        disposeHandler?.Invoke();
+        return res;
+    }
+    
+    /// <inheritdoc/>   
+    public static async Task<Result> RunAsync(Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
+    {
+        // Die eigentliche Implementierug.
+        // Alle anderen public Überladungen delegieren hierhin...
         try
         {
             var getConnection = await CreatePipesAsync(sessionKey);
@@ -55,26 +73,27 @@ public class PipesServer : IPipesServer
             await using (conn.RequestPipe)
             await using (conn.ResponsePipe)
             {
-                var connectCts = new CancellationTokenSource(connectTimeout);
+                using var connectCts = new CancellationTokenSource(connectTimeout);
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
+                    connectCts.Token, cancellationToken);
+
                 try
                 {
                     await Task.WhenAll(
-                        conn.RequestPipe.WaitForConnectionAsync(connectCts.Token),
-                        conn.ResponsePipe.WaitForConnectionAsync(connectCts.Token));
+                        conn.RequestPipe.WaitForConnectionAsync(linkedCts.Token),
+                        conn.ResponsePipe.WaitForConnectionAsync(linkedCts.Token));
                 }
                 catch (OperationCanceledException)
                 {
-                    return Result.Error("Timeout: kein Client verbunden.");
+                    return Result.Error(cancellationToken.IsCancellationRequested
+                        ? "Verbindung durch Aufrufer abgebrochen."
+                        : "Timeout: kein Client verbunden.");
                 }
 
-                // Keine Unterstützung von CancellationToken in der einmal establishten Connection.
-                // Schleife läuft, bis der Client die Verbindung - explizt oder durch Terminieren - schließt; oder ein Fehler auftritt.
-                var result = await RequestLoopAsync(conn.RequestPipe, conn.ResponsePipe, processRequest);
-                
-                return result;
+                return await RequestLoopAsync(
+                    conn.RequestPipe, conn.ResponsePipe, processRequest, cancellationToken);
             }
         }
-
         catch (Exception ex) { return ex; }
     }
 
@@ -92,6 +111,30 @@ public class PipesServer : IPipesServer
         }
     }
 
+    private static (Action? disposeHandler, CancellationToken cancellationToken) CreatePollingCancellationToken(Func<bool>? shouldCancel = null, int pollIntervalMs = 100)
+    {
+        if (shouldCancel == null) 
+            return (null, CancellationToken.None);
+        
+        var cts = new CancellationTokenSource();
+        Action cancel = cts.Cancel;
+
+        // ReSharper disable once MethodSupportsCancellation
+        _ = Task.Run(() =>
+        {
+            while (!cts.IsCancellationRequested)
+            {
+                if (shouldCancel())
+                {
+                    cts.Cancel();
+                    break;
+                }
+                Thread.Sleep(pollIntervalMs);
+            }
+        });
+        
+        return (() => { cancel?.Invoke(); }, cts.Token);
+    }
 
     private static Result StartClientExe(string remoteExePath, string sessionKey)
     {
@@ -115,40 +158,45 @@ public class PipesServer : IPipesServer
         catch (Exception ex) { return ex; }
     }
 
-    private static async Task<Result> RequestLoopAsync(NamedPipeServerStream reqPipe, NamedPipeServerStream resPipe, Func<byte[], byte[]> processRequest)
+    private static async Task<Result> RequestLoopAsync(
+        NamedPipeServerStream reqPipe,
+        NamedPipeServerStream resPipe,
+        Func<byte[], byte[]> processRequest,
+        CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var writer = new BinaryWriter(resPipe, System.Text.Encoding.UTF8, leaveOpen: true);
+            await using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
 
-            while (reqPipe.IsConnected)
+            while (reqPipe.IsConnected && !cancellationToken.IsCancellationRequested)
             {
                 byte[] requestBytes;
                 try
                 {
                     var lengthPrefix = new byte[4];
-                    await reqPipe.ReadExactlyAsync(lengthPrefix, 0, 4);
+                    await reqPipe.ReadExactlyAsync(lengthPrefix, 0, 4, cancellationToken);
                     var messageLength = BitConverter.ToInt32(lengthPrefix, 0);
                     requestBytes = new byte[messageLength];
-                    await reqPipe.ReadExactlyAsync(requestBytes, 0, messageLength);
+                    await reqPipe.ReadExactlyAsync(requestBytes, 0, messageLength, cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return Result.Error("Request-Loop durch Aufrufer abgebrochen.");
                 }
                 catch (EndOfStreamException)
                 {
-                    // Passiert auch bei regulärem Schließen der Verbindung durch den Client.
-                    // Daher kein Fehler, sondern einfach Verbindungsende.
                     break;
                 }
 
                 var response = processRequest(requestBytes);
-                
                 writer.Write(response.Length);
                 writer.Write(response);
             }
             return Result.Success;
         }
-
         catch (Exception ex) { return Result.Fail(ex); }
     }
+
 
     private static async Task<Result<ServerPipes>> CreatePipesAsync(string sessionKey)
     {
