@@ -11,14 +11,14 @@ namespace JOSYN.Core.IPC;
 public class PipesServer : IPipesServer
 {
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<string, string> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<string, Task<string>> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
     {
         var handler = new RawRequestHandler{ ProcessStrings = processRequest };
         return await RunAsync(clientExePath, handler.ProcessRawRequest, connectTimeout, sessionKey, shouldCancel);
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
     {
         try
         {
@@ -38,7 +38,7 @@ public class PipesServer : IPipesServer
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<string, string> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(Func<string, Task<string>> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
     {
         var handler = new RawRequestHandler { ProcessStrings = processRequest };
         var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
@@ -48,7 +48,7 @@ public class PipesServer : IPipesServer
     }
     
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
     {
         var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
         var res = await RunAsync(processRequest, connectTimeout, sessionKey, cancellationToken);
@@ -57,7 +57,7 @@ public class PipesServer : IPipesServer
     }
     
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<byte[], byte[]> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
+    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
     {
         // Die eigentliche Implementierug.
         // Alle anderen public Überladungen delegieren hierhin...
@@ -101,12 +101,12 @@ public class PipesServer : IPipesServer
 
     internal class RawRequestHandler
     {
-        internal required Func<string, string> ProcessStrings { get; set; }
+        internal required Func<string, Task<string>> ProcessStrings { get; set; }
 
-        internal byte[] ProcessRawRequest(byte[] requestBytes)
+        internal async Task<byte[]> ProcessRawRequest(byte[] requestBytes)
         {
             var requestStr = Encoding.UTF8.GetString(requestBytes);
-            var responseStr = ProcessStrings(requestStr);
+            var responseStr = await ProcessStrings(requestStr);
             return Encoding.UTF8.GetBytes(responseStr);
         }
     }
@@ -161,7 +161,7 @@ public class PipesServer : IPipesServer
     private static async Task<Result> RequestLoopAsync(
         NamedPipeServerStream reqPipe,
         NamedPipeServerStream resPipe,
-        Func<byte[], byte[]> processRequest,
+        Func<byte[], Task<byte[]>> processRequest,
         CancellationToken cancellationToken = default)
     {
         try
@@ -188,7 +188,7 @@ public class PipesServer : IPipesServer
                     break;
                 }
 
-                var response = processRequest(requestBytes);
+                var response = await processRequest(requestBytes);
                 writer.Write(response.Length);
                 writer.Write(response);
             }

@@ -67,12 +67,12 @@ internal class Program
         return true;
     }
 
-    private static string HandleRequest(string requestStr)
+    private static Task<string> HandleRequest(string requestStr)
     {
         Console.WriteLine($"SRV|RECEIVED>{requestStr}");
         var responseStr = $"Echo: {requestStr}";
         Console.WriteLine($"SRV|SENDING>{responseStr}");
-        return responseStr;
+        return Task.FromResult(responseStr);
     }
 
     #region FakeLog
