@@ -48,13 +48,13 @@ Das Protokoll folgt einem strikten **Request/Response-Muster** zwischen genau ei
 
 ### Einschränkungen
 
-| Eigenschaft                | Ausprägung                      |
-|----------------------------|---------------------------------|
-| Topologie                  | 1:1 (one-to-one)                |
-| Kommunikationsrichtung     | Unidirektional: Client → Server |
-| Server-initiierte Anfragen | Nicht unterstützt               |
-| Multiplexing               | Nicht unterstützt               |
-| Große Payloads             | Nicht vorgesehen                |
+| Eigenschaft                | Ausprägung                               |
+|----------------------------|------------------------------------------|
+| Topologie                  | 1:1 (one-to-one)                         |
+| Kommunikationsrichtung     | Unidirektional Requests: Client → Server |
+| Server-initiierte Anfragen | Nicht unterstützt                        |
+| Multiplexing               | Nicht unterstützt                        |
+| Große Payloads             | Nicht vorgesehen                         |
 
 ---
 
