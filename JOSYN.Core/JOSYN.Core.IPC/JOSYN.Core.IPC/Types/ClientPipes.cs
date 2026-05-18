@@ -7,7 +7,7 @@ namespace JOSYN.Core.IPC;
 /// <summary>
 /// TODO
 /// </summary>
-public record ClientPipes
+public sealed class ClientPipes
 {
     /// <summary>
     /// TODO

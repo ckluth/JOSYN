@@ -55,15 +55,15 @@ public class PipesServer : IPipesServer
         disposeHandler?.Invoke();
         return res;
     }
-    
+ 
     /// <inheritdoc/>   
     public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
     {
-        // Die eigentliche Implementierug.
+	    // Die eigentliche Implementierug.
         // Alle anderen public Überladungen delegieren hierhin...
         try
         {
-            var getConnection = await CreatePipesAsync(sessionKey);
+            var getConnection = CreatePipes(sessionKey);
 
             if (!getConnection.Succeeded)
                 return Result.Propagate(getConnection.ToResult());
@@ -99,9 +99,9 @@ public class PipesServer : IPipesServer
 
     #region private
 
-    internal class RawRequestHandler
+    private class RawRequestHandler
     {
-        internal required Func<string, Task<string>> ProcessStrings { get; set; }
+        internal required Func<string, Task<string>> ProcessStrings { get; init; }
 
         internal async Task<byte[]> ProcessRawRequest(byte[] requestBytes)
         {
@@ -133,7 +133,7 @@ public class PipesServer : IPipesServer
             }
         });
         
-        return (() => { cancel?.Invoke(); }, cts.Token);
+        return (() => { cancel?.Invoke(); cts.Dispose(); }, cts.Token);
     }
 
     private static Result StartClientExe(string remoteExePath, string sessionKey)
@@ -157,7 +157,17 @@ public class PipesServer : IPipesServer
         }
         catch (Exception ex) { return ex; }
     }
-
+	
+	//----------------------------------------------------------------------------------------
+	// DISCLAIMER: Single-in-flight — kein Multiplexing im zentralen Request-Loop!
+	//
+	// Wie in der Spec des JOSYN-IPC-Protocols als design-basierte Limitierung beschrieben:
+	// Der Request-Loop verarbeitet Anfragen strikt sequenziell.
+	// Parallele Requests könne zu undefiniertem Verhalten führen.
+    //
+	// CALM DOWN: "Will never happen" in der internen JOSYN-Implementierung. ;)		
+	//----------------------------------------------------------------------------------------
+	
     private static async Task<Result> RequestLoopAsync(
         NamedPipeServerStream reqPipe,
         NamedPipeServerStream resPipe,
@@ -166,6 +176,11 @@ public class PipesServer : IPipesServer
     {
         try
         {
+            // BinaryReader/BinaryWriter used consistently on both sides.
+            // Note: BinaryWriter.Write(byte[]) emits a length prefix before the bytes, which
+            // would create a double-prefix bug. The correct overload is Write(byte[], 0, n),
+            // which writes raw bytes only — matching BinaryReader.ReadBytes(n) on the client.
+            using var reader = new BinaryReader(reqPipe,  Encoding.UTF8, leaveOpen: true);
             await using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
 
             while (reqPipe.IsConnected && !cancellationToken.IsCancellationRequested)
@@ -173,14 +188,12 @@ public class PipesServer : IPipesServer
                 byte[] requestBytes;
                 try
                 {
-                    var lengthPrefix = new byte[4];
-                    await reqPipe.ReadExactlyAsync(lengthPrefix, 0, 4, cancellationToken);
-                    var messageLength = BitConverter.ToInt32(lengthPrefix, 0);
-                    requestBytes = new byte[messageLength];
-                    await reqPipe.ReadExactlyAsync(requestBytes, 0, messageLength, cancellationToken);
-                }
+                    var messageLength = reader.ReadInt32();
+                    requestBytes = reader.ReadBytes(messageLength);
+                }				
                 catch (OperationCanceledException)
                 {
+					// can't happen in the current design - but, paranoia...
                     return Result.Error("Request-Loop durch Aufrufer abgebrochen.");
                 }
                 catch (EndOfStreamException)
@@ -189,22 +202,24 @@ public class PipesServer : IPipesServer
                 }
 
                 var response = await processRequest(requestBytes);
+				
                 writer.Write(response.Length);
-                writer.Write(response);
+                writer.Write(response, 0, response.Length); // raw bytes only — no extra length prefix
+				writer.Flush();
             }
             return Result.Success;
         }
-        catch (Exception ex) { return Result.Fail(ex); }
+        catch (Exception ex) { return ex; }
     }
 
 
-    private static async Task<Result<ServerPipes>> CreatePipesAsync(string sessionKey)
+    private static Result<ServerPipes> CreatePipes(string sessionKey)
     {
         var (requestPipeName, responsePipeName) = PipesProtocol.DerivePipeNamesFromSessionKey(sessionKey);
-        return await CreatePipesAsync(requestPipeName, responsePipeName);
+        return CreatePipes(requestPipeName, responsePipeName);
     }
 
-    private static async Task<Result<ServerPipes>> CreatePipesAsync(string requestPipeName, string responsePipeName)
+    private static Result<ServerPipes> CreatePipes(string requestPipeName, string responsePipeName)
     {
         try
         {
@@ -222,7 +237,7 @@ public class PipesServer : IPipesServer
                 transmissionMode: PipeTransmissionMode.Byte,
                 options: PipeOptions.Asynchronous);
 
-            return await Task.FromResult(new ServerPipes { RequestPipe = reqPipe, ResponsePipe = resPipe });
+            return new ServerPipes { RequestPipe = reqPipe, ResponsePipe = resPipe };
 
         }
         catch (Exception ex) { return ex; }

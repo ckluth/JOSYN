@@ -29,18 +29,21 @@ public class PipesClient : IPipesClient
     {
         try
         {
-            var lengthPrefix = BitConverter.GetBytes(requestBytes.Length);
-            await pipes.RequestPipe.WriteAsync(lengthPrefix);
-            await pipes.RequestPipe.WriteAsync(requestBytes);
+            // Write request: explicit length prefix then raw bytes (no BinaryWriter.Write(byte[])
+            // which would emit a second length prefix). Mirrors BinaryReader.ReadBytes() on the
+            // server side.
+            await using var writer = new BinaryWriter(pipes.RequestPipe, Encoding.UTF8, leaveOpen: true);
+            writer.Write(requestBytes.Length);
+            writer.Write(requestBytes, 0, requestBytes.Length);
             await pipes.RequestPipe.FlushAsync();
-            var responseLengthBytes = new byte[4];
-            await pipes.ResponsePipe.ReadExactlyAsync(responseLengthBytes, 0, 4);
-            var responseLength = BitConverter.ToInt32(responseLengthBytes, 0);
-            var responseBytes = new byte[responseLength];
-            await pipes.ResponsePipe.ReadExactlyAsync(responseBytes, 0, responseLength);
+
+            // Read response: BinaryReader mirrors the explicit Write(int)/Write(byte[],0,n) the
+            // server now uses, giving a single consistent framing contract on both sides.
+            using var reader = new BinaryReader(pipes.ResponsePipe, Encoding.UTF8, leaveOpen: true);
+            var responseLength = reader.ReadInt32();
+            var responseBytes  = reader.ReadBytes(responseLength);
 
             return responseBytes;
-
         }
         catch (Exception ex) { return ex; }
     }
@@ -50,16 +53,12 @@ public class PipesClient : IPipesClient
     {
         try
         {
-            pipes.RequestPipe.Close();
-            pipes.ResponsePipe.Close();
-
-            return await Task.FromResult(Result.Success);
+            await pipes.RequestPipe.FlushAsync();
+            await pipes.RequestPipe.DisposeAsync();
+            await pipes.ResponsePipe.DisposeAsync();
+            return Result.Success;
         }
-        catch (Exception ex)
-        {
-            return await Task.FromResult(ex);
-        }
-
+        catch (Exception ex) { return ex; }
     }
 
     #region private

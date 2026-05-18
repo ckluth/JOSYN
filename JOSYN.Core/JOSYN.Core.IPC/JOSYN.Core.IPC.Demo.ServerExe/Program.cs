@@ -16,13 +16,15 @@ internal class Program
         var arguments = parseArgs.Value;
 
         if (string.IsNullOrEmpty(arguments.clientExePath))
-            return await RunSzenario01(arguments.sessionKey, 10);
+            return await RunSzenario02(arguments.sessionKey, 10);
         
         
-        return await RunSzenario02(arguments.clientExePath, arguments.sessionKey);
+        return await RunSzenario03(arguments.clientExePath, arguments.sessionKey);
+
+        // Specified Szenario 1 not implemented in this Demo so far...
     }
     
-    private static async Task<int> RunSzenario01(string sessionKey, int? timeout = null)
+    private static async Task<int> RunSzenario02(string sessionKey, int? timeout = null)
     {
         // No Client-Exe start; wait for Any Client, which must know the session-key (a 3rd Party must have started Server and Client with sessionKEy as CLI-Argument)
 
@@ -40,7 +42,7 @@ internal class Program
         return !res.Succeeded ? LogErrorResult(res, 1) : 0;
     }
 
-    private static async Task<int> RunSzenario02(string clientExePath, string sessionKey, int? timeout = null)
+    private static async Task<int> RunSzenario03(string clientExePath, string sessionKey, int? timeout = null)
     {
         // Client-Exe will get startet by Process.Run() with sessionKEy as CLI-Argument
 
