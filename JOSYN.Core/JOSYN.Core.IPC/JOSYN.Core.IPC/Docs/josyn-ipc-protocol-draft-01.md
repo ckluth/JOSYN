@@ -16,11 +16,12 @@ Durch die Nutzung von `System.IO.Pipes` ist das Protokoll plattformübergreifend
 
 Das Protokoll ist in aufeinander aufbauenden Schichten organisiert:
 
-| Schicht | Bezeichnung                  | Status        | Beschreibung                                                              |
-|---------|------------------------------|---------------|---------------------------------------------------------------------------|
-| 0       | Transport                    | Implementiert | `System.IO.Pipes` – plattformübergreifende Pipe-Abstraktion               |
-| 1       | Framing                      | Implementiert | Rohe Nutzdaten als `byte[]`-Arrays                                        |
-| 2       | Textkodierung                | Implementiert | UTF-8-Enkodierung der Nutzdaten                                           |
+| Schicht | Bezeichnung                  | Status        | Beschreibung                                                               |
+|---------|------------------------------|---------------|----------------------------------------------------------------------------|
+| 0       | Transport                    | Implementiert | `System.IO.Pipes` – plattformübergreifende Pipe-Abstraktion                |
+| 1       | Framing                      | Implementiert | Rohe Nutzdaten als `byte[]`-Arrays                                         |
+|         |                              |               | [ 4 Bytes: Länge (int32, little-endian) ][ N Bytes: Payload (UTF-8) ]      |
+| 2       | Textkodierung                | Implementiert | UTF-8-Enkodierung der Nutzdaten                                            |
 | 3       | Konventionen-Protokoll       | Geplant       | Strukturierte Felder: Verb, Payload, Status – voraussichtlich JSON-basiert |
 
 Applikationsspezifische Layer, die konkrete Request-Typen definieren, liegen außerhalb des Scopes dieses Protokolls.
@@ -48,7 +49,7 @@ Das Protokoll folgt einem strikten **Request/Response-Muster** zwischen genau ei
 ### Einschränkungen
 
 | Eigenschaft                | Ausprägung                      |
-|--------------------------|-----------------------------------|
+|----------------------------|---------------------------------|
 | Topologie                  | 1:1 (one-to-one)                |
 | Kommunikationsrichtung     | Unidirektional: Client → Server |
 | Server-initiierte Anfragen | Nicht unterstützt               |
@@ -83,7 +84,7 @@ Die Übergabe des Session-Keys zwischen den Prozessen erfolgt über standardisie
 **Argumentstruktur:**
 
 ```
-JOSYN-IPC  [<client-exe-path>]  <session-key>
+JOSYN-IPC <session-key> [<client-exe-path>]
 ```
 
 | Argument        | Pflicht | Beschreibung                                    |

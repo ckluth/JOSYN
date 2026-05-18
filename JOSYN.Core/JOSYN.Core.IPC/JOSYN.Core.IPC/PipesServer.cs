@@ -63,7 +63,7 @@ public class PipesServer : IPipesServer
         // Alle anderen public Überladungen delegieren hierhin...
         try
         {
-            var getConnection = CreatePipesAsync(sessionKey);
+            var getConnection = CreatePipes(sessionKey);
 
             if (!getConnection.Succeeded)
                 return Result.Propagate(getConnection.ToResult());
@@ -133,7 +133,7 @@ public class PipesServer : IPipesServer
             }
         });
         
-        return (() => { cancel?.Invoke(); }, cts.Token);
+        return (() => { cancel?.Invoke(); cts.Dispose(); }, cts.Token);
     }
 
     private static Result StartClientExe(string remoteExePath, string sessionKey)
@@ -166,18 +166,20 @@ public class PipesServer : IPipesServer
     {
         try
         {
-            await using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
+            // BinaryReader/BinaryWriter used consistently on both sides.
+            // Note: BinaryWriter.Write(byte[]) emits a length prefix before the bytes, which
+            // would create a double-prefix bug. The correct overload is Write(byte[], 0, n),
+            // which writes raw bytes only — matching BinaryReader.ReadBytes(n) on the client.
+            using var reader = new BinaryReader(reqPipe,  Encoding.UTF8, leaveOpen: true);
+            using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
 
             while (reqPipe.IsConnected && !cancellationToken.IsCancellationRequested)
             {
                 byte[] requestBytes;
                 try
                 {
-                    var lengthPrefix = new byte[4];
-                    await reqPipe.ReadExactlyAsync(lengthPrefix, 0, 4, cancellationToken);
-                    var messageLength = BitConverter.ToInt32(lengthPrefix, 0);
-                    requestBytes = new byte[messageLength];
-                    await reqPipe.ReadExactlyAsync(requestBytes, 0, messageLength, cancellationToken);
+                    var messageLength = reader.ReadInt32();
+                    requestBytes = reader.ReadBytes(messageLength);
                 }
                 catch (OperationCanceledException)
                 {
@@ -190,7 +192,7 @@ public class PipesServer : IPipesServer
 
                 var response = await processRequest(requestBytes);
                 writer.Write(response.Length);
-                writer.Write(response);
+                writer.Write(response, 0, response.Length); // raw bytes only — no extra length prefix
             }
             return Result.Success;
         }
@@ -198,13 +200,13 @@ public class PipesServer : IPipesServer
     }
 
 
-    private static Result<ServerPipes> CreatePipesAsync(string sessionKey)
+    private static Result<ServerPipes> CreatePipes(string sessionKey)
     {
         var (requestPipeName, responsePipeName) = PipesProtocol.DerivePipeNamesFromSessionKey(sessionKey);
-        return CreatePipesAsync(requestPipeName, responsePipeName);
+        return CreatePipes(requestPipeName, responsePipeName);
     }
 
-    private static Result<ServerPipes> CreatePipesAsync(string requestPipeName, string responsePipeName)
+    private static Result<ServerPipes> CreatePipes(string requestPipeName, string responsePipeName)
     {
         try
         {
