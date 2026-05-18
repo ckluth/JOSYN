@@ -24,7 +24,7 @@ public class PipesProtocol: IPipesProtocol
         if (args.Length is < 2 or > 3 || !args[0].Equals(PipesProtocol.MagicToken))
             return Result.Error("Invalid IPC-Arguments");
 
-        return args.Length == 2 ? (args[1], string.Empty) : (args[2], args[1]);
+        return args.Length == 2 ? (args[1], string.Empty) : (args[1], args[2]);
     }
 
     /// <inheritdoc/>

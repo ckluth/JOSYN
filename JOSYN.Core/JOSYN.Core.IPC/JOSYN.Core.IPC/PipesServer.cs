@@ -63,7 +63,7 @@ public class PipesServer : IPipesServer
         // Alle anderen public Überladungen delegieren hierhin...
         try
         {
-            var getConnection = await CreatePipesAsync(sessionKey);
+            var getConnection = CreatePipesAsync(sessionKey);
 
             if (!getConnection.Succeeded)
                 return Result.Propagate(getConnection.ToResult());
@@ -198,13 +198,13 @@ public class PipesServer : IPipesServer
     }
 
 
-    private static async Task<Result<ServerPipes>> CreatePipesAsync(string sessionKey)
+    private static Result<ServerPipes> CreatePipesAsync(string sessionKey)
     {
         var (requestPipeName, responsePipeName) = PipesProtocol.DerivePipeNamesFromSessionKey(sessionKey);
-        return await CreatePipesAsync(requestPipeName, responsePipeName);
+        return CreatePipesAsync(requestPipeName, responsePipeName);
     }
 
-    private static async Task<Result<ServerPipes>> CreatePipesAsync(string requestPipeName, string responsePipeName)
+    private static Result<ServerPipes> CreatePipesAsync(string requestPipeName, string responsePipeName)
     {
         try
         {
@@ -222,7 +222,7 @@ public class PipesServer : IPipesServer
                 transmissionMode: PipeTransmissionMode.Byte,
                 options: PipeOptions.Asynchronous);
 
-            return await Task.FromResult(new ServerPipes { RequestPipe = reqPipe, ResponsePipe = resPipe });
+            return new ServerPipes { RequestPipe = reqPipe, ResponsePipe = resPipe };
 
         }
         catch (Exception ex) { return ex; }

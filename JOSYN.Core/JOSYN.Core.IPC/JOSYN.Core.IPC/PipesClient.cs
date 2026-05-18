@@ -50,16 +50,15 @@ public class PipesClient : IPipesClient
     {
         try
         {
+            await pipes.RequestPipe.FlushAsync();
+            
             pipes.RequestPipe.Close();
             pipes.ResponsePipe.Close();
 
-            return await Task.FromResult(Result.Success);
+            return Result.Success;
         }
-        catch (Exception ex)
-        {
-            return await Task.FromResult(ex);
-        }
-
+        
+        catch (Exception ex) { return ex; }
     }
 
     #region private
