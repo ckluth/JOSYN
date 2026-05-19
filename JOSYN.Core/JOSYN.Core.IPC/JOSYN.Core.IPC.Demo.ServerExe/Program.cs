@@ -1,5 +1,4 @@
 ﻿using JOSYN.Core.ResultPattern;
-using System.Data.Common;
 using System.Diagnostics;
 using System.Text;
 
@@ -22,9 +21,10 @@ internal class Program
             //if (string.IsNullOrEmpty(arguments.clientExePath))
             return await RunSzenario02(arguments.sessionKey);
 
+            //not for now... 
             //return await RunSzenario03(arguments.clientExePath, arguments.sessionKey);
 
-            // Specified Szenario 1 not implemented in this Demo so far...
+            //Specified Szenario 1 not implemented in this Demo so far...
 
         }
         catch (Exception ex)
@@ -49,8 +49,8 @@ internal class Program
 
 
         // Reconnection - Pattern ist für Produktiv-Szenario irrelevant.
-        // Es gibt keinen Use-Case für eine temporäre On-To-One-Session im vorgesehenen Einsatz.
-        // Would by YAGNI, das in die Implementierung aufzunehmen, da es die Komplexität unnötig erhöht.
+        // Es gibt keinen Use-Case für eine temporäre One-To-One-Session im vorgesehenen Einsatz.
+        // Would be YAGNI, das in die Implementierung aufzunehmen, da es die Komplexität unnötig erhöht.
         // Ist nur für die Convenience im DEV/Demo-Context hier an-implementiert.
         Result res;
         while (true)
@@ -92,17 +92,6 @@ internal class Program
         return !res.Succeeded ? LogErrorResult(res, 1) : TerminateWithSuccess();
     }
 
-    private static async Task HandleHandlerError(string request, Exception ex)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine();
-        Console.WriteLine($"Error handling request: {request}");
-        Console.WriteLine($"Exception: {ex}");
-        Console.WriteLine();
-        Console.ResetColor();
-        await Task.CompletedTask;
-    }
-
     private static bool wasEscaped = false;
 
     private static Task<bool> WasEscapePressed()
@@ -123,6 +112,16 @@ internal class Program
     }
 
     #region FakeLog
+    private static async Task HandleHandlerError(string request, Exception ex)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine();
+        Console.WriteLine($"Error handling request: {request}");
+        Console.WriteLine($"Exception: {ex}");
+        Console.WriteLine();
+        Console.ResetColor();
+        await Task.CompletedTask;
+    }
 
     private static int TerminateWithSuccess()
     {
