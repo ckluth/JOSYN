@@ -12,6 +12,16 @@ public interface IPipesProtocol
     /// <summary>
     /// TODO
     /// </summary>
+    public const string MagicToken = "JOSYN-IPC";
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public const string MagicErrorResponsePrefix = $"{MagicToken}-ERROR";
+
+    /// <summary>
+    /// TODO
+    /// </summary>
     static abstract string CreateClientStartCLIArguments(string sessionKey);
 
     /// <summary>

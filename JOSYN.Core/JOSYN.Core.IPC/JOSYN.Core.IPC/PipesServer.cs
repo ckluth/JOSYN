@@ -116,10 +116,8 @@ public class PipesServer : IPipesServer
         }
     }
 
-    private static (Action? disposeHandler, CancellationToken cancellationToken) CreatePollingCancellationToken(Func<Task<bool>>? shouldCancel = null, int pollIntervalMs = 500)
+    private static (Action? disposeHandler, CancellationToken cancellationToken) CreatePollingCancellationToken(Func<Task<bool>>? shouldCancel = null, int pollIntervalMs = 100)
     {
-        // TODO: fixes Poll-Interval 500ms dokumentieren
-        
         if (shouldCancel == null) 
             return (null, CancellationToken.None);
         
@@ -135,8 +133,8 @@ public class PipesServer : IPipesServer
                 // Die Exception "verschwindet im Nirwana".
                 // "Könnte man" aufangen - und propagieren, oder als CancelRequest behandeln - aber NOPE!
                 // Explizite Design-Entscheidung hier:
-                // Der IsCancellationRequested-Callback in der Anwendung soll lightweigth und schlank implementiert
-                // sein und keinen kritischen Code beinhalten! Bei Verstpß gegen dieses dokumentierte Konzept: Ein Fall von "Pech gehabt"!
+                // Der IsCancellationRequested-Callback in der Anwendung soll lightweigth und schlank implementiert sein
+                // und keinen kritischen Code beinhalten! Bei Verstoß gegen dieses dokumentierte Konzept: Ein Fall von "Pech gehabt"!
 
                 var isCanncellationRequested = await shouldCancel();
                 
@@ -229,7 +227,7 @@ public class PipesServer : IPipesServer
                 catch (Exception ex)
                 {
                     await onError(Encoding.UTF8.GetString(requestBytes), ex);
-                    var responseStr = $"{PipesProtocol.MagicErrorResponsePrefix}{ex}";
+                    var responseStr = $"{IPipesProtocol.MagicErrorResponsePrefix}{ex}";
                     response = Encoding.UTF8.GetBytes(responseStr);
                 }
 

@@ -9,12 +9,5 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\JOSYN.Core.IPC\JOSYN.Core.IPC.csproj"/>
-	</ItemGroup>
-	
-    <!--
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Command="start &quot;&quot; &quot;C:\Temp\VS.OUT\JOSYN\JOSYN.Core.IPC.Demo.ServerExe\bin\Debug\JOSYN.Core.IPC.Demo.ServerExe.exe&quot; JOSYN-IPC my-session-key"/>
-	</Target>		
-	-->
-	
+	</ItemGroup>	
 </Project>

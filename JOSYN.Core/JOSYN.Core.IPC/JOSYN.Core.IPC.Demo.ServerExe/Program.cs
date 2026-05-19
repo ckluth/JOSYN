@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
+﻿using JOSYN.Core.ResultPattern;
+using System.Data.Common;
+using System.Diagnostics;
 using System.Text;
-using JOSYN.Core.ResultPattern;
 
 namespace JOSYN.Core.IPC.Demo.ServerExe;
 
@@ -46,6 +47,11 @@ internal class Program
 
         var mayBeInfiniteTimeout = TimeSpan.FromDays(timeout ?? 1);
 
+
+        // Reconnection - Pattern ist für Produktiv-Szenario irrelevant.
+        // Es gibt keinen Use-Case für eine temporäre On-To-One-Session im vorgesehenen Einsatz.
+        // Would by YAGNI, das in die Implementierung aufzunehmen, da es die Komplexität unnötig erhöht.
+        // Ist nur für die Convenience im DEV/Demo-Context hier an-implementiert.
         Result res;
         while (true)
         {
@@ -67,8 +73,6 @@ internal class Program
         return !res.Succeeded ? LogErrorResult(res, 1) : TerminateWithSuccess(); ;
     }
   
-
-
     private static async Task<int> RunSzenario03(string clientExePath, string sessionKey, int? timeout = null)
     {
         // Client-Exe will get startet by Process.Run() with sessionKEy as CLI-Argument
@@ -99,13 +103,10 @@ internal class Program
         await Task.CompletedTask;
     }
 
-
-
     private static bool wasEscaped = false;
 
     private static Task<bool> WasEscapePressed()
     {
-        throw new Exception("aaa");
         if (!Console.KeyAvailable || Console.ReadKey(true).Key != ConsoleKey.Escape)
             return Task.FromResult(false);
         Console.WriteLine("ESC gedrückt. Abbruch...");
@@ -118,7 +119,6 @@ internal class Program
         Console.WriteLine($"SRV|RECEIVED>{requestStr}");
         var responseStr = $"Echo: {requestStr}";
         Console.WriteLine($"SRV|SENDING>{responseStr}");
-        throw new Exception("Oh No!");
         return Task.FromResult(responseStr);
     }
 
