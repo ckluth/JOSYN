@@ -11,14 +11,16 @@ namespace JOSYN.Core.IPC;
 public class PipesServer : IPipesServer
 {
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<string, Task<string>> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<string, Task<string>> processRequest, TimeSpan connectTimeout,
+        Func<string, Exception, Task> onError, string? sessionKey = null, Func<Task<bool>>? shouldCancel = null)
     {
         var handler = new RawRequestHandler{ ProcessStrings = processRequest };
-        return await RunAsync(clientExePath, handler.ProcessRawRequest, connectTimeout, sessionKey, shouldCancel);
+        return await RunAsync(clientExePath, handler.ProcessRawRequest, connectTimeout, onError, sessionKey, shouldCancel);
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string? sessionKey = null, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(string clientExePath, Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
+        Func<string, Exception, Task> onError, string? sessionKey = null, Func<Task<bool>>? shouldCancel = null)
     {
         try
         {
@@ -29,7 +31,7 @@ public class PipesServer : IPipesServer
                 return Result.Propagate(startClient);
 
             var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
-            var res = await RunAsync(processRequest, connectTimeout, sessionKey, cancellationToken);
+            var res = await RunAsync(processRequest, connectTimeout, onError, sessionKey, cancellationToken);
             disposeHandler?.Invoke();
             return res;
 
@@ -38,26 +40,29 @@ public class PipesServer : IPipesServer
     }
 
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<string, Task<string>> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(Func<string, Task<string>> processRequest, TimeSpan connectTimeout,
+        Func<string, Exception, Task> onError, string sessionKey, Func<Task<bool>>? shouldCancel = null)
     {
         var handler = new RawRequestHandler { ProcessStrings = processRequest };
         var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
-        var res = await RunAsync(handler.ProcessRawRequest, connectTimeout, sessionKey, cancellationToken);
+        var res = await RunAsync(handler.ProcessRawRequest, connectTimeout, onError, sessionKey, cancellationToken);
         disposeHandler?.Invoke();
         return res;
     }
     
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, Func<bool>? shouldCancel = null)
+    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
+        Func<string, Exception, Task> onError, string sessionKey, Func<Task<bool>>? shouldCancel = null)
     {
         var (disposeHandler, cancellationToken) = CreatePollingCancellationToken(shouldCancel);
-        var res = await RunAsync(processRequest, connectTimeout, sessionKey, cancellationToken);
+        var res = await RunAsync(processRequest, connectTimeout, onError, sessionKey, cancellationToken);
         disposeHandler?.Invoke();
         return res;
     }
  
     /// <inheritdoc/>   
-    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout, string sessionKey, CancellationToken cancellationToken = default)
+    public static async Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
+        Func<string, Exception, Task> onError, string sessionKey, CancellationToken cancellationToken = default)
     {
 	    // Die eigentliche Implementierug.
         // Alle anderen public Überladungen delegieren hierhin...
@@ -91,7 +96,7 @@ public class PipesServer : IPipesServer
                 }
 
                 return await RequestLoopAsync(
-                    conn.RequestPipe, conn.ResponsePipe, processRequest, cancellationToken);
+                    conn.RequestPipe, conn.ResponsePipe, processRequest, onError, cancellationToken);
             }
         }
         catch (Exception ex) { return ex; }
@@ -111,7 +116,7 @@ public class PipesServer : IPipesServer
         }
     }
 
-    private static (Action? disposeHandler, CancellationToken cancellationToken) CreatePollingCancellationToken(Func<bool>? shouldCancel = null, int pollIntervalMs = 100)
+    private static (Action? disposeHandler, CancellationToken cancellationToken) CreatePollingCancellationToken(Func<Task<bool>>? shouldCancel = null, int pollIntervalMs = 100)
     {
         if (shouldCancel == null) 
             return (null, CancellationToken.None);
@@ -120,16 +125,26 @@ public class PipesServer : IPipesServer
         Action cancel = cts.Cancel;
 
         // ReSharper disable once MethodSupportsCancellation
-        _ = Task.Run(() =>
+        _ = Task.Run(async() =>
         {
             while (!cts.IsCancellationRequested)
             {
-                if (shouldCancel())
+                // Eine Exception in shouldCancel() würde hier diesen Task beenden, ohne dass cts.Cancel() aufgerufen wird.
+                // Die Exception "verschwindet im Nirwana".
+                // "Könnte man" aufangen - und propagieren, oder als CancelRequest behandeln - aber NOPE!
+                // Explizite Design-Entscheidung hier:
+                // Der IsCancellationRequested-Callback in der Anwendung soll lightweigth und schlank implementiert sein
+                // und keinen kritischen Code beinhalten! Bei Verstoß gegen dieses dokumentierte Konzept: Ein Fall von "Pech gehabt"!
+
+                var isCanncellationRequested = await shouldCancel();
+                
+                if (isCanncellationRequested)
                 {
-                    cts.Cancel();
+                    await cts.CancelAsync();
                     break;
                 }
-                Thread.Sleep(pollIntervalMs);
+                // ReSharper disable once MethodSupportsCancellation
+                await Task.Delay(pollIntervalMs);
             }
         });
         
@@ -157,21 +172,24 @@ public class PipesServer : IPipesServer
         }
         catch (Exception ex) { return ex; }
     }
-	
-	//----------------------------------------------------------------------------------------
-	// DISCLAIMER: Single-in-flight — kein Multiplexing im zentralen Request-Loop!
-	//
-	// Wie in der Spec des JOSYN-IPC-Protocols als design-basierte Limitierung beschrieben:
-	// Der Request-Loop verarbeitet Anfragen strikt sequenziell.
-	// Parallele Requests könne zu undefiniertem Verhalten führen.
+
+    //----------------------------------------------------------------------------------------------------
+    // DISCLAIMER: Single-in-flight — kein Multiplexing im zentralen Request-Loop!
     //
-	// CALM DOWN: "Will never happen" in der internen JOSYN-Implementierung. ;)		
-	//----------------------------------------------------------------------------------------
-	
+    // Wie in der Spec des JOSYN-IPC-Protocols als design-basierte Limitierung beschrieben:
+    // Der Request-Loop verarbeitet Anfragen strikt sequenziell.
+    // Parallele Requests könne zu undefiniertem Verhalten führen.
+    //
+    // CALM DOWN: "Will never happen" in der internen JOSYN-Implementierung. ;)		
+    //
+    // TODO: "undefiniertes Verhalten" ist schon blöd; eine BUSY/Rejected-Antwort muss doch drin sein...
+    //----------------------------------------------------------------------------------------------------
+
     private static async Task<Result> RequestLoopAsync(
         NamedPipeServerStream reqPipe,
         NamedPipeServerStream resPipe,
         Func<byte[], Task<byte[]>> processRequest,
+        Func<string, Exception, Task> onError,
         CancellationToken cancellationToken = default)
     {
         try
@@ -201,8 +219,18 @@ public class PipesServer : IPipesServer
                     break;
                 }
 
-                var response = await processRequest(requestBytes);
-				
+                byte[] response;
+                try
+                {
+                    response = await processRequest(requestBytes);
+                }
+                catch (Exception ex)
+                {
+                    await onError(Encoding.UTF8.GetString(requestBytes), ex);
+                    var responseStr = $"{IPipesProtocol.MagicErrorResponsePrefix}{ex}";
+                    response = Encoding.UTF8.GetBytes(responseStr);
+                }
+
                 writer.Write(response.Length);
                 writer.Write(response, 0, response.Length); // raw bytes only — no extra length prefix
 				writer.Flush();

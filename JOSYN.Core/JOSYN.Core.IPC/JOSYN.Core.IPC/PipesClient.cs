@@ -42,6 +42,10 @@ public class PipesClient : IPipesClient
             using var reader = new BinaryReader(pipes.ResponsePipe, Encoding.UTF8, leaveOpen: true);
             var responseLength = reader.ReadInt32();
             var responseBytes  = reader.ReadBytes(responseLength);
+            
+            var responseStr = Encoding.UTF8.GetString(responseBytes);
+            if (responseStr.StartsWith(IPipesProtocol.MagicErrorResponsePrefix))
+                return Result.Error(responseStr[IPipesProtocol.MagicErrorResponsePrefix.Length..]);
 
             return responseBytes;
         }
