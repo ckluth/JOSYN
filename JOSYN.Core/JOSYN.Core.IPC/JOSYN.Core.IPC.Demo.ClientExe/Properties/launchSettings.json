@@ -2,7 +2,7 @@
   "profiles": {
     "JOSYN.Core.IPC.Demo.ClientExe": {
       "commandName": "Project",
-      "commandLineArgs": "JOSYN-IPC my-session-key"
+      "commandLineArgs": "JOSYN-IPC dea5611d-d740-437f-ad93-7a5dc5ae4299"
     }
   }
 }
