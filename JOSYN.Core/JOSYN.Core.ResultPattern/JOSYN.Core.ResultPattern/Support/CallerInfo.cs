@@ -3,33 +3,32 @@ namespace JOSYN.Core.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// TODO
+/// Represents a single frame in a result's propagation chain.
+/// Populated automatically — you never create these manually.
 /// </summary>
-public record CallerInfo
+public sealed record CallerInfo
 {
     /// <summary>
-    /// TODO
+    /// Method name.
     /// </summary>
     public string MethodName { get; init; } = "";
 
     /// <summary>
-    /// TODO
+    /// Declaring type name.
     /// </summary>
     public string ClassName { get; init; } = "";
 
     /// <summary>
-    /// TODO
+    /// Source file path. Empty when no PDB is available.
     /// </summary>
     public string FilePath { get; init; } = "";
 
     /// <summary>
-    /// TODO
+    /// Line number. Zero when no PDB is available.
     /// </summary>
     public int LineNumber { get; init; }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
+    /// <inheritdoc />
     public override string ToString()
     {
         if (string.IsNullOrEmpty(FilePath) || LineNumber == 0) return $"{ClassName}.{MethodName}()";

@@ -20,7 +20,8 @@ internal static class ResultHelper
     internal static string CallStackToString(IReadOnlyList<CallerInfo> callers) =>
         callers.Count == 0
             ? "(kein Callstack)"
-            : string.Join("\n  at ", callers.Select(c => c.ToString()));
+            : string.Join("\n", callers.Select(c => $"  at {c}"));
 
+    // "Ausnahmefehler: " prefix is intentionally German — matches the project's runtime error message convention.
     internal static string FormatExceptionMessage(Exception exception) => $"Ausnahmefehler: {exception.Message}";
 }

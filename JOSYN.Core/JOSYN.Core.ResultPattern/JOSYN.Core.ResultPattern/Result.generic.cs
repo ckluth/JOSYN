@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -8,8 +7,9 @@ namespace JOSYN.Core.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// TODO: decribe Result&lt;T&gt;
-/// </summary>>
+/// Represents the outcome of an operation returning <typeparamref name="TValue"/> on success.
+/// Either succeeds with a value or carries an error, optional exception, and a propagation call chain.
+/// </summary>
 public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
 {
     /// <inheritdoc />
@@ -62,12 +62,14 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public static implicit operator Result<TValue>(Exception exception)
     {
-        var frame = new StackFrame(1);
+        var frame = new StackFrame(1, needFileInfo: true);
         var method = frame.GetMethod();
         var caller = new CallerInfo
         {
             MethodName = method?.Name ?? "",
             ClassName = method?.DeclaringType?.Name ?? "",
+            FilePath = frame.GetFileName() ?? "",
+            LineNumber = frame.GetFileLineNumber(),
         };
         return new Result<TValue>(default, ResultHelper.FormatExceptionMessage(exception), exception) with { Callers = [caller] };
     }
@@ -75,12 +77,14 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public static implicit operator Result<TValue>(Error error)
     {
-        var frame = new StackFrame(1);
+        var frame = new StackFrame(1, needFileInfo: true);
         var method = frame.GetMethod();
         var caller = new CallerInfo
         {
             MethodName = method?.Name ?? "",
             ClassName = method?.DeclaringType?.Name ?? "",
+            FilePath = frame.GetFileName() ?? "",
+            LineNumber = frame.GetFileLineNumber(),
         };
         return new Result<TValue>(default, error.ErrorMessage, error.Exception) with { Callers = [caller] };
     }
@@ -88,6 +92,7 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public static Result<TValue> Propagate(Result<TValue> result, [CallerMemberName] string internal_ignore_callermembername = "", [CallerFilePath] string internal_ignore_callerfilepath = "", [CallerLineNumber] int internal_ignore_callerlinenumber = 0)
     {
+        Debug.Assert(!result.Succeeded, "Propagate() wurde auf einem succeeded Result aufgerufen.");
         if (result.Succeeded) return result;
         var className = new StackFrame(1).GetMethod()?.DeclaringType?.Name ?? "";
         var caller = ResultHelper.CreateCallerInfo(internal_ignore_callermembername, internal_ignore_callerfilepath, internal_ignore_callerlinenumber, className);
@@ -95,14 +100,16 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     }
 
     /// <inheritdoc />
-    public Result ToResult() 
-    { 
-        if (Succeeded) return Result.Success; return Result.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
+    public Result ToResult()
+    {
+        if (Succeeded) return Result.Success;
+        return Result.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
     }
 
     /// <inheritdoc />
     public Result<TOther> ToResult<TOther>()
     {
+        Debug.Assert(!Succeeded, "ToResult<T>() wurde auf einem succeeded Result aufgerufen.");
         if (Succeeded) return Result<TOther>.FailSilent("Kein Wert vorhanden");
         return Result<TOther>.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
     }
@@ -110,5 +117,6 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public string CallStackAsString => ResultHelper.CallStackToString(Callers);
 
+    /// <summary>Creates a failed result without capturing any caller info. Used internally by ToResult() overloads.</summary>
     internal static Result<TValue> FailSilent(string error, Exception? exception = null) => new(default, error, exception);
 }

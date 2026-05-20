@@ -5,30 +5,88 @@ namespace JOSYN.Core.ResultPattern.Test;
 [TestFixture]
 public class ResultTestsPropagate
 {
+    // ── void Result, propagated across mixed generic types ────────────────────
+
     [Test]
-    public void Propagate_ShouldAccumulateCallStack_AcrossTypes()
-    {
-        // Act
-        var result = LoadUserDisplayName();
+    public void Propagate_AcrossTypes_FourLevelChain_Succeeded_IsFalse() =>
+        Assert.That(LoadUserDisplayName().Succeeded, Is.False);
 
-        // Assert
-        Console.WriteLine("Succeeded:");
-        Console.WriteLine(result.Succeeded);
-        Console.WriteLine();
-        Console.WriteLine("[ErrorMessage]");
-        Console.WriteLine(result.ErrorMessage);
-        Console.WriteLine();
-        Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackAsString);
-        if (result.Exception == null) return;
-        Console.WriteLine();
-        Console.WriteLine("[Exception]");
-        Console.WriteLine(result.Exception.ToString());
+    [Test]
+    public void Propagate_AcrossTypes_FourLevelChain_Callers_HasFourEntries() =>
+        Assert.That(LoadUserDisplayName().Callers.Count, Is.EqualTo(4));
 
-        Assert.That(result.Callers.Count, Is.EqualTo(4));
-    }
-    
-    // ── Hilfsmethoden ─────────────────────────────────────────────────────────
+    [Test]
+    public void Propagate_AcrossTypes_FourLevelChain_ErrorMessage_IsPreserved() =>
+        Assert.That(LoadUserDisplayName().ErrorMessage, Does.Contain("Datenbankverbindung fehlgeschlagen."));
+
+    [Test]
+    public void Propagate_AcrossTypes_FourLevelChain_Exception_IsPreserved() =>
+        Assert.That(LoadUserDisplayName().Exception, Is.Not.Null);
+
+    [Test]
+    public void Propagate_AcrossTypes_FourLevelChain_CallStackAsString_AllEntriesStartWithAt() =>
+        Assert.That(LoadUserDisplayName().CallStackAsString.Split('\n'), Has.All.StartWith("  at "));
+
+    // ── void Result, same type across all levels ──────────────────────────────
+
+    [Test]
+    public void Propagate_SameType_FourLevelChain_Succeeded_IsFalse() =>
+        Assert.That(DoA().Succeeded, Is.False);
+
+    [Test]
+    public void Propagate_SameType_FourLevelChain_Callers_HasFourEntries() =>
+        Assert.That(DoA().Callers.Count, Is.EqualTo(4));
+
+    [Test]
+    public void Propagate_SameType_FourLevelChain_ErrorMessage_IsPreserved() =>
+        Assert.That(DoA().ErrorMessage, Does.Contain("Etwas ist schiefgelaufen."));
+
+    [Test]
+    public void Propagate_SameType_FourLevelChain_Exception_IsPreserved() =>
+        Assert.That(DoA().Exception, Is.Not.Null);
+
+    [Test]
+    public void Propagate_SameType_FourLevelChain_CallStackAsString_AllEntriesStartWithAt() =>
+        Assert.That(DoA().CallStackAsString.Split('\n'), Has.All.StartWith("  at "));
+
+    // ── generic Result<T>, propagated across levels ───────────────────────────
+
+    [Test]
+    public void Propagate_GenericResult_FourLevelChain_Succeeded_IsFalse() =>
+        Assert.That(LoadUserDisplayName2().Succeeded, Is.False);
+
+    [Test]
+    public void Propagate_GenericResult_FourLevelChain_Callers_HasFourEntries() =>
+        Assert.That(LoadUserDisplayName2().Callers.Count, Is.EqualTo(4));
+
+    [Test]
+    public void Propagate_GenericResult_FourLevelChain_ErrorMessage_IsPreserved() =>
+        Assert.That(LoadUserDisplayName2().ErrorMessage, Does.Contain("Datenbankverbindung fehlgeschlagen."));
+
+    [Test]
+    public void Propagate_GenericResult_FourLevelChain_Exception_IsPreserved() =>
+        Assert.That(LoadUserDisplayName2().Exception, Is.Not.Null);
+
+    [Test]
+    public void Propagate_GenericResult_FourLevelChain_CallStackAsString_AllEntriesStartWithAt() =>
+        Assert.That(LoadUserDisplayName2().CallStackAsString.Split('\n'), Has.All.StartWith("  at "));
+
+    // ── single-level propagation (2-frame chain) ──────────────────────────────
+
+    [Test]
+    public void Propagate_SingleLevel_Succeeded_IsFalse() =>
+        Assert.That(SingleLevel_Outer().Succeeded, Is.False);
+
+    [Test]
+    public void Propagate_SingleLevel_Callers_HasTwoEntries() =>
+        Assert.That(SingleLevel_Outer().Callers.Count, Is.EqualTo(2));
+
+    [Test]
+    public void Propagate_SingleLevel_ErrorMessage_IsPreserved() =>
+        Assert.That(SingleLevel_Outer().ErrorMessage, Is.EqualTo("inner failed"));
+
+    // ── scenario helpers ──────────────────────────────────────────────────────
+
     private Result LoadUserDisplayName()
     {
         var result = ParseUserAge();
@@ -52,42 +110,9 @@ public class ResultTestsPropagate
 
     private Result<Guid> LoadUserRecord()
     {
-        try
-        {
-            throw new InvalidOperationException("Datenbankverbindung fehlgeschlagen.");
-        }
-        catch (Exception ex)
-        {
-            //return Result<Guid>.Fail(ex);
-            return ex;
-        }
+        try { throw new InvalidOperationException("Datenbankverbindung fehlgeschlagen."); }
+        catch (Exception ex) { return ex; }
     }
-
-
-    [Test]
-    public void Propagate_ShouldAccumulateCallStack()
-    {
-        // Act
-        var result = DoA();
-
-        // Assert
-        Console.WriteLine("Succeeded:");
-        Console.WriteLine(result.Succeeded);
-        Console.WriteLine();
-        Console.WriteLine("[ErrorMessage]");
-        Console.WriteLine(result.ErrorMessage);
-        Console.WriteLine();
-        Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackAsString);
-        if (result.Exception == null) return;
-        Console.WriteLine();
-        Console.WriteLine("[Exception]");
-        Console.WriteLine(result.Exception.ToString());
-
-        Assert.That(result.Callers.Count, Is.EqualTo(4));
-    }
-
-    // ── Hilfsmethoden ─────────────────────────────────────────────────────────
 
     private Result DoA()
     {
@@ -112,40 +137,9 @@ public class ResultTestsPropagate
 
     private Result DoD()
     {
-        try
-        {
-            throw new InvalidOperationException("Etwas ist schiefgelaufen.");
-        }
-        catch (Exception ex)
-        {
-            return ex; // Result.Fail(ex);
-        }
+        try { throw new InvalidOperationException("Etwas ist schiefgelaufen."); }
+        catch (Exception ex) { return ex; }
     }
-
-    [Test]
-    public void Propagate_Generic_ShouldAccumulateCallStack()
-    {
-        // Act
-        var result = LoadUserDisplayName2();
-
-        // Assert
-        Console.WriteLine("Succeeded:");
-        Console.WriteLine(result.Succeeded);
-        Console.WriteLine();
-        Console.WriteLine("[ErrorMessage]");
-        Console.WriteLine(result.ErrorMessage);
-        Console.WriteLine();
-        Console.WriteLine("[Callstack]");
-        Console.WriteLine(result.CallStackAsString);
-        if (result.Exception == null) return;
-        Console.WriteLine();
-        Console.WriteLine("[Exception]");
-        Console.WriteLine(result.Exception.ToString());
-
-        Assert.That(result.Callers.Count, Is.EqualTo(4));
-    }
-
-    // ── Hilfsmethoden ─────────────────────────────────────────────────────────
 
     private Result<string> LoadUserDisplayName2()
     {
@@ -170,13 +164,16 @@ public class ResultTestsPropagate
 
     private Result<Guid> LoadUserRecord2()
     {
-        try
-        {
-            throw new InvalidOperationException("Datenbankverbindung fehlgeschlagen.");
-        }
-        catch (Exception ex)
-        {
-            return ex; //Result<Guid>.Fail(ex);
-        }
+        try { throw new InvalidOperationException("Datenbankverbindung fehlgeschlagen."); }
+        catch (Exception ex) { return ex; }
+    }
+
+    private static Result SingleLevel_Inner() => Result.Fail("inner failed");
+
+    private static Result SingleLevel_Outer()
+    {
+        var r = SingleLevel_Inner();
+        if (!r.Succeeded) return Result.Propagate(r);
+        return Result.Success;
     }
 }

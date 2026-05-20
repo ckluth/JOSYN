@@ -3,6 +3,6 @@ namespace JOSYN.Core.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// TODO
+/// Marker type for <see cref="Result.Success"/>. You never need to instantiate this directly.
 /// </summary>
 public readonly struct ResultSuccess { }
