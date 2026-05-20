@@ -27,5 +27,5 @@ public interface IPipesClient
     /// <summary>
     /// TODO
     /// </summary>
-    static abstract Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest);
+    static abstract Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest = false);
 }

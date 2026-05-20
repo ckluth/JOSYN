@@ -1,4 +1,5 @@
-﻿using JOSYN.Core.ResultPattern;
+﻿using JOSYN.Core.IPC.JIP;
+using JOSYN.Core.ResultPattern;
 using System.Diagnostics;
 using System.Text;
 
@@ -61,8 +62,37 @@ internal class Program
     private static Task<string> HandleRequest(string requestStr)
     {
         Console.WriteLine($"SRV|RECEIVED>{requestStr}");
-        var responseStr = $"Echo: {requestStr}";
-        Console.WriteLine($"SRV|SENDING>{responseStr}");
+
+        var parseResult = JipProtocol.ParseRequest(requestStr);
+        if (!parseResult.Succeeded)
+        {
+            var errResponse = JipProtocol.ToLogicalFailureResponse($"Ungültige JIP-Anfrage: {parseResult.ErrorMessage}");
+            Console.WriteLine($"SRV|SENDING>{errResponse}");
+            return Task.FromResult(errResponse.ToString());
+        }
+
+        var request = parseResult.Value;
+        var response = request.What switch
+        {
+            "PING"       => JipProtocol.ToResponse(Result.Success),
+            "GET-CONFIG" => JipProtocol.ToResponse(Result<string>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"), d => d),
+            "GET-DICT"   => new Response
+            {
+                Status = ResponseStatus.Success,
+                Dict   = new Dictionary<string, string> { ["host"] = "localhost", ["port"] = "5000" },
+            },
+            _ => JipProtocol.ToLogicalFailureResponse($"Unbekannte Funktion: '{request.What}'"),
+        };
+
+
+        Console.WriteLine($"SRV|SENDING>{response}");
+
+        var responseStr = response.ToString();
+
+        //if (request.What == "GET-CONFIG")
+        //    responseStr += "}";
+
+
         return Task.FromResult(responseStr);
     }
 

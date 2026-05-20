@@ -28,7 +28,7 @@ public class PipesClient : IPipesClient
     public static async Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes pipes)
     {
         if (!pipes.TrySetBusy())
-            return Result.Error($"{IPipesProtocol.MagicBusyToken}Anfrage abgelehnt: vorherige Anfrage noch ausstehend.");
+            return Result.Error(IPipesProtocol.MagicBusyToken);
 
         try
         {
@@ -53,11 +53,12 @@ public class PipesClient : IPipesClient
             return responseBytes;
         }
         catch (Exception ex) { return ex; }
+        
         finally { pipes.ClearBusy(); }
     }
 
     /// <inheritdoc /> 
-    public static async Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest)
+    public static async Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest = false)
     {
         try
         {
