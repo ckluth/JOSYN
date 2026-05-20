@@ -10,9 +10,9 @@ namespace JOSYN.Core.IPC;
 public class PipesClient : IPipesClient
 {
     /// <inheritdoc /> 
-    public static async Task<Result<ClientPipes>> ConnectAsync(string sessionKey)
+    public static async Task<Result<ClientPipes>> ConnectAsync(Guid sessionKey)
     {
-        var (requestPipeName, responsePipeName) = PipesProtocol.DerivePipeNamesFromSessionKey(sessionKey);
+        var (requestPipeName, responsePipeName) = PipesProtocol.DerivePipeNamesFromSessionKey(sessionKey.ToString());
         return await ConnectAsync(requestPipeName, responsePipeName);
     }
 
@@ -27,6 +27,9 @@ public class PipesClient : IPipesClient
     /// <inheritdoc /> 
     public static async Task<Result<byte[]>> SendRequestAsync(byte[] requestBytes, ClientPipes pipes)
     {
+        if (!pipes.TrySetBusy())
+            return Result.Error($"{IPipesProtocol.MagicBusyToken}Anfrage abgelehnt: vorherige Anfrage noch ausstehend.");
+
         try
         {
             // Write request: explicit length prefix then raw bytes (no BinaryWriter.Write(byte[])
@@ -44,19 +47,25 @@ public class PipesClient : IPipesClient
             var responseBytes  = reader.ReadBytes(responseLength);
             
             var responseStr = Encoding.UTF8.GetString(responseBytes);
-            if (responseStr.StartsWith(IPipesProtocol.MagicErrorResponsePrefix))
-                return Result.Error(responseStr[IPipesProtocol.MagicErrorResponsePrefix.Length..]);
+            if (responseStr.StartsWith(IPipesProtocol.MagicErrorToken))
+                return Result.Error(responseStr[IPipesProtocol.MagicErrorToken.Length..]);
 
             return responseBytes;
         }
         catch (Exception ex) { return ex; }
+        finally { pipes.ClearBusy(); }
     }
 
     /// <inheritdoc /> 
-    public static async Task<Result> DisconnectAsync(ClientPipes pipes)
+    public static async Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest)
     {
         try
         {
+            if (sendShutdownRequest)
+            {
+                var shutdownRequest = Encoding.UTF8.GetBytes(IPipesProtocol.MagicShutdownToken);
+                await SendRequestAsync(shutdownRequest, pipes);
+            }
             await pipes.RequestPipe.FlushAsync();
             await pipes.RequestPipe.DisposeAsync();
             await pipes.ResponsePipe.DisposeAsync();

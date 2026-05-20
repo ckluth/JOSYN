@@ -10,33 +10,7 @@ namespace JOSYN.Core.IPC;
 public interface IPipesServer
 {
     /// <summary>
-    /// TODO
+    /// 
     /// </summary>
-    static abstract Task<Result> RunAsync(string clientExePath, Func<string, Task<string>> processRequest, TimeSpan connectTimeout, 
-        Func<string, Exception, Task> onError, string? sessionKey = null, Func<Task<bool>>? shouldCancel = null);
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    static abstract Task<Result> RunAsync(string clientExePath, Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
-        Func<string, Exception, Task> onError, string? sessionKey = null, Func<Task<bool>>? shouldCancel = null);
-    
-    /// <summary>
-    /// TODO
-    /// </summary>
-    static abstract Task<Result> RunAsync(Func<string, Task<string>> processRequest, TimeSpan connectTimeout,
-        Func<string, Exception, Task> onError, string sessionKey, Func<Task<bool>>? shouldCancel = null);
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    static abstract Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
-        Func<string, Exception, Task> onError, string sessionKey, Func<Task<bool>>? shouldCancel = null);
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    static abstract Task<Result> RunAsync(Func<byte[], Task<byte[]>> processRequest, TimeSpan connectTimeout,
-        Func<string, Exception, Task> onError, string sessionKey, CancellationToken cancellationToken = default);
-
+    static abstract Task<Result> RunAsync(ServerStartArguments args, bool reConnect = false, Action? onReconnect= null);
 }
