@@ -9,9 +9,9 @@ internal class Program
 {
     private static async Task<int> Main(string[] args)
     {
-        var sessionKey = PipesProtocol.ParseSessionKeyFromCLIArguments(args);
+        var sessionKey = PipesProtocol.ParseSessionKeyCLIArguments(args);
         
-        if (string.IsNullOrEmpty(sessionKey))
+        if (sessionKey == Guid.Empty)
             return LogError("Es wurde kein Pipes-SessionKey übergeben", 1);
         
         
@@ -41,7 +41,7 @@ internal class Program
         Console.WriteLine("[PRESS KEY TO DISCONNECT]");
         Console.ReadKey(true);
 
-        await PipesClient.DisconnectAsync(pipes);
+        await PipesClient.DisconnectAsync(pipes, sendShutdownRequest: true);
         
         Console.WriteLine("\nDisconnected.");
         Console.WriteLine("[PRESS KEY TO EXIT]");

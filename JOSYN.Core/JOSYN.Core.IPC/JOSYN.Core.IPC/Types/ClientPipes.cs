@@ -18,4 +18,11 @@ public sealed class ClientPipes
     /// TODO
     /// </summary>
     public required NamedPipeClientStream ResponsePipe { get; init; }
+    
+    private int isBusy;
+
+    /// <summary>Atomically claims the busy-slot. Returns true if the caller acquired it, false if already busy.</summary>
+    internal bool TrySetBusy() => Interlocked.CompareExchange(ref isBusy, 1, 0) == 0;
+
+    internal void ClearBusy() => Interlocked.Exchange(ref isBusy, 0);
 }

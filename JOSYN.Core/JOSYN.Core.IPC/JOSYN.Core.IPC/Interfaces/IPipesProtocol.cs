@@ -17,7 +17,17 @@ public interface IPipesProtocol
     /// <summary>
     /// TODO
     /// </summary>
-    public const string MagicErrorResponsePrefix = $"{MagicToken}-ERROR";
+    public const string MagicErrorToken = $"{MagicToken}-ERROR";
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public const string MagicBusyToken = $"{MagicErrorToken}-BUSY";
+
+    /// <summary>
+    /// TODO
+    /// </summary>
+    public const string MagicShutdownToken = $"{MagicToken}-SHUTDOWN";
 
     /// <summary>
     /// TODO
@@ -26,13 +36,8 @@ public interface IPipesProtocol
 
     /// <summary>
     /// TODO
-    /// </summary>    
-    static abstract Result<(string sessionKey, string clientExePath)> ParseServerCLIArguments(string[] args);
-
-    /// <summary>
-    /// TODO
     /// </summary>        
-    static abstract string? ParseSessionKeyFromCLIArguments(string[] args);
+    static abstract Guid ParseSessionKeyCLIArguments(string[] args);
 
     /// <summary>
     /// TODO

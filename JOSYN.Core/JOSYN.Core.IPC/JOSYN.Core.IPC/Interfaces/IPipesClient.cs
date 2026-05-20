@@ -12,7 +12,7 @@ public interface IPipesClient
     /// <summary>
     /// TODO
     /// </summary>
-    static abstract Task<Result<ClientPipes>> ConnectAsync(string sessionKey);
+    static abstract Task<Result<ClientPipes>> ConnectAsync(Guid sessionKey);
 
     /// <summary>
     /// TODO
@@ -27,5 +27,5 @@ public interface IPipesClient
     /// <summary>
     /// TODO
     /// </summary>
-    static abstract Task<Result> DisconnectAsync(ClientPipes pipes);
+    static abstract Task<Result> DisconnectAsync(ClientPipes pipes, bool sendShutdownRequest);
 }

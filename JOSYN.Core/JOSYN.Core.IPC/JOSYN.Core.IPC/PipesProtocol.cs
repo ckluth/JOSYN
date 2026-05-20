@@ -14,18 +14,12 @@ public class PipesProtocol: IPipesProtocol
     }
 
     /// <inheritdoc/>
-    public static Result<(string sessionKey, string clientExePath)> ParseServerCLIArguments(string[] args)
+    public static Guid ParseSessionKeyCLIArguments(string[] args)
     {
-        if (args.Length is < 2 or > 3 || !args[0].Equals(IPipesProtocol.MagicToken))
-            return Result.Error("Invalid IPC-Arguments");
+        if (args is not [IPipesProtocol.MagicToken, _])
+            return Guid.Empty;
 
-        return args.Length == 2 ? (args[1], string.Empty) : (args[1], args[2]);
-    }
-
-    /// <inheritdoc/>
-    public static string? ParseSessionKeyFromCLIArguments(string[] args)
-    {
-        return args is not [IPipesProtocol.MagicToken, _] ? null : args[1];
+        return Guid.TryParse(args[1], out var guid) ? guid : Guid.Empty;
     }
 
     /// <inheritdoc/>

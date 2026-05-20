@@ -10,22 +10,12 @@ internal class Program
     {
         try
         {
-
             Console.WriteLine("ARGS: " + string.Join(" | ", args));
-            var parseArgs = PipesProtocol.ParseServerCLIArguments(args);
-            if (!parseArgs.Succeeded)
-                return LogErrorResult(parseArgs.ToResult(), 1, "Keine IPC-Argumente angegeben. ");
-
-            var arguments = parseArgs.Value;
-
-            //if (string.IsNullOrEmpty(arguments.clientExePath))
-            return await RunSzenario02(arguments.sessionKey);
-
-            //not for now... 
-            //return await RunSzenario03(arguments.clientExePath, arguments.sessionKey);
-
-            //Specified Szenario 1 not implemented in this Demo so far...
-
+            var sessionKey = PipesProtocol.ParseSessionKeyCLIArguments(args);
+            if (sessionKey == Guid.Empty)
+                return LogError("Keine IPC-Session-UID angegeben.", 1);
+            
+            return await RunServer(sessionKey);
         }
         catch (Exception ex)
         {
@@ -34,72 +24,37 @@ internal class Program
         }
     }
 
-    private static async Task<int> RunSzenario02(string sessionKey, int? timeout = null)
+    private static async Task<int> RunServer(Guid sessionKey, int? timeout = null)
     {
-        // No Client-Exe start; wait for Any Client, which must know the session-key (a 3rd Party must have started Server and Client with sessionKEy as CLI-Argument)
-
-        // Wait for started Client => Single Connection-Attempt-Loop with specified Timeout or user-cancellation
-        // RequestLoop with User-Cancellation (by ESC-Key) 
-        // Terminate silently when Client closes Connection (explicitly or just by termination)
-
-        Console.WriteLine("No client executable path provided. Just listening until specified timeout and/or user-cancellation...");
+        Console.WriteLine("Starting Server...");
         var sw = Stopwatch.StartNew();
 
-        var mayBeInfiniteTimeout = TimeSpan.FromDays(timeout ?? 1);
-
-
-        // Reconnection - Pattern ist für Produktiv-Szenario irrelevant.
-        // Es gibt keinen Use-Case für eine temporäre One-To-One-Session im vorgesehenen Einsatz.
-        // Would be YAGNI, das in die Implementierung aufzunehmen, da es die Komplexität unnötig erhöht.
-        // Ist nur für die Convenience im DEV/Demo-Context hier an-implementiert.
-        Result res;
-        while (true)
+        var serverStartArguments = new ServerStartArguments
         {
-            res = await PipesServer.RunAsync(HandleRequest, mayBeInfiniteTimeout, HandleHandlerError, sessionKey, WasEscapePressed);
-            if (res.Succeeded)
-            {
-                if (wasEscaped)
-                    break;
-                
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine("\nResestablishing Connection\n");
-                Console.ResetColor();
-            } else
-                break;
-        }
+            ConnectionTimeout = TimeSpan.FromDays(timeout ?? 1),
+            HandleStringRequest = HandleRequest,
+            SessionKey = sessionKey,
+            HandleErrorNotification = HandleHandlerError,
+            IsCancellationRequested = WasEscapePressed,
+        };
+        
+        var res = await PipesServer.RunAsync(serverStartArguments, true, () =>
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("\nResestablishing Connection\n");
+            Console.ResetColor();
+        } );
 
         Console.WriteLine($"Finished after {sw.Elapsed}");
-
         return !res.Succeeded ? LogErrorResult(res, 1) : TerminateWithSuccess(); ;
     }
-  
-    private static async Task<int> RunSzenario03(string clientExePath, string sessionKey, int? timeout = null)
-    {
-        // Client-Exe will get startet by Process.Run() with sessionKEy as CLI-Argument
-
-        // Wait for started Client => Single Connection-Attempt-Loop with specified Timeout
-        // RequestLoop with User-Cancellation (by ESC-Key) 
-        // Terminate silently when Client closes Connection (explicitly or just by termination)
-
-        Console.WriteLine($"Starting {Path.GetFileName(clientExePath)}");
-
-        var sw = Stopwatch.StartNew();
-
-        var mayBeInfiniteTimeout = TimeSpan.FromDays(timeout ?? 1);
-        var res = await PipesServer.RunAsync(clientExePath, HandleRequest, mayBeInfiniteTimeout, HandleHandlerError, sessionKey, WasEscapePressed);
-
-        Console.WriteLine($"Finished after {sw.Elapsed}");
-        return !res.Succeeded ? LogErrorResult(res, 1) : TerminateWithSuccess();
-    }
-
-    private static bool wasEscaped = false;
 
     private static Task<bool> WasEscapePressed()
     {
         if (!Console.KeyAvailable || Console.ReadKey(true).Key != ConsoleKey.Escape)
             return Task.FromResult(false);
         Console.WriteLine("ESC gedrückt. Abbruch...");
-        wasEscaped = true;
+        
         return Task.FromResult(true);
     }
 
