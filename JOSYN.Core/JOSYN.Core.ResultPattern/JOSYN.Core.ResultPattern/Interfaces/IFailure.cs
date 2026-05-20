@@ -3,27 +3,27 @@ namespace JOSYN.Core.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// TODO
+/// Contract for the <see cref="Error"/> value type.
 /// </summary>
 public interface IError<out TSelf> where TSelf : IError<TSelf>
 {
     /// <summary>
-    /// TODO
+    /// The error message.
     /// </summary>
     string ErrorMessage { get; }
 
     /// <summary>
-    /// TODO
+    /// The originating exception, if any.
     /// </summary>
     Exception? Exception { get; }
 
     /// <summary>
-    /// TODO
+    /// Enables <c>Error err = "message";</c>.
     /// </summary>
     static abstract implicit operator TSelf(string error);
 
     /// <summary>
-    /// TODO
+    /// Enables <c>Error err = exception;</c>.
     /// </summary>
     static abstract implicit operator TSelf(Exception exception);
 }

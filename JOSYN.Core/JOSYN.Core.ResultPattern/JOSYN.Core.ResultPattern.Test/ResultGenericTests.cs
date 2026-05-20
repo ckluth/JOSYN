@@ -201,19 +201,32 @@ public class ResultGenericTests
     // ── Error struct ────────────────────────────────────────────────────────
 
     [Test]
-    public void Error_ImplicitConversion_FromString()
+    public void Error_ImplicitConversion_FromString_ErrorMessage_IsSet()
     {
         Error error = "something went wrong";
         Assert.That(error.ErrorMessage, Is.EqualTo("something went wrong"));
+    }
+
+    [Test]
+    public void Error_ImplicitConversion_FromString_Exception_IsNull()
+    {
+        Error error = "something went wrong";
         Assert.That(error.Exception, Is.Null);
     }
 
     [Test]
-    public void Error_ImplicitConversion_FromException()
+    public void Error_ImplicitConversion_FromException_ErrorMessage_ContainsExceptionMessage()
     {
         var ex = new InvalidOperationException("oops");
         Error error = ex;
-        Assert.That(error.ErrorMessage, Is.EqualTo("oops"));
+        Assert.That(error.ErrorMessage, Does.Contain("oops"));
+    }
+
+    [Test]
+    public void Error_ImplicitConversion_FromException_Exception_IsSet()
+    {
+        var ex = new InvalidOperationException("oops");
+        Error error = ex;
         Assert.That(error.Exception, Is.SameAs(ex));
     }
 
@@ -228,11 +241,157 @@ public class ResultGenericTests
     }
 
     [Test]
-    public void TwoFailResults_WithSameMessage_AreEqual()
+    public void TwoFailResults_WithSameMessage_HaveSameErrorMessage()
     {
         var a = Result<int>.Fail("same");
         var b = Result<int>.Fail("same");
         Assert.That(a.ErrorMessage, Is.EqualTo(b.ErrorMessage));
+    }
+
+    [Test]
+    public void TwoFailResults_AreNotRecordEqual()
+    {
+        // Callers differ (different line numbers per call site) → records are not equal
+        var a = Result<int>.Fail("same");
+        var b = Result<int>.Fail("same");
+        Assert.That(a, Is.Not.EqualTo(b));
+    }
+
+    // ── Caller capture ────────────────────────────────────────────────────────
+
+    [Test]
+    public void Success_Callers_IsEmpty()
+    {
+        Assert.That(Result<int>.Success(42).Callers, Is.Empty);
+    }
+
+    [Test]
+    public void Success_CallStackAsString_ReturnsNoCallstackMessage()
+    {
+        Assert.That(Result<int>.Success(42).CallStackAsString, Is.EqualTo("(kein Callstack)"));
+    }
+
+    [Test]
+    public void Fail_String_Callers_HasOneEntry()
+    {
+        Assert.That(Result<int>.Fail("oops").Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Fail_String_CallStackAsString_ContainsCallerInfo()
+    {
+        Assert.That(Result<int>.Fail("oops").CallStackAsString, Does.Contain(nameof(ResultGenericTests)));
+    }
+
+    [Test]
+    public void Fail_CallStackAsString_StartsWithAt()
+    {
+        Assert.That(Result<int>.Fail("oops").CallStackAsString, Does.StartWith("  at "));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_Callers_HasOneEntry()
+    {
+        Result<int> result = new Exception("x");
+        Assert.That(result.Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_CallerInfo_HasFilePath()
+    {
+        Result<int> result = new Exception("x");
+        Assert.That(result.Callers[0].FilePath, Is.Not.Empty);
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_CallerInfo_HasLineNumber()
+    {
+        Result<int> result = new Exception("x");
+        Assert.That(result.Callers[0].LineNumber, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromError_Callers_HasOneEntry()
+    {
+        Result<int> result = Result.Error("err");
+        Assert.That(result.Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromError_CallStackAsString_ContainsCallerInfo()
+    {
+        Result<int> result = Result.Error("err");
+        Assert.That(result.CallStackAsString, Does.Contain(nameof(ResultGenericTests)));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromValue_Zero_Succeeded_IsTrue()
+    {
+        Result<int> result = 0;
+        Assert.That(result.Succeeded, Is.True);
+    }
+
+    [Test]
+    public void ImplicitConversion_FromValue_Zero_Value_IsZero()
+    {
+        Result<int> result = 0;
+        Assert.That(result.Value, Is.EqualTo(0));
+    }
+
+    // ── ToResult / ToResult<T> ────────────────────────────────────────────────
+
+    [Test]
+    public void ToResult_OnFailed_Succeeded_IsFalse()
+    {
+        Assert.That(Result<int>.Fail("err").ToResult().Succeeded, Is.False);
+    }
+
+    [Test]
+    public void ToResult_OnFailed_CarriesErrorMessage()
+    {
+        var failed = Result<int>.Fail("original error");
+        Assert.That(failed.ToResult().ErrorMessage, Is.EqualTo("original error"));
+    }
+
+    [Test]
+    public void ToResult_OnFailed_PreservesException()
+    {
+        var ex = new Exception("ex");
+        Assert.That(Result<int>.Fail("error", ex).ToResult().Exception, Is.SameAs(ex));
+    }
+
+    [Test]
+    public void ToResult_OnFailed_PreservesCallers()
+    {
+        var failed = Result<int>.Fail("error");
+        Assert.That(failed.ToResult().Callers.Count, Is.EqualTo(failed.Callers.Count));
+    }
+
+    [Test]
+    public void ToResult_OnSucceeded_ReturnsSucceeded()
+    {
+        Result<int> succeeded = 42;
+        Assert.That(succeeded.ToResult().Succeeded, Is.True);
+    }
+
+    [Test]
+    public void ToResultGeneric_OnFailed_Succeeded_IsFalse()
+    {
+        Assert.That(Result<int>.Fail("err").ToResult<string>().Succeeded, Is.False);
+    }
+
+    [Test]
+    public void ToResultGeneric_OnFailed_CarriesErrorMessage()
+    {
+        var failed = Result<int>.Fail("original error");
+        Assert.That(failed.ToResult<string>().ErrorMessage, Is.EqualTo("original error"));
+    }
+
+    [Test]
+    public void ToResultGeneric_OnFailed_PreservesCallers()
+    {
+        var failed = Result<int>.Fail("error");
+        Assert.That(failed.ToResult<string>().Callers.Count, Is.EqualTo(failed.Callers.Count));
     }
 
     [Test]
@@ -243,45 +402,56 @@ public class ResultGenericTests
         Assert.That(success, Is.Not.EqualTo(fail));
     }
 
-    // ── Typical usage pattern (propagating Errors) ──────────────────────────
+    // ── Cross-type error conversion pattern ──────────────────────────────────
 
     [Test]
-    public void TypicalPattern_PropagateError()
+    public void ErrorConversionPattern_ToOtherType_Succeeded_IsFalse()
     {
-        static Result<int> Inner() => Result<int>.Fail("inner failed");
-
-        static Result<string> Outer()
-        {
-            var r = Inner();
-            if (!r.Succeeded)
-                return Result.Error(r.ErrorMessage, r.Exception);
-            return r.Value.ToString();
-        }
-
-        var result = Outer();
-        Assert.That(result.Succeeded, Is.False);
-        Assert.That(result.ErrorMessage, Is.EqualTo("inner failed"));
+        Assert.That(ErrorConversionPattern_Outer().Succeeded, Is.False);
     }
 
     [Test]
-    public void TypicalPattern_HappyPath()
+    public void ErrorConversionPattern_ToOtherType_ErrorMessage_IsPreserved()
     {
-        var result = Parse("42");
-        Assert.That(result.Succeeded, Is.True);
-        Assert.That(result.Value, Is.EqualTo(42));
-        return;
+        Assert.That(ErrorConversionPattern_Outer().ErrorMessage, Is.EqualTo("inner failed"));
+    }
 
-        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Error($"Not a number: {s}");
+    // ── Value-returning computation pattern ───────────────────────────────────
+
+    [Test]
+    public void ComputationPattern_ValidInput_Succeeded_IsTrue()
+    {
+        Assert.That(ParseInt("42").Succeeded, Is.True);
     }
 
     [Test]
-    public void TypicalPattern_ErrorPath()
+    public void ComputationPattern_ValidInput_Value_IsSet()
     {
-        var result = Parse("abc");
-        Assert.That(result.Succeeded, Is.False);
-        Assert.That(result.ErrorMessage, Does.Contain("abc"));
-        return;
-
-        static Result<int> Parse(string s) => int.TryParse(s, out var n) ? n : Result.Error($"Not a number: {s}");
+        Assert.That(ParseInt("42").Value, Is.EqualTo(42));
     }
+
+    [Test]
+    public void ComputationPattern_InvalidInput_Succeeded_IsFalse()
+    {
+        Assert.That(ParseInt("abc").Succeeded, Is.False);
+    }
+
+    [Test]
+    public void ComputationPattern_InvalidInput_ErrorMessage_ContainsInput()
+    {
+        Assert.That(ParseInt("abc").ErrorMessage, Does.Contain("abc"));
+    }
+
+    // ── Pattern helpers ───────────────────────────────────────────────────────
+
+    private static Result<string> ErrorConversionPattern_Outer()
+    {
+        var r = Result<int>.Fail("inner failed");
+        if (!r.Succeeded)
+            return Result.Error(r.ErrorMessage, r.Exception);
+        return r.Value.ToString();
+    }
+
+    private static Result<int> ParseInt(string s) =>
+        int.TryParse(s, out var n) ? n : Result.Error($"Not a number: {s}");
 }

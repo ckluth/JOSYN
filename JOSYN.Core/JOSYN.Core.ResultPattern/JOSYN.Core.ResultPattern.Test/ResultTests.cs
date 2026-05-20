@@ -160,10 +160,121 @@ public class ResultTests
     }
 
     [Test]
-    public void TwoFailResults_WithSameMessage_AreEqual()
+    public void TwoFailResults_WithSameMessage_HaveSameErrorMessage()
     {
         var a = Result.Fail("same");
         var b = Result.Fail("same");
         Assert.That(a.ErrorMessage, Is.EqualTo(b.ErrorMessage));
+    }
+
+    [Test]
+    public void TwoFailResults_AreNotRecordEqual()
+    {
+        // Callers differ (different line numbers per call site) → records are not equal
+        var a = Result.Fail("same");
+        var b = Result.Fail("same");
+        Assert.That(a, Is.Not.EqualTo(b));
+    }
+
+    // ── Caller capture ────────────────────────────────────────────────────────
+
+    [Test]
+    public void Success_Callers_IsEmpty()
+    {
+        Assert.That(Result.Success.Callers, Is.Empty);
+    }
+
+    [Test]
+    public void Success_CallStackAsString_ReturnsNoCallstackMessage()
+    {
+        Assert.That(Result.Success.CallStackAsString, Is.EqualTo("(kein Callstack)"));
+    }
+
+    [Test]
+    public void Fail_String_Callers_HasOneEntry()
+    {
+        Assert.That(Result.Fail("oops").Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Fail_String_CallStackAsString_ContainsCallerInfo()
+    {
+        Assert.That(Result.Fail("oops").CallStackAsString, Does.Contain(nameof(ResultTests)));
+    }
+
+    [Test]
+    public void Fail_Exception_Callers_HasOneEntry()
+    {
+        Assert.That(Result.Fail(new Exception("bang")).Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Fail_CallStackAsString_StartsWithAt()
+    {
+        Assert.That(Result.Fail("oops").CallStackAsString, Does.StartWith("  at "));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_Callers_HasOneEntry()
+    {
+        Result result = new Exception("x");
+        Assert.That(result.Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_CallerInfo_HasFilePath()
+    {
+        Result result = new Exception("x");
+        Assert.That(result.Callers[0].FilePath, Is.Not.Empty);
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_CallerInfo_HasLineNumber()
+    {
+        Result result = new Exception("x");
+        Assert.That(result.Callers[0].LineNumber, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromError_Callers_HasOneEntry()
+    {
+        Result result = Result.Error("err");
+        Assert.That(result.Callers.Count, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromError_CallStackAsString_ContainsCallerInfo()
+    {
+        Result result = Result.Error("err");
+        Assert.That(result.CallStackAsString, Does.Contain(nameof(ResultTests)));
+    }
+
+    // ── ToResult<T> ───────────────────────────────────────────────────────────
+
+    [Test]
+    public void ToResult_Generic_OnFailed_Succeeded_IsFalse()
+    {
+        Assert.That(Result.Fail("err").ToResult<int>().Succeeded, Is.False);
+    }
+
+    [Test]
+    public void ToResult_Generic_OnFailed_CarriesErrorMessage()
+    {
+        var failed = Result.Fail("original error");
+        Assert.That(failed.ToResult<int>().ErrorMessage, Is.EqualTo("original error"));
+    }
+
+    [Test]
+    public void ToResult_Generic_OnFailed_PreservesException()
+    {
+        var ex = new Exception("ex");
+        Assert.That(Result.Fail("error", ex).ToResult<int>().Exception, Is.SameAs(ex));
+    }
+
+    [Test]
+    public void ToResult_Generic_OnFailed_PreservesCallers()
+    {
+        var failed = Result.Fail("error");
+        Assert.That(failed.ToResult<int>().Callers.Count, Is.EqualTo(failed.Callers.Count));
     }
 }

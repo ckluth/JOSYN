@@ -10,7 +10,7 @@
 		<AssemblyName>JOSYN.Core.ResultPattern</AssemblyName>
 		<RootNamespace>JOSYN.Core.ResultPattern</RootNamespace>
 		<PlatformTarget>AnyCPU</PlatformTarget>
-		<Version>1.0.0</Version>
+		<Version>1.0.0-preview01</Version>
 		<Company>HAEVG</Company>
 		<Authors>HAEVG SWE</Authors>
 		<Description>Das zentralste JOSYN-Paket. Implementiert das Result-Pattern, das im gesamten System genutzt wird.</Description>
@@ -22,12 +22,11 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<Copyright>Copyright © 2026 HAEVG AG</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageReleaseNotes>- Erste Fassung
-- Alles neu</PackageReleaseNotes>
+		<PackageReleaseNotes>Erste stabile Kandidatenversion (preview). Result und Result&lt;T&gt; produktionsreif, 113 Unit-Tests, vollständige XML-Dokumentation. Siehe CHANGELOG.md.</PackageReleaseNotes>
 		<PackageIcon>icon.png</PackageIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\"/>
+		<None Include="..\README.md" Pack="true" PackagePath="\"/>
 		<None Include="icon.png" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 	<PropertyGroup>

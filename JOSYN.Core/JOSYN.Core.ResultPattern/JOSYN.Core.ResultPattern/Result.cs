@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -11,8 +9,9 @@ namespace JOSYN.Core.ResultPattern;
 
 
 /// <summary>
-/// TODO: decribe Result
-/// </summary>>
+/// Represents the outcome of a void operation. Either succeeds or carries an error, optional exception,
+/// and a propagation call chain.
+/// </summary>
 public sealed record Result : IResult<Result>
 {
     /// <inheritdoc />
@@ -41,12 +40,14 @@ public sealed record Result : IResult<Result>
     /// <inheritdoc />
     public static implicit operator Result(Exception exception)
     {
-        var frame = new StackFrame(1);
+        var frame = new StackFrame(1, needFileInfo: true);
         var method = frame.GetMethod();
         var caller = new CallerInfo
         {
             MethodName = method?.Name ?? "",
             ClassName = method?.DeclaringType?.Name ?? "",
+            FilePath = frame.GetFileName() ?? "",
+            LineNumber = frame.GetFileLineNumber(),
         };
         return new Result(ResultHelper.FormatExceptionMessage(exception), exception) with { Callers = [caller] };
     }
@@ -54,14 +55,14 @@ public sealed record Result : IResult<Result>
     /// <inheritdoc />
     public static implicit operator Result(Error error)
     {
-        var frame = new StackFrame(1);
+        var frame = new StackFrame(1, needFileInfo: true);
         var method = frame.GetMethod();
         var caller = new CallerInfo
         {
             MethodName = method?.Name ?? "",
             ClassName = method?.DeclaringType?.Name ?? "",
-            FilePath = "",
-            LineNumber = 0,
+            FilePath = frame.GetFileName() ?? "",
+            LineNumber = frame.GetFileLineNumber(),
         };
         return new Result(error.ErrorMessage, error.Exception) with { Callers = [caller] };
     }
@@ -87,6 +88,7 @@ public sealed record Result : IResult<Result>
     /// <inheritdoc />
     public static Result Propagate(Result result, [CallerMemberName] string internal_ignore_callermembername = "", [CallerFilePath] string internal_ignore_callerfilepath = "", [CallerLineNumber] int internal_ignore_callerlinenumber = 0)
     {
+        Debug.Assert(!result.Succeeded, "Propagate() wurde auf einem succeeded Result aufgerufen.");
         if (result.Succeeded) return result;
         var className = new StackFrame(1).GetMethod()?.DeclaringType?.Name ?? "";
         var caller = ResultHelper.CreateCallerInfo(internal_ignore_callermembername, internal_ignore_callerfilepath, internal_ignore_callerlinenumber, className);
@@ -99,9 +101,11 @@ public sealed record Result : IResult<Result>
     /// <inheritdoc />
     public Result<TValue> ToResult<TValue>()
     {
+        Debug.Assert(!Succeeded, "ToResult<T>() wurde auf einem succeeded Result aufgerufen.");
         if (Succeeded) return Result<TValue>.FailSilent("Kein Wert vorhanden");
         return Result<TValue>.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
     }
 
+    /// <summary>Creates a failed result without capturing any caller info. Used internally by ToResult() overloads.</summary>
     internal static Result FailSilent(string error, Exception? exception = null) => new(error, exception);
 }
