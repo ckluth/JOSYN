@@ -71,3 +71,23 @@ ignored test is dead weight; delete it or fix it.
 
 Only add a comment if the purpose is genuinely not obvious from the test name and
 assertions alone.
+
+## General AI Advice!
+
+- Your context might be one of these:
+	- Analyze this new building-block and create a fresh, first, high-quality test suite for it.
+	- I have made changes in the code, which is targeted by those tests. Analyze the changes and update the tests accordingly.
+	- I have an already existing test suite; i want a discussion about the quality. Analyze the test suite and suggest improvements.
+
+- Don't be a pleaser! Don't write tests just to increase coverage or satisfy a checklist. Write them to verify meaningful behaviour and edge cases.
+- Never write pseudo unit tests that would be more of an integration test. If you can't write a proper unit test, just say it. Don't try to force it.
+- Don't reach for "all green" at any cost; if you detect errors or flaws in the test-targets, write tests that expose those issues and that help fixing them. 
+- Don't be afraid to take into consideration to delete tests that no longer serve a purpose or that are too brittle to maintain. Focus on quality, not quantity.
+- Don't be afraid to refactor tests when the production code changes. Tests are code too, and they should be kept clean and maintainable.
+- When in any doubt: interrupt your proceeding and contact your human!
+- After an analysis or edit session, create a temporary summary of what you have done for documentation purposes. Your target is the human who always will review your work.
+- Always remember: be a good and responsible servant - you are not the last decision maker, that's the one in front of the keyboard...
+
+
+
+
