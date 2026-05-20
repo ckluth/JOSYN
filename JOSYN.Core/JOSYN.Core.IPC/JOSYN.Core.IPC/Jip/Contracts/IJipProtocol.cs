@@ -10,7 +10,7 @@ namespace JOSYN.Core.IPC.JIP;
 public interface IJipProtocol
 {
     // -------------------------------------------------------------------------
-    // Parsing (Robustheit: Exceptions → Result)
+    // Parsing (Exceptions → Result)
     // -------------------------------------------------------------------------
 
     /// <summary>

@@ -10,6 +10,9 @@ internal class Program
 {
     private static async Task<int> Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+        
         var sessionKey = PipesProtocol.ParseSessionKeyCLIArguments(args);
 
         if (sessionKey == Guid.Empty)
