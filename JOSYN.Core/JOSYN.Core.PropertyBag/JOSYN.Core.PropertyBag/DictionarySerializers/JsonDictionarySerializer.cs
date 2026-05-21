@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
@@ -13,19 +12,12 @@ namespace JOSYN.Core.PropertyBag;
 /// <inheritdoc cref="IJsonDictionarySerializer"/>
 public static class JsonDictionarySerializer
 {
-    static JsonDictionarySerializer()
-    {
-        var culture = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-    }
-
     /// <inheritdoc cref="IJsonDictionarySerializer.Serialize{T}(T)"/>
     public static Result<string> Serialize<T>(T obj)
     {
         try
         {
-            return JsonSerializer.Serialize(obj, CreateCultureAwareOptions());
+            return JsonSerializer.Serialize(obj, _cultureAwareOptions);
         }
         catch (Exception ex) { return ex; }
     }
@@ -46,19 +38,16 @@ public static class JsonDictionarySerializer
 
 
     #region private
-    
-    private static readonly JsonSerializerOptions options = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-    };
+
+    // JsonSerializerOptions is expensive to construct — cache it.
+    // The culture-aware converters read CultureInfo.CurrentCulture at call time, so caching is safe.
+    private static readonly JsonSerializerOptions _cultureAwareOptions = CreateCultureAwareOptions();
 
     private static Result<T> Deserialize<T>(string json)
     {
         try
         {
-            var result = JsonSerializer.Deserialize<T>(json, CreateCultureAwareOptions());
+            var result = JsonSerializer.Deserialize<T>(json, _cultureAwareOptions);
             return result == null ? Result<T>.Fail("JsonSerializer.Deserialize<T> returned null.") : Result<T>.Success(result);
         }
         catch (Exception ex) { return ex; }
@@ -66,12 +55,17 @@ public static class JsonDictionarySerializer
     
     private static JsonSerializerOptions CreateCultureAwareOptions()
     {
-        var cultureAwareOptions = new JsonSerializerOptions(options);
-        cultureAwareOptions.Converters.Add(new CultureAwareDateTimeConverter());
-        cultureAwareOptions.Converters.Add(new CultureAwareDecimalConverter());
-        cultureAwareOptions.Converters.Add(new CultureAwareDateOnlyConverter());
-        cultureAwareOptions.Converters.Add(new CultureAwareTimeOnlyConverter());
-        return cultureAwareOptions;
+        var baseOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            Converters = { new JsonStringEnumConverter() },
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        };
+        baseOptions.Converters.Add(new CultureAwareDateTimeConverter());
+        baseOptions.Converters.Add(new CultureAwareDecimalConverter());
+        baseOptions.Converters.Add(new CultureAwareDateOnlyConverter());
+        baseOptions.Converters.Add(new CultureAwareTimeOnlyConverter());
+        return baseOptions;
     }
     #endregion
 }

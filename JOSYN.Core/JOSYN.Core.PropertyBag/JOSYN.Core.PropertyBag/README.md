@@ -9,7 +9,7 @@ Serializes and deserializes flat C# `record class` instances to and from string-
 ## Quick start
 
 ```csharp
-// Define a record using init-property style (required for deserialization — see Constraints below)
+// Define a record — both styles work
 public record JobRequest
 {
     public required string JobId  { get; init; }
@@ -83,7 +83,7 @@ All properties of a serialized record must be one of the following types. Nullab
 | Boolean | `bool` |
 | Integer | `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong` |
 | Floating-point | `float`, `double`, `decimal` |
-| Date / Time | `DateTime`, `DateOnly`, `TimeOnly`, `TimeSpan` |
+| Date / Time | `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `TimeSpan` |
 | Identity | `Guid` |
 | Enum | any `enum` type |
 
@@ -133,32 +133,36 @@ Enums are serialized by name (`Color.Green` → `"Green"`) and deserialized case
 
 ## Culture
 
-Number and date formatting uses the **current thread culture** at the time of serialization/deserialization. The default thread culture in a JOSYN process is `de-DE`, so `decimal` values serialize with a comma decimal separator (`3,14`), and dates follow German locale conventions.
+Number and date formatting uses the **current thread culture** at the time of serialization/deserialization. The canonical JOSYN culture is `de-DE` (declared in `JosynCulture.Default` in `JOSYN.Core.PropertyBag`), so `decimal` values serialize with a comma decimal separator (`3,14`), and dates follow German locale conventions.
 
-> **Important:** `PropertyBag` does not set the thread culture itself. The host process is responsible for configuring `CultureInfo.DefaultThreadCurrentCulture` before using this package. Within JOSYN, this is done at process startup. Serialized data and the process that reads it must use the same culture, or round-trip fidelity for numbers and dates is not guaranteed.
+> **Important:** `PropertyBag` does not set the thread culture itself. Every JOSYN host process applies `JosynCulture.Default` at startup:
+> ```csharp
+> CultureInfo.DefaultThreadCurrentCulture   = JosynCulture.Default;
+> CultureInfo.DefaultThreadCurrentUICulture = JosynCulture.Default;
+> ```
+> Serialized data and the process that reads it must use the same culture, or round-trip fidelity for numbers and dates is not guaranteed. `JosynCulture.Default` is the single source of truth — see its XML documentation before changing it.
 
 ---
 
 ## Constraints
 
-**Record style: init-property pattern required for deserialization.**
-Deserialization uses `Activator.CreateInstance` followed by `PropertyInfo.SetValue`. This requires a parameterless constructor, which **only records written in the init-property style have**:
+**Flat records only.** Nested records and all collection types (`List<T>`, arrays, etc.) are not supported.
+
+**Key matching is case-sensitive** for record deserialization. Property names in the record (PascalCase) must match the keys in the serialized string exactly. The `ParameterInfo[]` overload applies a first-character case toggle as a convenience, but the record overload does not.
+
+**Both record styles work** — init-property and primary-constructor (positional):
 
 ```csharp
-// ✅ Works for serialize AND deserialize
+// ✅ Works for serialize AND deserialize — init-property style
 public record JobRequest
 {
     public required string JobId  { get; init; }
     public int             Retries { get; init; }
 }
 
-// ✅ Works for serialize. ❌ Fails for deserialize — no parameterless constructor
+// ✅ Works for serialize AND deserialize — primary-constructor (positional) style
 public record JobRequest(string JobId, int Retries);
 ```
-
-**Flat records only.** Nested records and all collection types (`List<T>`, arrays, etc.) are not supported.
-
-**Key matching is case-sensitive** for record deserialization. Property names in the record (PascalCase) must match the keys in the serialized string exactly. The `ParameterInfo[]` overload applies a first-character case toggle as a convenience, but the record overload does not.
 
 ---
 

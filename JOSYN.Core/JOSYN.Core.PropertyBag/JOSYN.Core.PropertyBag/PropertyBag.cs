@@ -9,13 +9,6 @@ namespace JOSYN.Core.PropertyBag;
 /// <inheritdoc cref="IPropertyBag"/>
 public static class PropertyBag
 {
-    static PropertyBag()
-    {
-        var culture = new CultureInfo("de-DE");
-        CultureInfo.DefaultThreadCurrentCulture = culture;
-        CultureInfo.DefaultThreadCurrentUICulture = culture;
-    }
-
     #region Serializer
 
     /// <inheritdoc cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>
@@ -144,38 +137,94 @@ public static class PropertyBag
             return Result.Error($"{recordType.Name} must be a class record.");
         try
         {
-            var instance = Activator.CreateInstance(recordType);
-            if (instance == null)
-                return Result.Error($"Could not create instance of {recordType.Name}.");
-
             var properties = recordType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var unsupported = properties.Where(p => !SupportedPropertyTypes.IsMatch(p.PropertyType)).Select(p => $"{p.Name}: {p.PropertyType.Name}").ToList();
             if (unsupported.Count > 0) return Result.Error($"Unsupported property types in {recordType.Name}: {string.Join(", ", unsupported)}");
 
-            foreach (var prop in properties)
+            var paramlessCtor = recordType.GetConstructor(Type.EmptyTypes);
+
+            if (paramlessCtor != null)
             {
-                var (targetType, isNullable) = GetNullableTypeInfo(prop);
-                object? converted = null;
-                if (!raw.TryGetValue(prop.Name, out var rawValue))
+                // init-property style: create instance then set each property
+                var instance = Activator.CreateInstance(recordType)!;
+                foreach (var prop in properties)
                 {
-                    if (isNullable)
-                        continue;
-                    return Result.Error($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
-                }
-                if (isNullable && rawValue == string.Empty)
-                    converted = null;
-                else
-                {
-                    var conversion = ConvertFromString(rawValue, targetType);
-                    if (conversion.Succeeded)
-                        converted = conversion.Value;
+                    var (targetType, isNullable) = GetNullableTypeInfo(prop);
+                    object? converted = null;
+                    if (!raw.TryGetValue(prop.Name, out var rawValue))
+                    {
+                        if (isNullable)
+                            continue;
+                        return Result.Error($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
+                    }
+                    if (isNullable && rawValue == string.Empty)
+                        converted = null;
                     else
+                    {
+                        var conversion = ConvertFromString(rawValue, targetType);
+                        if (conversion.Succeeded)
+                            converted = conversion.Value;
+                        else
+                            return Result.Error(conversion.ErrorMessage, conversion.Exception);
+                    }
+                    prop.SetValue(instance, converted);
+                }
+                return instance;
+            }
+            else
+            {
+                // primary-constructor (positional) style: find matching ctor and invoke with args
+                var ctors = recordType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+                var primaryCtor = ctors
+                    .OrderByDescending(c => c.GetParameters().Length)
+                    .FirstOrDefault(c => c.GetParameters().All(p =>
+                    {
+                        if (p.Name == null) return false;
+                        // nullable params may be absent from the dictionary
+                        var isNullableParam = Nullable.GetUnderlyingType(p.ParameterType) != null
+                            || (!p.ParameterType.IsValueType && new NullabilityInfoContext().Create(p).WriteState == NullabilityState.Nullable);
+                        if (isNullableParam) return true;
+                        return raw.Keys.Any(k => string.Equals(k, p.Name, StringComparison.OrdinalIgnoreCase));
+                    }));
+
+                if (primaryCtor == null)
+                    return Result.Error($"Kein passender Konstruktor für {recordType.Name} gefunden.");
+
+                var ctorParams = primaryCtor.GetParameters();
+                var args = new object?[ctorParams.Length];
+                for (int i = 0; i < ctorParams.Length; i++)
+                {
+                    var param = ctorParams[i];
+                    var (targetType, isNullable) = GetNullableTypeInfoFromParam(param);
+
+                    var matchedKey = raw.Keys.FirstOrDefault(k =>
+                        string.Equals(k, param.Name, StringComparison.OrdinalIgnoreCase));
+
+                    if (matchedKey == null)
+                    {
+                        if (isNullable)
+                        {
+                            args[i] = null;
+                            continue;
+                        }
+                        return Result.Error($"Non-Nullable Konstruktorparameter ist nicht im Dictionary: {param.Name}");
+                    }
+
+                    var rawValue = raw[matchedKey];
+                    if (isNullable && rawValue == string.Empty)
+                    {
+                        args[i] = null;
+                        continue;
+                    }
+
+                    var conversion = ConvertFromString(rawValue, targetType);
+                    if (!conversion.Succeeded)
                         return Result.Error(conversion.ErrorMessage, conversion.Exception);
+                    args[i] = conversion.Value;
                 }
 
-                prop.SetValue(instance, converted);
+                return primaryCtor.Invoke(args);
             }
-            return instance;
         }
         catch (Exception ex) { return ex; }
 
@@ -188,6 +237,18 @@ public static class PropertyBag
             if (type.IsValueType) return (type, false);
             var ctx = new NullabilityInfoContext();
             var info = ctx.Create(property);
+            var isNullable = info.WriteState == NullabilityState.Nullable || info.ReadState == NullabilityState.Nullable;
+            return (type, isNullable);
+        }
+
+        static (Type targetType, bool isNullable) GetNullableTypeInfoFromParam(ParameterInfo param)
+        {
+            var type = param.ParameterType;
+            var underlying = Nullable.GetUnderlyingType(type);
+            if (underlying != null) return (underlying, true);
+            if (type.IsValueType) return (type, false);
+            var ctx = new NullabilityInfoContext();
+            var info = ctx.Create(param);
             var isNullable = info.WriteState == NullabilityState.Nullable || info.ReadState == NullabilityState.Nullable;
             return (type, isNullable);
         }
@@ -210,6 +271,9 @@ public static class PropertyBag
         return (getRecord.Value as TRecord)!;
     }
 
+    // <Clone>$ is a compiler-generated method present on all C# record class types.
+    // It is not part of the language specification, but has been stable across all
+    // C# compiler versions since records were introduced. Technically fragile; practically safe.
     private static bool IsRecord(Type type) => type.GetMethod("<Clone>$") is not null;
 
     private static Result<object?> ConvertFromString(string rawValue, Type targetType)
@@ -218,6 +282,8 @@ public static class PropertyBag
         {
             if (targetType.IsEnum)
                 return Enum.Parse(targetType, rawValue, ignoreCase: true);
+            if (targetType == typeof(DateTimeOffset))
+                return DateTimeOffset.Parse(rawValue, CultureInfo.CurrentCulture);
             if (targetType == typeof(DateOnly))
                 return DateOnly.Parse(rawValue);
             if (targetType == typeof(TimeOnly))
