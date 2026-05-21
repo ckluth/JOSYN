@@ -101,7 +101,7 @@ await PipesClient.DisconnectAsync(pipes);
 
 The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `CancellationToken`. Callers pass a simple predicate; no `CancellationToken` management required.
 
-**Known PoC limitations** (see `.github\discussions\ipc\ipc-discussion-session-001.md` for full analysis):
+**Known PoC limitations** (see `.github\session-results\ipc\session-0003-poc-assessment-conclusion.md` for full analysis):
 - Request handler is currently synchronous (`Func<byte[], byte[]>`) — async handlers needed before building on top of this.
 - Protocol is single-in-flight (strictly sequential, no request IDs).
 - `ClientPipes` / `ServerPipes` are typed as `record` but should be `sealed class`.
@@ -112,4 +112,52 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
 - **Namespace pragma** — files whose folder path doesn't match their namespace use `#pragma warning disable/restore IDE0130` around the `namespace` declaration.
 - **Local NuGet feed** — inter-repo dependencies are resolved via `..\..\Local Packages\` (each `nuget.config` points here). Pack a dependency before referencing it from another logical repo.
 - **Error messages are in German** — maintain this for consistency (`"Verbindung durch Aufrufer abgebrochen."`, `"kein Callstack"`, etc.).
-- **Discussion files** live under `.github\discussions\<topic>\` and are named `<topic>-discussion-session-NNN.md` (e.g. `ipc-discussion-session-001.md`). Each session that produces a discussion appends a new file — never overwrites an old one. This preserves the full discussion history as explicit files in addition to git history.
+- **Session results** are stored under `.github\session-results\` using a two-level structure: **story directory** → **session files**.
+
+  **Story directory** = a named folder for a subject area, e.g. `result-pattern\` or `ipc\`. Session files accumulate here with no setup overhead — just start writing them.
+
+  **Session file naming:** `session-NNNN-[short-description]-[type].md`
+  - `NNNN` — zero-padded **4-digit** index, continuous per story (never resets after archiving)
+  - `short-description` — 2–4 word kebab-case hint of the content
+  - `type` — one of: `discussion` | `summary` | `conclusion` | `analysis` | `generation` | `opener`
+  - The directory already carries story context — the filename must **not** repeat it.
+  - Examples: `session-0001-make-or-buy-summary.md`, `session-0002-async-handler-analysis.md`
+  - Each session appends a new file — never overwrites an old one.
+
+  **Story index (`_index.md`):** each story folder has a `_index.md` maintained entirely by the AI.
+  - **Read it first** at the start of any session in that story — it gives full context without opening individual session files
+  - **Create it** on the first save in a story that doesn't have one yet
+  - **Update it silently** on every subsequent save — no separate instruction from the user needed
+  - Contains three sections:
+    - `Key Decisions` — firm conclusions that future sessions must not contradict without knowing about them
+    - `Open Questions` — unresolved threads a future session might pick up
+    - `Sessions` — one-line-per-session table (sequence number, filename, one-sentence summary); archived sessions are listed with `[archived]` tag
+  - `_index.md` is **never archived** — it stays in the story root and carries forward across chapters
+  - `_index.md` has no `session-NNNN` prefix and is not a session file
+
+  **Session opener:** an optional structured prompt the user places in the story folder before a session starts, to kick off a focused and prepared session:
+  - Named `session-NNNN-opener[-short-description].md` (type is `opener`; short-description is optional)
+  - The user is responsible for placing it in the correct story folder with the correct name
+  - At session start, the AI reads it first, paraphrases it briefly, and asks for clarification if anything is unclear, then begins working
+  - Openers are purely optional; sessions without them work exactly as before
+
+  **Archiving:** when the user says *"archive the current chapter"* (optionally *"as \<name\>"*):
+  1. Move all session files currently in the story root into `archives\archive-NNN[-optional-name]\` (3-digit archive counter, optional suffix).
+  2. Session numbering in the story **continues from where it left off** — no reset.
+  3. If there are 3 or more sessions in the batch, offer (do not require): *"Want a brief conclusion file in the archive?"* — if yes, negotiate content on the fly, no fixed structure.
+  4. Archives are sealed after creation — never modified.
+
+  **Directory layout example:**
+  ```
+  .github\session-results\
+    result-pattern\
+      session-0004-new-story-discussion.md   ← active, continues after archive
+      archives\
+        archive-001-first-iteration\          ← sealed
+          session-0001-make-or-buy-summary.md
+          session-0002-...md
+          session-0003-...md
+          conclusion.md                       ← optional, only if requested
+  ```
+
+- **Session save trigger** — whenever the user says *"save this session"*, *"write a summary"*, *"log this"*, or similar: always propose a filename following the pattern above and ask for confirmation before writing. Example: *"Shall I save this as `.github\session-results\result-pattern\session-0001-make-or-buy-summary.md`?"*
