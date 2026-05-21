@@ -1,43 +1,200 @@
 # JOSYN.Core.PropertyBag
 
-- PropertyBag ist ein Serializer/Deserializer für ein logisches Dictionary<string,string> das <Name,Value>-Paare darstellt, die Properties eines flachen Records oder Aufrufargumente beschreiben. 
-- Aktuell werden die Formate Sectionless-Ini oder Json unterstützt (auto-detect)
-- Das Result-Pattern wird durchgängig eingesetzt.
+Serializes and deserializes flat C# `record class` instances to and from string-based formats — sectionless INI or JSON — with full integration of the JOSYN Result pattern. Designed for use in JOSYN IPC protocols where structured data must travel as an inspectable string.
 
-## Artifact
+> **Scope.** This is not a general-purpose serialization library. Its specific role is serializing flat records and method parameter sets for use in JOSYN's named-pipe IPC channel. For general JSON serialization, use `System.Text.Json` directly.
 
-JOSYN.Core.PropertyBag.n.n.n.nupkg
+---
 
-## Supported Types (in ``SupportedPropertyTypes.cs``)
+## Quick start
 
-- string
-- bool
-- char
-- byte
-- sbyte
-- short
-- ushort
-- int
-- uint
-- long
-- ulong
-- float
-- double
-- decimal
-- DateTime
-- TimeSpan
-- DateOnly
-- TimeOnly
-- Guid
+```csharp
+// Define a record using init-property style (required for deserialization — see Constraints below)
+public record JobRequest
+{
+    public required string JobId  { get; init; }
+    public int             Retries { get; init; }
+    public bool            Urgent  { get; init; }
+}
 
-## Purpose
+var req = new JobRequest { JobId = "JOB-42", Retries = 3, Urgent = true };
 
-- Primär für den internen Einsatz in JOSYN
+// Serialize to INI
+var ini = PropertyBag.Serialize(req, IniDictionarySerializer.Serialize);
+// JobId=JOB-42
+// Retries=3
+// Urgent=True
 
-## Referenced by
+// Serialize to JSON
+var json = PropertyBag.Serialize(req, JsonDictionarySerializer.Serialize);
+// {
+//   "JobId": "JOB-42",
+//   "Retries": "3",
+//   "Urgent": "True"
+// }
 
-- JOSYN.JobRunner
+// Deserialize — format is auto-detected
+var result = PropertyBag.Deserialize<JobRequest>(ini.Value);
+// result.Value.JobId  == "JOB-42"
+// result.Value.Retries == 3
+```
 
-## References
+---
 
-- JOSYN.Core.ResultPattern
+## API overview
+
+All methods return `Result` or `Result<T>`. No exceptions propagate up the call stack.
+
+### `PropertyBag` — main entry point
+
+| Method | Description |
+|--------|-------------|
+| `Serialize<TRecord>(record, serializer)` | Serializes a record instance to a string using the given format serializer. |
+| `Serialize(object, Type, serializer)` | Same, with the type supplied at runtime (for reflection-driven callers). |
+| `Deserialize<TRecord>(string)` | Auto-detects format, deserializes into a strongly-typed record. |
+| `Deserialize(string, Type)` | Same, with the target type supplied at runtime. Returns `Result<object>`. |
+| `Deserialize(string, ParameterInfo[])` | Auto-detects format, deserializes into an `object[]` aligned with the given method parameters. For reflection-based dispatch. |
+
+### Format serializers
+
+Pass one of these as the `serializer` argument to `PropertyBag.Serialize`:
+
+| Serializer | Format |
+|------------|--------|
+| `IniDictionarySerializer.Serialize` | Sectionless INI (`Key=Value` lines) |
+| `JsonDictionarySerializer.Serialize` | Indented JSON with string values |
+
+`IniDictionarySerializer` and `JsonDictionarySerializer` are also usable directly when lower-level dictionary access is needed.
+
+### Format auto-detection
+
+`Deserialize` inspects the first non-whitespace character of the input: if it is `{`, JSON is assumed; otherwise INI is assumed. The caller does not need to track or pass the format — output from either serializer round-trips cleanly.
+
+---
+
+## Supported property types
+
+All properties of a serialized record must be one of the following types. Nullable wrappers (`T?`) are accepted for any entry in this list. All `enum` types are supported regardless of their underlying integer type.
+
+| Category | Types |
+|---|---|
+| Text | `string` |
+| Character | `char` |
+| Boolean | `bool` |
+| Integer | `byte`, `sbyte`, `short`, `ushort`, `int`, `uint`, `long`, `ulong` |
+| Floating-point | `float`, `double`, `decimal` |
+| Date / Time | `DateTime`, `DateOnly`, `TimeOnly`, `TimeSpan` |
+| Identity | `Guid` |
+| Enum | any `enum` type |
+
+Records containing any other property type (nested records, collections, arrays, etc.) will fail serialization with an informative error message listing the unsupported properties.
+
+---
+
+## Nullable properties
+
+- A nullable property (`T?`) that is missing from the input string is silently set to `null` — no error.
+- A nullable property present in the input with an empty value (`Key=`) is also set to `null`.
+- A non-nullable property that is missing from the input causes an error.
+
+```csharp
+public record Config
+{
+    public required string Host    { get; init; }
+    public int?            Timeout { get; init; }   // optional — may be absent
+}
+```
+
+---
+
+## Enum serialization
+
+Enums are serialized by name (`Color.Green` → `"Green"`) and deserialized case-insensitively (`"green"` → `Color.Green`).
+
+---
+
+## INI format details
+
+- **Sectionless only** for record serialization — no `[Section]` headers are written or expected by `PropertyBag`.
+- **Values are verbatim** — the right-hand side of `=` is stored and returned exactly as written. A hand-crafted entry `Key= value` captures the leading space. The caller is responsible for the exact content.
+- **Comments** — lines starting with `;` are ignored during deserialization.
+- **Duplicate keys** cause a deserialization error.
+- `IniDictionarySerializer` additionally supports sectioned INI (`Dictionary<string, Dictionary<string, string>>`) for callers that need multi-section documents directly.
+
+---
+
+## JSON format details
+
+- Output is **indented** with enum values written as strings.
+- The JSON must represent a **flat object** where every value is a JSON string. Nested objects or non-string values are not supported as input.
+- Culture-aware converters are applied for `DateTime`, `DateOnly`, `TimeOnly`, and `decimal`, using the current thread culture (default: `de-DE`).
+
+---
+
+## Culture
+
+Number and date formatting uses the **current thread culture** at the time of serialization/deserialization. The default thread culture in a JOSYN process is `de-DE`, so `decimal` values serialize with a comma decimal separator (`3,14`), and dates follow German locale conventions.
+
+> **Important:** `PropertyBag` does not set the thread culture itself. The host process is responsible for configuring `CultureInfo.DefaultThreadCurrentCulture` before using this package. Within JOSYN, this is done at process startup. Serialized data and the process that reads it must use the same culture, or round-trip fidelity for numbers and dates is not guaranteed.
+
+---
+
+## Constraints
+
+**Record style: init-property pattern required for deserialization.**
+Deserialization uses `Activator.CreateInstance` followed by `PropertyInfo.SetValue`. This requires a parameterless constructor, which **only records written in the init-property style have**:
+
+```csharp
+// ✅ Works for serialize AND deserialize
+public record JobRequest
+{
+    public required string JobId  { get; init; }
+    public int             Retries { get; init; }
+}
+
+// ✅ Works for serialize. ❌ Fails for deserialize — no parameterless constructor
+public record JobRequest(string JobId, int Retries);
+```
+
+**Flat records only.** Nested records and all collection types (`List<T>`, arrays, etc.) are not supported.
+
+**Key matching is case-sensitive** for record deserialization. Property names in the record (PascalCase) must match the keys in the serialized string exactly. The `ParameterInfo[]` overload applies a first-character case toggle as a convenience, but the record overload does not.
+
+---
+
+## Delegate types
+
+The format plug-in points are two delegates, which decouple `PropertyBag` from any specific format:
+
+```csharp
+// Converts Dictionary<string, string> → string  (used by Serialize)
+public delegate Result<string> DictionaryToStringSerializer(Dictionary<string, string> data);
+
+// Converts string → Dictionary<string, string>  (used internally by Deserialize)
+public delegate Result<Dictionary<string, string>> StringToDictionarySerializer(string str);
+```
+
+Custom serializers can be plugged in by implementing these delegate signatures.
+
+---
+
+## Parameter deserialization
+
+`Deserialize(string raw, ParameterInfo[] parameters)` is the entry point for reflection-based dispatch. It parses the input and constructs an `object[]` positionally aligned with the given parameter array, ready to pass to `MethodBase.Invoke`.
+
+- Keys are matched against parameter names with a first-character case toggle (e.g., `jobId` matches a parameter named `JobId`).
+- Nullable parameters absent from the input are set to `null`.
+- Non-nullable parameters absent from the input cause an error.
+
+---
+
+## Dependencies
+
+- `JOSYN.Core.ResultPattern` — the Result pattern used throughout.
+- `.NET 10` / C# `latest`.
+
+---
+
+## Status
+
+`genesis` / `poc` — internal package for the JOSYN ecosystem. API may change between versions.

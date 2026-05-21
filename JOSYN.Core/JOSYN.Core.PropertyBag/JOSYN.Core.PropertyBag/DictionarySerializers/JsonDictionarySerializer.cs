@@ -63,9 +63,7 @@ public static class JsonDictionarySerializer
         }
         catch (Exception ex) { return ex; }
     }
-
-
-
+    
     private static JsonSerializerOptions CreateCultureAwareOptions()
     {
         var cultureAwareOptions = new JsonSerializerOptions(options);
