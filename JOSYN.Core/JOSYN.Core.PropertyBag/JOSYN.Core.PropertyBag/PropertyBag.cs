@@ -6,6 +6,9 @@ using JOSYN.Core.ResultPattern;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// 
+/// </summary>
 public static class PropertyBag
 {
     static PropertyBag()
@@ -17,12 +20,26 @@ public static class PropertyBag
 
     #region Serializer
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TRecord"></typeparam>
+    /// <param name="record"></param>
+    /// <param name="serializeToString"></param>
+    /// <returns></returns>
     public static Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString) where TRecord : class
     {
         var getDict = SerializeToDictionary(record, typeof(TRecord));
         return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="record"></param>
+    /// <param name="recordType"></param>
+    /// <param name="serializeToString"></param>
+    /// <returns></returns>
     public static Result<string> Serialize(object record, Type recordType, DictionaryToStringSerializer serializeToString)
     {
         var getDict = SerializeToDictionary(record, recordType);
@@ -33,18 +50,36 @@ public static class PropertyBag
 
     #region Deserializer
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="raw"></param>
+    /// <param name="recordType"></param>
+    /// <returns></returns>
     public static Result<object> Deserialize(string raw, Type recordType )
     {
         var serializer = DetectRequiredDeserializer(raw);
         return Deserialize(raw, recordType, serializer);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TRecord"></typeparam>
+    /// <param name="raw"></param>
+    /// <returns></returns>
     public static Result<TRecord> Deserialize<TRecord>(string raw) where TRecord : class
     {
         var serializer = DetectRequiredDeserializer(raw);
         return Deserialize<TRecord>(raw, serializer);
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="raw"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
     public static Result<object[]> Deserialize(string raw, ParameterInfo[] parameters)
     {
         var serializer = DetectRequiredDeserializer(raw);
@@ -156,7 +191,6 @@ public static class PropertyBag
                         continue;
                     return Result.Error($"Non-Nullable Property ist nicht im Dictionary: {prop.Name}");
                 }
-                rawValue = rawValue.Trim();
                 if (isNullable && rawValue == string.Empty)
                     converted = null;
                 else
@@ -197,9 +231,12 @@ public static class PropertyBag
     private static Result<TRecord> Deserialize<TRecord>(string raw, StringToDictionarySerializer deserializeToDictionary) where TRecord : class
     {
         var getDict = deserializeToDictionary(raw);
-        return getDict.Succeeded
-            ? (DeserializeFromDictionary(getDict.Value, typeof(TRecord)).Value as TRecord)! // Dieser Cast ist safe, wenn Succeeded!
-            : Result.Error(getDict.ErrorMessage, getDict.Exception);
+        if (!getDict.Succeeded) return Result.Error(getDict.ErrorMessage, getDict.Exception);
+
+        var getRecord = DeserializeFromDictionary(getDict.Value, typeof(TRecord));
+        if (!getRecord.Succeeded) return Result.Error(getRecord.ErrorMessage, getRecord.Exception);
+
+        return (getRecord.Value as TRecord)!;
     }
 
     private static bool IsRecord(Type type) => type.GetMethod("<Clone>$") is not null;

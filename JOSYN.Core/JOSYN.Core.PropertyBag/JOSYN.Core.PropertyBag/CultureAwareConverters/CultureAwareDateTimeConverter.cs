@@ -6,6 +6,9 @@ using System.Text.Json.Serialization;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// 
+/// </summary>
 internal class CultureAwareDateTimeConverter : JsonConverter<DateTime>
 {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => DateTime.Parse(reader.GetString()!, CultureInfo.CurrentCulture);

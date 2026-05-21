@@ -10,6 +10,9 @@ internal class Program
 {
     private static async Task<int> Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+        
         var sessionKey = PipesProtocol.ParseSessionKeyCLIArguments(args);
 
         if (sessionKey == Guid.Empty)
@@ -26,17 +29,26 @@ internal class Program
         Console.WriteLine("Connected.\n");
         var pipes = getPipes.Value;
 
-        // --- PING (void-Ergebnis) ---
-        if (await SendAndPrint(pipes, new Request { What = "PING" }, JipProtocol.ToResult) is not 0 and var e1) return e1;
+        // --- PING (void) ---
+        var ping = await JipClient.SendAsync(pipes, "PING");
+        PrintResult("PING", ping);
+        if (!ping.Succeeded) return 1;
 
-        // --- GET-CONFIG (string-Ergebnis) ---
-        if (await SendAndPrint(pipes, new Request { What = "GET-CONFIG" }, r => JipProtocol.ToResult<string>(r, d => d)) is not 0 and var e2) return e2;
+        // --- GET-CONFIG (string-Payload) ---
+        var config = await JipClient.SendAsync<string>(pipes, "GET-CONFIG", d => d);
+        PrintResult("GET-CONFIG", config.ToResult(), config.Succeeded ? config.Value : null);
+        if (!config.Succeeded) return 1;
 
-        // --- GET-DICT (dict-Ergebnis, manuell ausgelesen) ---
-        if (await SendAndPrint(pipes, new Request { What = "GET-DICT" }, JipProtocol.ToResult) is not 0 and var e3) return e3;
+        // --- GET-DICT (Dict-Payload) ---
+        var dict = await JipClient.SendDictAsync(pipes, "GET-DICT");
+        PrintResult("GET-DICT", dict.ToResult(), dict.Succeeded
+            ? string.Join(", ", dict.Value.Select(kv => $"{kv.Key}={kv.Value}"))
+            : null);
+        if (!dict.Succeeded) return 1;
 
-        // --- Unbekannte Funktion (LogicalFailure) ---
-        await SendAndPrint(pipes, new Request { What = "DO-MAGIC" }, JipProtocol.ToResult);
+        // --- DO-MAGIC (erwarteter LogicalFailure) ---
+        var magic = await JipClient.SendAsync(pipes, "DO-MAGIC");
+        PrintResult("DO-MAGIC", magic);
 
         Console.WriteLine("\n[PRESS KEY TO DISCONNECT]");
         Console.ReadKey(true);
@@ -47,35 +59,20 @@ internal class Program
         return 0;
     }
 
-    private static async Task<int> SendAndPrint<T>(
-        ClientPipes pipes,
-        Request request,
-        Func<Response, T> toResult)
+    private static void PrintResult(string label, Result result, string? data = null)
     {
-        Console.WriteLine($"CLI|SENDING> {request}");
-
-        var getRaw = await PipesClient.SendRequestAsync(request.ToString(), pipes);
-        if (!getRaw.Succeeded)
-            return LogErrorResult(getRaw.ToResult(), 1);
-
-        var parseResult = JipProtocol.ParseResponse(getRaw.Value);
-        if (!parseResult.Succeeded)
-            return LogErrorResult(parseResult.ToResult(), 1);
-
-        var response = parseResult.Value;
-        Console.WriteLine($"CLI|STATUS>  {response.Status}");
-
-        if (response.HasError)
-            Console.WriteLine($"CLI|ERROR>   {response.Error}");
-        else if (response.Data is not null)
-            Console.WriteLine($"CLI|DATA>    {response.Data}");
-        else if (response.Dict is not null)
-            Console.WriteLine($"CLI|DICT>    {string.Join(", ", response.Dict.Select(kv => $"{kv.Key}={kv.Value}"))}");
+        if (result.Succeeded)
+        {
+            Console.Write($"CLI|{label}> OK");
+            if (data != null) Console.Write($" → {data}");
+        }
         else
-            Console.WriteLine("CLI|OK>      (kein Datenwert)");
-
-        Console.WriteLine();
-        return 0;
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.Write($"CLI|{label}> FEHLER → {result.ErrorMessage}");
+            Console.ResetColor();
+        }
+        Console.WriteLine("\n");
     }
 
     #region FakeLog

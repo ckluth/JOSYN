@@ -4,8 +4,16 @@
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// 
+/// </summary>
 public class IniDictionarySerializer
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
     public static Result<string> Serialize(Dictionary<string, Dictionary<string, string>> data)
     {
         try
@@ -14,7 +22,7 @@ public class IniDictionarySerializer
             if (IsSectionless(data))
             {
                 foreach (var kvp in data[string.Empty])
-                    writer.WriteLine($"{kvp.Key.Trim()}={kvp.Value.Trim()}");
+                    writer.WriteLine($"{kvp.Key.Trim()}={kvp.Value}");
             }
             else
             {
@@ -22,7 +30,7 @@ public class IniDictionarySerializer
                 {
                     writer.WriteLine($"[{section.Key.Trim()}]");
                     foreach (var kvp in section.Value)
-                        writer.WriteLine($"{kvp.Key.Trim()}={kvp.Value.Trim()}");
+                        writer.WriteLine($"{kvp.Key.Trim()}={kvp.Value}");
                     writer.WriteLine();
                 }
             }
@@ -31,6 +39,11 @@ public class IniDictionarySerializer
         catch (Exception ex) { return ex; }
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
     public static Result<string> Serialize(Dictionary<string, string> data)
     {
         var d = new Dictionary<string, Dictionary<string, string>> { {"", data} };
@@ -38,6 +51,11 @@ public class IniDictionarySerializer
         return res;
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="raw"></param>
+    /// <returns></returns>
     public static Result<Dictionary<string, string>> DeserializeSingleSection(string raw)
     {
         var d = Deserialize(raw);
@@ -53,6 +71,11 @@ public class IniDictionarySerializer
         };
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="raw"></param>
+    /// <returns></returns>
     public static Result<Dictionary<string, Dictionary<string, string>>> Deserialize(string raw)
     {
         try
@@ -82,7 +105,7 @@ public class IniDictionarySerializer
                     
                     
                     var key = keyValue[0].Trim();
-                    var value = keyValue[1].Trim();
+                    var value = keyValue[1];
 
                     if (data[currentSection].ContainsKey(key))
                     {

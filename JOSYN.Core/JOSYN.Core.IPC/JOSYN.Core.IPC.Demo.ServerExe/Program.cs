@@ -59,41 +59,20 @@ internal class Program
         return Task.FromResult(true);
     }
 
-    private static Task<string> HandleRequest(string requestStr)
+    private static readonly Func<string, Task<string>> _dispatch = JipServer.WrapHandler(req => req.What switch
     {
-        Console.WriteLine($"SRV|RECEIVED>{requestStr}");
+        "PING"       => JipProtocol.ToResponse(Result.Success),
+        "GET-CONFIG" => JipProtocol.ToResponse(Result<string>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"), d => d),
+        "GET-DICT"   => new Response { Status = ResponseStatus.Success, Dict = new Dictionary<string, string> { ["host"] = "localhost", ["port"] = "5000" } },
+        _            => JipProtocol.ToLogicalFailureResponse($"Unbekannte Funktion: '{req.What}'"),
+    });
 
-        var parseResult = JipProtocol.ParseRequest(requestStr);
-        if (!parseResult.Succeeded)
-        {
-            var errResponse = JipProtocol.ToLogicalFailureResponse($"Ungültige JIP-Anfrage: {parseResult.ErrorMessage}");
-            Console.WriteLine($"SRV|SENDING>{errResponse}");
-            return Task.FromResult(errResponse.ToString());
-        }
-
-        var request = parseResult.Value;
-        var response = request.What switch
-        {
-            "PING"       => JipProtocol.ToResponse(Result.Success),
-            "GET-CONFIG" => JipProtocol.ToResponse(Result<string>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"), d => d),
-            "GET-DICT"   => new Response
-            {
-                Status = ResponseStatus.Success,
-                Dict   = new Dictionary<string, string> { ["host"] = "localhost", ["port"] = "5000" },
-            },
-            _ => JipProtocol.ToLogicalFailureResponse($"Unbekannte Funktion: '{request.What}'"),
-        };
-
-
-        Console.WriteLine($"SRV|SENDING>{response}");
-
-        var responseStr = response.ToString();
-
-        //if (request.What == "GET-CONFIG")
-        //    responseStr += "}";
-
-
-        return Task.FromResult(responseStr);
+    private static async Task<string> HandleRequest(string requestStr)
+    {
+        Console.WriteLine($"SRV|RECEIVED> {requestStr}");
+        var responseStr = await _dispatch(requestStr);
+        Console.WriteLine($"SRV|SENDING>  {responseStr}");
+        return responseStr;
     }
 
     #region FakeLog
