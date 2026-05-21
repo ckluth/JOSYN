@@ -140,6 +140,7 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
   - The user is responsible for placing it in the correct story folder with the correct name
   - At session start, the AI reads it first, paraphrases it briefly, and asks for clarification if anything is unclear, then begins working
   - Openers are purely optional; sessions without them work exactly as before
+  - The session result file produced from an opener is numbered **NNNN** (the opener's own number — the user is responsible for a correctly incremented session number); never re-derive the next number from the file listing when an opener is present
 
   **Archiving:** when the user says *"archive the current chapter"* (optionally *"as \<name\>"*):
   1. Move all session files currently in the story root into `archives\archive-NNN[-optional-name]\` (3-digit archive counter, optional suffix).

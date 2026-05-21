@@ -1,7 +1,7 @@
 # The Session Results Method
 ### A process for managing AI-assisted work across multiple sessions
 
-*Updated version — based on `session-0001-session-process-description.md`, revised terminology and opener concept added in `session-0002`, `_index.md` concept added in `session-0004`.*
+*Updated version — based on `session-0001-session-process-description.md`, revised terminology and opener concept added in `session-0002`, `_index.md` concept added in `session-0003`.*
 
 ---
 
@@ -75,7 +75,7 @@ The AI will:
 3. Ask for clarification if anything is unclear
 4. Then begin working
 
-Openers are entirely optional. Sessions without them work exactly as before. The user is responsible for placing the file in the right folder with the right name.
+Openers are entirely optional. Sessions without them work exactly as before. The user is responsible for placing the file in the right folder with the right name. The result file produced in that session is numbered **NNNN** (the opener's own number — the user is responsible for a correctly incremented session number) — the AI never re-derives the next number from the file listing when an opener is present.
 
 As a suggestion, openers can use this structure:
 - `topic` — which story this belongs to
@@ -193,7 +193,7 @@ Archives are **sealed after creation** — never modified.
     _index.md                                                  ← AI-maintained story index
     session-0001-session-process-description.md               ← original description
     session-0002-opener-session-result-method-enhancement.md  ← opener for this session
-    session-0003-session-results-method-description.md        ← this file
+    session-0002-session-results-method-description.md        ← this file
 ```
 
 ---
@@ -208,7 +208,7 @@ Archives are **sealed after creation** — never modified.
 | Filename never repeats folder | Directory = story context |
 | AI always proposes, you confirm | No file is written without your approval |
 | Conclusion is optional | Only on explicit request; negotiated on the fly |
-| Opener is optional | User prepares it; AI reads, paraphrases, then works |
+| Opener is optional | User prepares it; AI reads, paraphrases, then works; result file gets opener's number (user is responsible for correct numbering) |
 | `_index.md` is maintained by AI | Created on first save, updated on every subsequent save |
 | `_index.md` is never archived | Stays in story root, carries forward across chapters |
 
@@ -222,7 +222,7 @@ Add the following to your `.github\copilot-instructions.md` (or `AGENTS.md`):
 Session results are stored under `.github\session-results\<story>\`.
 Session file naming: session-NNNN-[short-description]-[type].md
 (NNNN = 4-digit zero-padded, continuous per story; type = discussion|summary|conclusion|analysis|generation|opener)
-Opener: if a session-NNNN-opener[-short-description].md exists at session start, read it first, paraphrase briefly, ask for clarification if needed, then proceed.
+Opener: if a session-NNNN-opener[-short-description].md exists at session start, read it first, paraphrase briefly, ask for clarification if needed, then proceed. The result file is numbered NNNN (the opener's own number; the user is responsible for correct numbering) — never re-derive the next number from the file listing when an opener is present.
 Story index: each story folder has a _index.md maintained by the AI. Read it at session start for instant context. Create it on first save if absent; update it on every subsequent save (Key Decisions, Open Questions, Sessions table).
 Archiving: "archive the current chapter [as <name>]" → move session files to archives\archive-NNN[-name]\, offer conclusion if 3+ sessions. _index.md stays in story root.
 ```

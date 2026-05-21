@@ -17,7 +17,7 @@ This session executed the work prepared in the opener (`session-0002`) and then 
 
 ### Terminology rename
 
-Applied globally across `copilot-instructions.md` and `session-0003-session-results-method-description.md`:
+Applied globally across `copilot-instructions.md` and `session-0002-session-results-method-description.md`:
 
 | Old | New |
 |---|---|
@@ -58,7 +58,7 @@ Applied globally across `copilot-instructions.md` and `session-0003-session-resu
 - `opener` added as valid file type with full behavioral description
 - Stale reference to `ipc-discussion-session-001.md` corrected to `session-0003-poc-assessment-conclusion.md`
 
-### New file — meta\session-0003-session-results-method-description.md
+### New file — meta\session-0002-session-results-method-description.md
 
 Human-readable description of the updated method. Based on `session-0001-session-process-description.md`, revised with new terminology and opener concept. Serves as the canonical reference for the method going forward.
 
@@ -86,7 +86,7 @@ The AI identified that without a per-story summary file, every new session requi
 ### Documents updated
 
 - `copilot-instructions.md` — full `_index.md` section added before opener section
-- `session-0003-session-results-method-description.md` — new `## The Story Index` section, directory layout updated, rules table extended
+- `session-0002-session-results-method-description.md` — new `## The Story Index` section, directory layout updated, rules table extended
 
 ### _index.md files created
 
@@ -103,11 +103,11 @@ The AI identified that without a per-story summary file, every new session requi
 | `.github\copilot-instructions.md` | Updated (terminology, opener, _index.md) |
 | `result-pattern\` — 4 files | Renamed |
 | `ipc\` — 3 files + 3 folders | Renamed |
-| `meta\session-0003-session-results-method-description.md` | Created |
+| `meta\session-0002-session-results-method-description.md` | Created |
 | `result-pattern\_index.md` | Created |
 | `ipc\_index.md` | Created |
 | `meta\_index.md` | Created |
-| `meta\session-0004-enhancements-applied-generation.md` | This file |
+| `meta\session-0003-enhancements-applied-generation.md` | This file |
 
 ---
 
