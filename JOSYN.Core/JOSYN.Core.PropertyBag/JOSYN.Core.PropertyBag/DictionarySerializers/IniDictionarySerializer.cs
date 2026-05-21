@@ -4,16 +4,10 @@
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// 
-/// </summary>
-public class IniDictionarySerializer
+/// <inheritdoc cref="IIniDictionarySerializer"/>
+public static class IniDictionarySerializer
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IIniDictionarySerializer.Serialize(Dictionary{string,Dictionary{string,string}})"/>
     public static Result<string> Serialize(Dictionary<string, Dictionary<string, string>> data)
     {
         try
@@ -39,11 +33,7 @@ public class IniDictionarySerializer
         catch (Exception ex) { return ex; }
     }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IIniDictionarySerializer.Serialize(Dictionary{string,string})"/>
     public static Result<string> Serialize(Dictionary<string, string> data)
     {
         var d = new Dictionary<string, Dictionary<string, string>> { {"", data} };
@@ -51,11 +41,7 @@ public class IniDictionarySerializer
         return res;
     }
     
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="raw"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IIniDictionarySerializer.DeserializeSingleSection(string)"/>
     public static Result<Dictionary<string, string>> DeserializeSingleSection(string raw)
     {
         var d = Deserialize(raw);
@@ -71,11 +57,7 @@ public class IniDictionarySerializer
         };
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="raw"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IIniDictionarySerializer.Deserialize(string)"/>
     public static Result<Dictionary<string, Dictionary<string, string>>> Deserialize(string raw)
     {
         try

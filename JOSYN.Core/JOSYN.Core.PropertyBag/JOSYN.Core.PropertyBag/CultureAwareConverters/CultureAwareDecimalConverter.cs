@@ -6,8 +6,16 @@ using System.Text.Json.Serialization;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// A <see cref="JsonConverter{T}"/> for <see cref="decimal"/> that formats and parses values
+/// using the current thread culture (default: <c>de-DE</c>), preserving locale-specific decimal
+/// separators (e.g. <c>,</c> instead of <c>.</c>).
+/// </summary>
 internal class CultureAwareDecimalConverter : JsonConverter<decimal>
 {
+    /// <inheritdoc/>
     public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => decimal.Parse(reader.GetString()!, CultureInfo.CurrentCulture);
+
+    /// <inheritdoc/>
     public override void Write(Utf8JsonWriter writer, decimal value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString(CultureInfo.CurrentCulture));
 }

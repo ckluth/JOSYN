@@ -6,9 +6,7 @@ using JOSYN.Core.ResultPattern;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// 
-/// </summary>
+/// <inheritdoc cref="IPropertyBag"/>
 public static class PropertyBag
 {
     static PropertyBag()
@@ -20,26 +18,14 @@ public static class PropertyBag
 
     #region Serializer
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TRecord"></typeparam>
-    /// <param name="record"></param>
-    /// <param name="serializeToString"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>
     public static Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString) where TRecord : class
     {
         var getDict = SerializeToDictionary(record, typeof(TRecord));
         return getDict.Succeeded ? serializeToString(getDict.Value) : Result.Error(getDict.ErrorMessage, getDict.Exception);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="record"></param>
-    /// <param name="recordType"></param>
-    /// <param name="serializeToString"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IPropertyBag.Serialize(object, Type, DictionaryToStringSerializer)"/>
     public static Result<string> Serialize(object record, Type recordType, DictionaryToStringSerializer serializeToString)
     {
         var getDict = SerializeToDictionary(record, recordType);
@@ -50,36 +36,21 @@ public static class PropertyBag
 
     #region Deserializer
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="raw"></param>
-    /// <param name="recordType"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IPropertyBag.Deserialize(string, Type)"/>
     public static Result<object> Deserialize(string raw, Type recordType )
     {
         var serializer = DetectRequiredDeserializer(raw);
         return Deserialize(raw, recordType, serializer);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TRecord"></typeparam>
-    /// <param name="raw"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IPropertyBag.Deserialize{TRecord}(string)"/>
     public static Result<TRecord> Deserialize<TRecord>(string raw) where TRecord : class
     {
         var serializer = DetectRequiredDeserializer(raw);
         return Deserialize<TRecord>(raw, serializer);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="raw"></param>
-    /// <param name="parameters"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IPropertyBag.Deserialize(string, ParameterInfo[])"/>
     public static Result<object[]> Deserialize(string raw, ParameterInfo[] parameters)
     {
         var serializer = DetectRequiredDeserializer(raw);

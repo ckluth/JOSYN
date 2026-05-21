@@ -10,9 +10,7 @@ using JOSYN.Core.ResultPattern;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// 
-/// </summary>
+/// <inheritdoc cref="IJsonDictionarySerializer"/>
 public static class JsonDictionarySerializer
 {
     static JsonDictionarySerializer()
@@ -22,12 +20,7 @@ public static class JsonDictionarySerializer
         CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IJsonDictionarySerializer.Serialize{T}(T)"/>
     public static Result<string> Serialize<T>(T obj)
     {
         try
@@ -37,11 +30,7 @@ public static class JsonDictionarySerializer
         catch (Exception ex) { return ex; }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="raw"></param>
-    /// <returns></returns>
+    /// <inheritdoc cref="IJsonDictionarySerializer.Deserialize(string)"/>
     public static Result<Dictionary<string, string>> Deserialize(string raw)
     {
         try
