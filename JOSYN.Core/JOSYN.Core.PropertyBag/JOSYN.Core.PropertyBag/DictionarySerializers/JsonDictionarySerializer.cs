@@ -10,6 +10,9 @@ using JOSYN.Core.ResultPattern;
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// 
+/// </summary>
 public static class JsonDictionarySerializer
 {
     static JsonDictionarySerializer()
@@ -19,6 +22,12 @@ public static class JsonDictionarySerializer
         CultureInfo.DefaultThreadCurrentUICulture = culture;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public static Result<string> Serialize<T>(T obj)
     {
         try
@@ -28,6 +37,11 @@ public static class JsonDictionarySerializer
         catch (Exception ex) { return ex; }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="raw"></param>
+    /// <returns></returns>
     public static Result<Dictionary<string, string>> Deserialize(string raw)
     {
         try
@@ -41,6 +55,16 @@ public static class JsonDictionarySerializer
         catch (Exception ex) { return ex; }
     }
 
+
+    #region private
+    
+    private static readonly JsonSerializerOptions options = new()
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+    };
+
     private static Result<T> Deserialize<T>(string json)
     {
         try
@@ -51,14 +75,6 @@ public static class JsonDictionarySerializer
         catch (Exception ex) { return ex; }
     }
 
-    #region private
-
-    private static readonly JsonSerializerOptions options = new()
-    {
-        WriteIndented = true,
-        Converters = { new JsonStringEnumConverter() },
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-    };
 
 
     private static JsonSerializerOptions CreateCultureAwareOptions()

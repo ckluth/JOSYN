@@ -16,15 +16,15 @@ if /i "%CONFIGURATION%" neq "Release" if /i "%CONFIGURATION%" neq "Debug" (
 )
 
 :: -------------------------------------------------------
-:: Suche nach einer .slnx-Datei im selben Verzeichnis
+:: Suche nach einer .slnx-Datei eine Ebene hoeher
 :: -------------------------------------------------------
 set "SLNX_FILE="
-for %%F in ("%~dp0*.slnx") do (
+for %%F in ("%~dp0..\*.slnx") do (
     set "SLNX_FILE=%%F"
 )
 
 if not defined SLNX_FILE (
-    echo [FEHLER] Keine .slnx-Datei in "%~dp0" gefunden.
+    echo [FEHLER] Keine .slnx-Datei in "%~dp0..\" gefunden.
     exit /b 1
 )
 
