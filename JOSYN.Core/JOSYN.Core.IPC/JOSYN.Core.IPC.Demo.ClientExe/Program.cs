@@ -31,24 +31,22 @@ internal class Program
 
         // --- PING (void) ---
         var ping = await JipClient.SendAsync(pipes, "PING");
-        PrintResult("PING", ping);
+        PrintResult("PING", ping.ToResult());
         if (!ping.Succeeded) return 1;
 
         // --- GET-CONFIG (string-Payload) ---
-        var config = await JipClient.SendAsync<string>(pipes, "GET-CONFIG", d => d);
-        PrintResult("GET-CONFIG", config.ToResult(), config.Succeeded ? config.Value : null);
+        var config = await JipClient.SendAsync(pipes, "GET-CONFIG");
+        PrintResult("GET-CONFIG", config.ToResult(), config.Value);
         if (!config.Succeeded) return 1;
 
-        // --- GET-DICT (Dict-Payload) ---
-        var dict = await JipClient.SendDictAsync(pipes, "GET-DICT");
-        PrintResult("GET-DICT", dict.ToResult(), dict.Succeeded
-            ? string.Join(", ", dict.Value.Select(kv => $"{kv.Key}={kv.Value}"))
-            : null);
-        if (!dict.Succeeded) return 1;
+        // --- ECHO (string-Payload round-trip) ---
+        var echo = await JipClient.SendAsync(pipes, "ECHO", "Hallo JOSYN");
+        PrintResult("ECHO", echo.ToResult(), echo.Value);
+        if (!echo.Succeeded) return 1;
 
-        // --- DO-MAGIC (erwarteter LogicalFailure) ---
+        // --- DO-MAGIC (erwarteter Fehler) ---
         var magic = await JipClient.SendAsync(pipes, "DO-MAGIC");
-        PrintResult("DO-MAGIC", magic);
+        PrintResult("DO-MAGIC", magic.ToResult());
 
         Console.WriteLine("\n[PRESS KEY TO DISCONNECT]");
         Console.ReadKey(true);

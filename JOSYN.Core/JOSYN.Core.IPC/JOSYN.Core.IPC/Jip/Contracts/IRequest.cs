@@ -12,12 +12,8 @@ public interface IRequest
     string What { get; init; }
 
     /// <summary>
-    /// Optionaler Nutzlast-String (z. B. serialisierter Parameter).
+    /// Optionaler Nutzlast-String. Der Applikations-Layer ist für Interpretation und
+    /// Serialisierung verantwortlich.
     /// </summary>
     string? Data { get; init; }
-
-    /// <summary>
-    /// Optionales Key-Value-Dictionary als strukturierte Parameter-Alternative zu <see cref="Data"/>.
-    /// </summary>
-    Dictionary<string, string>? Dict { get; init; }
 }

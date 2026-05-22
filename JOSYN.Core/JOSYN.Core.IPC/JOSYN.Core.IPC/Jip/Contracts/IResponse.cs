@@ -9,29 +9,20 @@ namespace JOSYN.Core.IPC.JIP;
 public interface IResponse
 {
     /// <summary>
-    /// Status der Antwort: Erfolg, fachlicher Fehler oder technischer Fehler.
+    /// <see langword="true"/> bei Erfolg. Wenn <see langword="false"/>, ist
+    /// <see cref="Error"/> garantiert gesetzt.
     /// </summary>
-    ResponseStatus Status { get; init; }
+    [MemberNotNullWhen(false, nameof(Error))]
+    bool Succeeded { get; init; }
 
     /// <summary>
-    /// <see langword="true"/>, wenn <see cref="Status"/> einen Fehler signalisiert
-    /// und <see cref="Error"/> gesetzt ist.
-    /// </summary>
-    [MemberNotNullWhen(true, nameof(Error))]
-    bool HasError => Status is ResponseStatus.TechnicalFailure or ResponseStatus.LogicalFailure;
-
-    /// <summary>
-    /// Fehlermeldung; nur gesetzt wenn <see cref="HasError"/> <see langword="true"/> ist.
+    /// Fehlermeldung; nur gesetzt wenn <see cref="Succeeded"/> <see langword="false"/> ist.
     /// </summary>
     string? Error { get; init; }
 
     /// <summary>
-    /// Optionaler Nutzlast-String (z. B. serialisiertes Ergebnis).
+    /// Optionaler Nutzlast-String. Der Applikations-Layer ist für Interpretation und
+    /// Deserialisierung verantwortlich.
     /// </summary>
     string? Data { get; init; }
-
-    /// <summary>
-    /// Optionales Key-Value-Dictionary als strukturierte Ergebnis-Alternative zu <see cref="Data"/>.
-    /// </summary>
-    Dictionary<string, string>? Dict { get; init; }
 }

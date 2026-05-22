@@ -59,12 +59,31 @@ internal class Program
         return Task.FromResult(true);
     }
 
+    private static string FakeReadArgumentsFromFile()
+    {
+        const string inicontent = """
+                                  Msg=Hello JOSYN
+                                  Count=9
+                                  MaybeCount=
+                                  IsSpecial=True
+                                  Expired=21.09.1988 00:00:00
+                                  OnlyDate=04.11.1966
+                                  MaybeDate=
+                                  EnumValue=Value2
+                                  MyTimeSpan=09:10:59
+                                  Price=1.200,30
+                                  """;
+        return inicontent;
+    }
+
+
     private static readonly Func<string, Task<string>> _dispatch = JipServer.WrapHandler(req => req.What switch
     {
-        "PING"       => JipProtocol.ToResponse(Result.Success),
-        "GET-CONFIG" => JipProtocol.ToResponse(Result<string>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"), d => d),
-        "GET-DICT"   => new Response { Status = ResponseStatus.Success, Dict = new Dictionary<string, string> { ["host"] = "localhost", ["port"] = "5000" } },
-        _            => JipProtocol.ToLogicalFailureResponse($"Unbekannte Funktion: '{req.What}'"),
+        "PING"       => Result<string?>.Success(null),
+        "GET-CONFIG" => Result<string?>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"),
+        "GET-ARGUMENTS" => Result<string?>.Success(FakeReadArgumentsFromFile()),
+        "ECHO"       => Result<string?>.Success("ECHO " + req.Data),
+        _            => Result<string?>.Fail($"Unbekannte Funktion: '{req.What}'"),
     });
 
     private static async Task<string> HandleRequest(string requestStr)
