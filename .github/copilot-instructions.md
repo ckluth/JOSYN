@@ -15,20 +15,20 @@ JOSYN/
     └── JOSYN.SessionServer/        ← placeholder
 ```
 
-Each logical repo under `JOSYN.Core/` is self-contained with its own `.slnx` solution, `nuget.config`, and `zzz.*` scripts.
+Each logical repo under `JOSYN.Core/` is self-contained with its own `.slnx` solution, `nuget.config`, and a `.local-build\` scripts folder.
 
 ## Build, Test & Pack
 
-Run from the **logical repo root** (e.g. `JOSYN.Core\JOSYN.Core.ResultPattern\`):
+Each logical repo contains a `.local-build\` folder with the following scripts. Run them from anywhere — they locate the `.slnx` one level up automatically.
 
-| Task | Command |
-|------|---------|
-| Build (Release) | `zzz.build.cmd` or `zzz.build.cmd Release` |
-| Build (Debug) | `zzz.build.cmd Debug` |
-| Run all tests | `zzz.test.cmd` → `dotnet test` |
-| Single test by name | `dotnet test --filter "TestName"` |
-| Pack NuGet | `zzz.pack.cmd` → outputs to `..\..\Local Packages\` |
-| Build all solutions | `zzz.build.all.cmd` from repo root |
+| Task | Script |
+|------|--------|
+| Build (Release, default) | `.local-build\build.cmd` or `.local-build\build.cmd Release` |
+| Build (Debug) | `.local-build\build.cmd Debug` or `.local-build\build.debug.cmd` |
+| Build (Release shortcut) | `.local-build\build.release.cmd` |
+| Run all tests | `.local-build\test.cmd` → `dotnet test` |
+| Single test by name | `dotnet test --filter "TestName"` (from logical repo root) |
+| Pack NuGet | `.local-build\pack.cmd` → outputs to `..\..\Local Packages\` |
 
 Build outputs go to `C:\Temp\VS.OUT\JOSYN\<ProjectName>\` (set in `Directory.Build.props`).  
 **Test framework:** NUnit 4.x — `[TestFixture]` / `[Test]`.  

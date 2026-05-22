@@ -2,8 +2,24 @@
 namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
+/// <summary>
+/// Defines the set of property types that <see cref="PropertyBag"/> can serialize and deserialize.
+/// </summary>
+/// <remarks>
+/// Nullable wrappers (<c>T?</c>) of any supported type are also accepted.
+/// All <see langword="enum"/> types are supported regardless of their underlying type.
+/// </remarks>
 internal static class SupportedPropertyTypes
 {
+    /// <summary>
+    /// Determines whether <paramref name="type"/> is a supported property type, including nullable
+    /// wrappers and all <see langword="enum"/> types.
+    /// </summary>
+    /// <param name="type">The property type to check.</param>
+    /// <returns>
+    /// <see langword="true"/> if the type can be handled by <see cref="PropertyBag"/>;
+    /// otherwise <see langword="false"/>.
+    /// </returns>
     internal static bool IsMatch(Type type)
     {
         var targetType = Nullable.GetUnderlyingType(type) ?? type;
@@ -27,7 +43,8 @@ internal static class SupportedPropertyTypes
         typeof(double),
         typeof(decimal),
         typeof(DateTime),
-        typeof(TimeSpan),		
+        typeof(DateTimeOffset),
+        typeof(TimeSpan),
         typeof(DateOnly),
         typeof(TimeOnly),
         typeof(Guid),

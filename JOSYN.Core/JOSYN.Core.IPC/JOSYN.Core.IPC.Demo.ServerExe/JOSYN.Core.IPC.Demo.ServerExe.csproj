@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JOSYN.Core.ResultPattern" Version="1.0.0" />
+    <PackageReference Include="JOSYN.Core.ResultPattern" Version="1.0.0-preview01" />
   </ItemGroup>
 
   <ItemGroup>

@@ -10,6 +10,10 @@ public record SimpleRecord
     public int Count { get; init; }
 }
 
+// Primary-constructor (positional) style — no parameterless ctor
+public record PositionalRecord(string Title, int Value);
+public record PositionalNullableRecord(string Name, int? Count);
+
 public record NullablePropertiesRecord
 {
     public required string RequiredName { get; init; }
@@ -32,6 +36,11 @@ public record EnumRecord
 public class PlainClass
 {
     public string Name { get; set; } = "";
+}
+
+public record DateTimeOffsetRecord
+{
+    public DateTimeOffset Timestamp { get; init; }
 }
 
 #endregion
@@ -266,5 +275,78 @@ internal class PropertyBagTests
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value!.OptionalName, Is.Null);
         Assert.That(result.Value.OptionalCount, Is.Null);
+    }
+
+    // ── Primary-constructor (positional) records ────────────────────────────
+
+    [Test]
+    public void Serialize_PositionalRecord_ProducesKeyValueLines()
+    {
+        var record = new PositionalRecord("Copilot", 7);
+
+        var result = PropertyBag.Serialize(record, IniDictionarySerializer.Serialize);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value, Does.Contain("Title=Copilot"));
+        Assert.That(result.Value, Does.Contain("Value=7"));
+    }
+
+    [Test]
+    public void Deserialize_PositionalRecord_IniRoundTrip_PreservesValues()
+    {
+        var original = new PositionalRecord("RoundTrip", 42);
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<PositionalRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Title, Is.EqualTo("RoundTrip"));
+        Assert.That(result.Value.Value, Is.EqualTo(42));
+    }
+
+    [Test]
+    public void Deserialize_PositionalRecord_JsonRoundTrip_PreservesValues()
+    {
+        var original = new PositionalRecord("JSON", 99);
+
+        var serialized = PropertyBag.Serialize(original, JsonDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<PositionalRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Title, Is.EqualTo("JSON"));
+        Assert.That(result.Value.Value, Is.EqualTo(99));
+    }
+
+    [Test]
+    public void Deserialize_PositionalNullableRecord_NullableParamMissingKey_IsAllowed()
+    {
+        const string ini = "Name=Present";
+
+        var result = PropertyBag.Deserialize<PositionalNullableRecord>(ini);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Name, Is.EqualTo("Present"));
+        Assert.That(result.Value.Count, Is.Null);
+    }
+
+    // ── DateTimeOffset support ──────────────────────────────────────────────
+
+    [Test]
+    public void Serialize_ThenDeserialize_DateTimeOffset_IniRoundTrip_PreservesValue()
+    {
+        var ts = new DateTimeOffset(2026, 5, 21, 20, 0, 0, TimeSpan.FromHours(2));
+        var original = new DateTimeOffsetRecord { Timestamp = ts };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<DateTimeOffsetRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Timestamp, Is.EqualTo(ts));
     }
 }
