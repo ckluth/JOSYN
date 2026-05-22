@@ -16,8 +16,5 @@ public record Request : IRequest
     public string? Data { get; init; }
 
     /// <inheritdoc/>
-    public Dictionary<string, string>? Dict { get; init; }
-
-    /// <inheritdoc/>
     public override string ToString() => JsonSerializer.Serialize(this);
 }

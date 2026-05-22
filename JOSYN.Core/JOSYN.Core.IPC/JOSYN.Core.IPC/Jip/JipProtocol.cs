@@ -5,8 +5,8 @@ namespace JOSYN.Core.IPC.JIP;
 
 /// <summary>
 /// Implementierung des JIP-Konventions-Layers.
-/// Vermittelt zwischen dem Protokoll-Vertrag (<see cref="Request"/>, <see cref="Response"/>)
-/// und der Implementierungsebene (<see cref="Result"/>, <see cref="Result{TValue}"/>).
+/// Vermittelt zwischen dem Wire Format (<see cref="Request"/>, <see cref="Response"/>)
+/// und der Implementierungsebene (<see cref="Result{TValue}"/> mit <c>string?</c>).
 /// </summary>
 public class JipProtocol : IJipProtocol
 {
@@ -49,77 +49,30 @@ public class JipProtocol : IJipProtocol
     }
 
     // -------------------------------------------------------------------------
-    // Server-Seite: Result → Response
+    // Server-Seite: Result<string?> → Response
     // -------------------------------------------------------------------------
 
     /// <inheritdoc/>
-    public static Response ToResponse(Result result)
+    public static Response ToResponse(Result<string?> result)
     {
         if (result.Succeeded)
-            return new Response { Status = ResponseStatus.Success };
+            return new Response { Succeeded = true, Data = result.Value };
 
         return new Response
         {
-            Status = ResponseStatus.TechnicalFailure,
-            Error  = result.ErrorMessage,
+            Succeeded = false,
+            Error     = result.ErrorMessage,
         };
     }
 
-    /// <inheritdoc/>
-    public static Response ToResponse<T>(Result<T> result, Func<T, string> serializeData)
-    {
-        if (!result.Succeeded)
-            return new Response
-            {
-                Status = ResponseStatus.TechnicalFailure,
-                Error  = result.ErrorMessage,
-            };
-
-        try
-        {
-            return new Response
-            {
-                Status = ResponseStatus.Success,
-                Data   = serializeData(result.Value),
-            };
-        }
-        catch (Exception ex)
-        {
-            return new Response
-            {
-                Status = ResponseStatus.TechnicalFailure,
-                Error  = $"Serialisierung des Rückgabewerts fehlgeschlagen: {ex.Message}",
-            };
-        }
-    }
-
-    /// <inheritdoc/>
-    public static Response ToLogicalFailureResponse(string message) =>
-        new() { Status = ResponseStatus.LogicalFailure, Error = message };
-
     // -------------------------------------------------------------------------
-    // Client-Seite: Response → Result
+    // Client-Seite: Response → Result<string?>
     // -------------------------------------------------------------------------
 
     /// <inheritdoc/>
-    public static Result ToResult(Response response) => !response.HasError ? Result.Success : Result.Fail(response.Error);
-
-    /// <inheritdoc/>
-    public static Result<T> ToResult<T>(Response response, Func<string, T> deserializeData)
-    {
-        if (response.HasError)
-            return Result<T>.Fail(response.Error);
-
-        if (response.Data is null)
-            return Result<T>.Fail("Kein Datenwert in der Antwort vorhanden.");
-
-        try
-        {
-            return deserializeData(response.Data);
-        }
-        catch (Exception ex)
-        {
-            return ex;
-        }
-    }
+    public static Result<string?> ToResult(Response response) =>
+        response.Succeeded
+            ? Result<string?>.Success(response.Data)
+            : Result<string?>.Fail(response.Error);
 }
+
