@@ -2,7 +2,7 @@ using JOSYN.Foundation.JIP;
 using JOSYN.Foundation.ResultPattern;
 using JOSYN.System.Contract;
 
-namespace JOSYN.JobHost;
+namespace JOSYN.System.Frontend;
 
 internal sealed class JAPClient : IJosynApplicationProtocol
 {

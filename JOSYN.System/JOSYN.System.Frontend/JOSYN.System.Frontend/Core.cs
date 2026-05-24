@@ -1,9 +1,11 @@
 ﻿using System.Text;
 
-namespace JOSYN.JobHost;
+namespace JOSYN.System.Frontend;
 
+/// <inheritdoc cref="ICore"/>
 public sealed class Core : ICore
 {
+    /// <inheritdoc/>
     public static async Task<int> Run(string[] args)
     {
         Console.InputEncoding = new UTF8Encoding();

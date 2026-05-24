@@ -1,6 +1,6 @@
 ﻿using JOSYN.Foundation.ResultPattern;
 
-namespace JOSYN.JobHost;
+namespace JOSYN.System.Frontend;
 
 internal static class FakeCore
 {

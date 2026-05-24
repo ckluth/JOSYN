@@ -1,4 +1,4 @@
-﻿using JOSYN.JobHost.Attributes;
+﻿using JOSYN.System.Frontend.Attributes;
 
 #pragma warning disable IDE0130
 namespace MyDemoJob;

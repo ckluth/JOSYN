@@ -1,11 +1,11 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using JOSYN.Foundation.PropertyBag;
-using JOSYN.JobHost.Attributes;
 using JOSYN.Foundation.ResultPattern;
 using JOSYN.System.Contract;
+using JOSYN.System.Frontend.Attributes;
 
-namespace JOSYN.JobHost;
+namespace JOSYN.System.Frontend;
 
 //public static class JobInvoker<T> where T : class
 //{
