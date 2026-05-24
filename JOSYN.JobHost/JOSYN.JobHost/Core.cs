@@ -2,7 +2,7 @@
 
 namespace JOSYN.JobHost;
 
-public class Core : ICore
+public sealed class Core : ICore
 {
     public static async Task<int> Run(string[] args)
     {

@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using System.Text;
-using JOSYN.Core.PropertyBag;
+using JOSYN.Foundation.PropertyBag;
 using JOSYN.JobHost.Attributes;
-using JOSYN.Core.ResultPattern;
-using JOSYN.JAP;
+using JOSYN.Foundation.ResultPattern;
+using JOSYN.System.Contract;
 
 namespace JOSYN.JobHost;
 

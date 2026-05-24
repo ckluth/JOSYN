@@ -1,9 +1,9 @@
-﻿using JOSYN.Core.ResultPattern;
-using JOSYN.JAP;
+﻿using JOSYN.Foundation.ResultPattern;
+using JOSYN.System.Contract;
 
 namespace JOSYN.System.JapServer.Server;
 
-public class JAPServer : IJosynApplicationProtocol
+public sealed class JAPServer : IJosynApplicationProtocol
 {
     public async Task<Result<string>> GetRawArguments()
     {

@@ -1,4 +1,4 @@
-﻿using JOSYN.Core.ResultPattern;
+﻿using JOSYN.Foundation.ResultPattern;
 
 namespace JOSYN.JobHost;
 

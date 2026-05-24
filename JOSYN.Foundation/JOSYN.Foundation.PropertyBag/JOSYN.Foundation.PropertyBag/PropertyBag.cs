@@ -7,7 +7,7 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <inheritdoc cref="IPropertyBag"/>
-public class PropertyBag : IPropertyBag
+public sealed class PropertyBag : IPropertyBag
 {
     private static readonly DictionaryToStringSerializer DefaultDictionaryToStringSerializer = IniDictionarySerializer.Serialize;
 

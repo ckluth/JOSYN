@@ -9,7 +9,7 @@ public enum MyEnum
     Value3
 }
 
-public record MyArguments
+public sealed record MyArguments
 {
     public required string Msg { get; init; }
     public int Count { get; init; }

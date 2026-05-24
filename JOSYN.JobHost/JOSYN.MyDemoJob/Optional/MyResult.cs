@@ -1,6 +1,6 @@
 ﻿namespace MyDemoJob;
 
-public record MyResult
+public sealed record MyResult
 {
     public required string Message { get; init; }
     public bool Succeeded { get; init; }

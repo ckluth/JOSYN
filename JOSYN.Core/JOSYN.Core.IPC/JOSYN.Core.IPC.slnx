@@ -1,6 +1,0 @@
-<Solution>
-  <Project Path="JOSYN.Core.IPC.Demo.ClientExe/JOSYN.Core.IPC.Demo.ClientExe.csproj" Id="dea5611d-d740-437f-ad93-7a5dc5ae4299" />
-  <Project Path="JOSYN.Core.IPC.Demo.ServerExe/JOSYN.Core.IPC.Demo.ServerExe.csproj" Id="eccae8b2-38aa-44cb-a343-c2b33fe6c84c" />
-  <Project Path="JOSYN.Core.IPC.Demo.ServerExe.Test/JOSYN.Core.IPC.Demo.ServerExe.Test.csproj" />
-  <Project Path="JOSYN.Core.IPC/JOSYN.Core.IPC.csproj" />
-</Solution>

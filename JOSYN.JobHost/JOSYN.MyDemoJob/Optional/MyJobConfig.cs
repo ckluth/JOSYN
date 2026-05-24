@@ -1,6 +1,6 @@
 ﻿namespace MyDemoJob;
 
-public record MyJobConfig
+public sealed record MyJobConfig
 {
     public required string Item1 { get; init; }
     public required string Item2 { get; init; }

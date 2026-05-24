@@ -1,11 +1,10 @@
-﻿using JOSYN.Core.IPC;
-using JOSYN.Core.IPC.JIP;
-using JOSYN.Core.ResultPattern;
-using JOSYN.JAP;
+using JOSYN.Foundation.JIP;
+using JOSYN.Foundation.ResultPattern;
+using JOSYN.System.Contract;
 
 namespace JOSYN.JobHost;
 
-internal class JAPClient : IJosynApplicationProtocol
+internal sealed class JAPClient : IJosynApplicationProtocol
 {
     private JAPClient() { }
     

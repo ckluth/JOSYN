@@ -1,5 +1,5 @@
 ﻿namespace MyDemoJob;
 
-public class MyExecutionReport // : JobExecutionReport, IJobExecutionReport 
+public sealed class MyExecutionReport // : JobExecutionReport, IJobExecutionReport 
 {
 }
