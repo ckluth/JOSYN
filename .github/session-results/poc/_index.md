@@ -27,3 +27,4 @@
 | 0001 | session-0001-story-definition-summary.md | Story definition: goals, four-aspect structure, rename scope, implementation order |
 | 0002 | session-0002-system-namespace-decision-summary.md | Resolved naming: `JOSYN.System` grouping layer accepted; Open Question #1 closed |
 | 0003 | session-0003-foundation-resultpattern-rename.md | Physical rename `JOSYN.Core.ResultPattern` → `JOSYN.Foundation.ResultPattern`; 113 tests green; NuGet packed |
+| 0004 | session-0004-foundation-propertybag-rename.md | Physical rename `JOSYN.Core.PropertyBag` → `JOSYN.Foundation.PropertyBag`; 47 tests green; NuGet packed |
