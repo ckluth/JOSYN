@@ -5,6 +5,54 @@ using System.Text;
 
 namespace JOSYN.Core.IPC.Demo.ServerExe;
 
+// 
+//  TODO: mit Server sharen
+//
+public interface IJosynApplicationProtocol
+{
+    Task<Result<string>> GetRawArguments();
+
+    Task<Result> PutRawResult(string result);
+
+}
+
+public class JAPServer: IJosynApplicationProtocol
+{
+    public async Task<Result<string>> GetRawArguments()
+    {
+        return await Task.FromResult(FakeReadArgumentsFromFile());
+    }
+
+    public async Task<Result> PutRawResult(string result)
+    {
+        Console.WriteLine();
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("[PROCESSING]");
+        Console.WriteLine(result);
+        Console.WriteLine();
+        Console.ResetColor();
+        
+        return await Task.FromResult(Result.Success);
+    }
+    
+    internal static string FakeReadArgumentsFromFile()
+    {
+        const string inicontent = """
+                                  Msg=Hello JOSYN
+                                  Count=9
+                                  MaybeCount=
+                                  IsSpecial=True
+                                  Expired=21.09.1988 00:00:00
+                                  OnlyDate=04.11.1966
+                                  MaybeDate=
+                                  EnumValue=Value2
+                                  MyTimeSpan=09:10:59
+                                  Price=1.200,30
+                                  """;
+        return inicontent;
+    }
+}
+
 internal class Program
 {
     private static async Task<int> Main(string[] args)
@@ -58,38 +106,19 @@ internal class Program
         
         return Task.FromResult(true);
     }
+    
+    private static readonly JAPServer japServer = new();
 
-    private static string FakeReadArgumentsFromFile()
-    {
-        const string inicontent = """
-                                  Msg=Hello JOSYN
-                                  Count=9
-                                  MaybeCount=
-                                  IsSpecial=True
-                                  Expired=21.09.1988 00:00:00
-                                  OnlyDate=04.11.1966
-                                  MaybeDate=
-                                  EnumValue=Value2
-                                  MyTimeSpan=09:10:59
-                                  Price=1.200,30
-                                  """;
-        return inicontent;
-    }
-
-
-    private static readonly Func<string, Task<string>> _dispatch = JipServer.WrapHandler(req => req.What switch
-    {
-        "PING"       => Result<string?>.Success(null),
-        "GET-CONFIG" => Result<string?>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"),
-        "GET-ARGUMENTS" => Result<string?>.Success(FakeReadArgumentsFromFile()),
-        "ECHO"       => Result<string?>.Success("ECHO " + req.Data),
-        _            => Result<string?>.Fail($"Unbekannte Funktion: '{req.What}'"),
-    });
+    private static readonly JipDispatcher jipDispatcher = new JipDispatcher()
+        .RegisterAll<IJosynApplicationProtocol>(japServer)
+        .Register("PING",       Result<string?>.Success(null))
+        .Register("GET-CONFIG", Result<string?>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"))
+        .Register("ECHO",       (string? data) => Result<string?>.Success("ECHO " + data));
 
     private static async Task<string> HandleRequest(string requestStr)
     {
         Console.WriteLine($"SRV|RECEIVED> {requestStr}");
-        var responseStr = await _dispatch(requestStr);
+        var responseStr = await jipDispatcher.Dispatch(requestStr);
         Console.WriteLine($"SRV|SENDING>  {responseStr}");
         return responseStr;
     }

@@ -1,5 +1,4 @@
-﻿using JOSYN.Core.IPC;
-using System.Text;
+﻿using System.Text;
 
 namespace JOSYN.JobHost;
 
@@ -9,19 +8,30 @@ public class Core : ICore
     {
         Console.InputEncoding = new UTF8Encoding();
         Console.OutputEncoding = new UTF8Encoding();
-        
-        var createJAPClient = await JAPClient.CreateConnectedClient(args);
-        if (!createJAPClient.Succeeded || createJAPClient.Value == null)
-        {
-            FakeCore.LogLocalError(createJAPClient.ToResult());
-            return -1;
-        }
-        var invokeResult = await JobRunner.InvokeJob(createJAPClient.Value);
 
-        if (invokeResult.Succeeded) return 0;
-        
-        FakeCore.LogError(invokeResult.ToResult());
-        return -2;
+        try
+        {
+            var createJAPClient = await JAPClient.CreateConnectedClient(args);
+            if (!createJAPClient.Succeeded || createJAPClient.Value == null)
+            {
+                FakeCore.LogLocalError(createJAPClient.ToResult());
+                return -1;
+            }
+            
+            var invokeResult = await JobInvoker.InvokeJob(createJAPClient.Value);
+            if (invokeResult.Succeeded) return 0;
+
+            FakeCore.LogError(invokeResult);
+            return -2;
+
+        }
+        finally
+        {
+#if DEBUG            
+            Console.WriteLine("\n[PRESS ANY KEY]\n");
+            Console.ReadKey(true);
+#endif
+        }
     }
 }
 

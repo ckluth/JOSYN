@@ -8,6 +8,7 @@
 - **`shouldCancel: Func<bool>?` predicate** — callers pass a simple predicate; converted internally to a polling `CancellationToken`; no `CancellationToken` management required from callers
 - **JipClient / JipServer convenience layer** — built over the raw protocol to eliminate 4-step boilerplate per method call
 - **`Result<string?>` as canonical JIP return type** — `Dict` and serialize/deserialize delegates removed from the JIP layer; app layer owns payload interpretation; `bool Succeeded` replaces `ResponseStatus` enum; `JipClient` has one method: `SendAsync(pipes, what, data?)`
+- **`JipDispatcher` replaces manual switch** — fluent registration, `RegisterAll<TProtocol>` via reflection; What-strings derived from method names; client uses `nameof` for same-symbol reference
 
 ## Open Questions
 
@@ -32,3 +33,4 @@
 | 0003 | session-0003-poc-assessment-conclusion.md | Status-quo documentation: architecture, two-pipe design, length-prefix framing, known PoC limitations |
 | 0004 | session-0004-protocol-simplification-generation.md | Radical JIP simplification: Dict removed, Result<string?> as canonical return type, JipClient to single method |
 | 0005 | session-0005-echo-demo-generation.md | ECHO demo case added: client sends string, server returns "ECHO " + string |
+| 0006 | session-0006-jipdispatcher-summary.md | JipDispatcher replaces manual switch: fluent API, RegisterAll<T> via reflection, nameof on client, test coverage |

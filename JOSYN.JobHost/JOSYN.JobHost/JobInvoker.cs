@@ -6,14 +6,14 @@ using JOSYN.Core.ResultPattern;
 
 namespace JOSYN.JobHost;
 
-//public static class JobRunner<T> where T : class
+//public static class JobInvoker<T> where T : class
 //{
 //    public static ArgumentsComparer<T>? ConditionalParallelExecutionAllowed { get; set; }
 //}
 
-internal static class JobRunner
+internal static class JobInvoker
 {
-    internal static async Task<Result<JobExectionResult>> InvokeJob(JAPClient japClient, Type? entrypointType = null)
+    internal static async Task<Result> InvokeJob(IJosynApplicationProtocol japClient, Type? entrypointType = null)
     {
         try
         {
@@ -22,14 +22,14 @@ internal static class JobRunner
             // 
             var findEntrypointAssembly = FindEntryPointAssembly(entrypointType);
             if (!findEntrypointAssembly.Succeeded)
-                return Result<JobExectionResult>.Propagate(findEntrypointAssembly.ToResult<JobExectionResult>());
+                return Result.Propagate(findEntrypointAssembly.ToResult());
 
             //
             // Einsprungs-Methode finden
             // 
             var findJobFunc = FindJobFunction(findEntrypointAssembly.Value);
             if (!findJobFunc.Succeeded)
-                return Result<JobExectionResult>.Propagate(findJobFunc.ToResult<JobExectionResult>());
+                return Result.Propagate(findJobFunc.ToResult());
 
             //
             // Aufrufsargumente erzeugen
@@ -37,7 +37,7 @@ internal static class JobRunner
             var getInvocationArgs = await CreateInvocationArguments(findJobFunc.Value, japClient);
 
             if (!getInvocationArgs.Succeeded)
-                return Result<JobExectionResult>.Propagate(getInvocationArgs.ToResult<JobExectionResult>());
+                return Result.Propagate(getInvocationArgs.ToResult());
             var invocationArgs = getInvocationArgs.Value;
 
             //
@@ -48,45 +48,64 @@ internal static class JobRunner
             {
                 res = findJobFunc.Value.Invoke(null, invocationArgs);
             }
-            catch (Exception ex) { return Result.Error("Der Job hat eine unbehandelte Exception durchgelassen.", ex); }
+            catch (Exception ex)
+            {
+                return Result.Error("Der Job hat eine unbehandelte Exception durchgelassen.", ex);
+            }
 
             //
             // Jetzt noch das Result verarbeiten
-            //
-            var resultType = findJobFunc.Value.ReturnType;
-            var nullabilityInfo = new NullabilityInfoContext().Create(findJobFunc.Value.ReturnParameter);
-            var hasNullableAnnotation = nullabilityInfo.WriteState == NullabilityState.Nullable ||
-                                        nullabilityInfo.ReadState == NullabilityState.Nullable;
-
-            if (resultType == typeof(void) || (res == null && hasNullableAnnotation))
-                return new JobExectionResult();
-
-            if (res == null)
-                return Result.Error("Job hat unerwartet NULL zurückgegeben.");
-
-            return new JobExectionResult { Value = res, Type = resultType };
+            //            
+            var processJobResult = await ProcessJobResult(res, findJobFunc.Value, japClient);
+            return !processJobResult.Succeeded ? Result.Propagate(processJobResult) : Result.Success;
 
         }
-        catch (Exception ex) { return ex; }
+        catch (Exception ex)
+        {
+            // due to the consistent result-pattern-usage above,
+            // it will never come to this point...
+            return ex;
+        }
     }
 
     #region private
 
-    private static async Task<Result<object[]?>> CreateInvocationArguments(MethodInfo func, JAPClient japClient)
+    private static async Task<Result> ProcessJobResult(object? jobResult, MethodInfo func, IJosynApplicationProtocol japClient)
     {
-        var parameters = func.GetParameters();
-        if (parameters.Length == 0) return Result<object[]?>.Success(null);
+        var resultType = func.ReturnType;
+        var nullabilityInfo = new NullabilityInfoContext().Create(func.ReturnParameter);
+        var hasNullableAnnotation = nullabilityInfo.WriteState == NullabilityState.Nullable ||
+                                    nullabilityInfo.ReadState == NullabilityState.Nullable;
 
-        var rawArguments = await japClient.GetRawArguments();
-        if (!rawArguments.Succeeded)
-            return Result<object[]?>.Propagate(rawArguments.ToResult<object[]?>());
+        if (resultType == typeof(void) || (jobResult == null && hasNullableAnnotation))
+            return Result.Success;
 
-        var createInvicationArguments = RetrieveInvocationArguments(func, rawArguments.Value);
-        if (!createInvicationArguments.Succeeded)
-            return Result<object[]?>.Propagate(createInvicationArguments.ToResult<object[]?>());
+        if (jobResult == null)
+            return Result.Error("Job hat unerwartet NULL zurückgegeben.");
+        
+        var getResultAsString = PropertyBag.Serialize(jobResult, resultType, IniDictionarySerializer.Serialize);
 
-        return createInvicationArguments.Value;
+        if (!getResultAsString.Succeeded)
+            return Result.Propagate(getResultAsString.ToResult());
+        
+        var res = await japClient.PutRawResult(getResultAsString.Value);
+
+        
+#if DEBUG
+        if (res.Succeeded)
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("[JobResult successfuly processed]");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(getResultAsString.Value);
+            Console.ResetColor();
+        }
+#endif
+        
+        return !res.Succeeded ? Result.Propagate(res) : Result.Success;
+        
     }
+
     private static Result<Assembly> FindEntryPointAssembly(Type? entrypointType = null)
     {
         try
@@ -98,9 +117,11 @@ internal static class JobRunner
             sb.AppendLine("Das Entrypoint-Assembly wurde nicht gefunden.");
             sb.AppendLine($"Explicit Enrypoint-Type: {(entrypointType == null ? "<NULL>" : entrypointType.FullName)}");
             return Result.Error(sb.ToString());
+            
         }
         catch (Exception ex) { return ex; }
     }
+    
     private static Result<MethodInfo> FindJobFunction(Assembly asm)
     {
         try
@@ -118,6 +139,23 @@ internal static class JobRunner
         }
         catch (Exception ex) { return ex; }
     }
+    
+    private static async Task<Result<object[]?>> CreateInvocationArguments(MethodInfo func, IJosynApplicationProtocol japClient)
+    {
+        var parameters = func.GetParameters();
+        if (parameters.Length == 0) return Result<object[]?>.Success(null);
+
+        var rawArguments = await japClient.GetRawArguments();
+        if (!rawArguments.Succeeded)
+            return Result<object[]?>.Propagate(rawArguments.ToResult<object[]?>());
+
+        var createInvicationArguments = RetrieveInvocationArguments(func, rawArguments.Value);
+        if (!createInvicationArguments.Succeeded)
+            return Result<object[]?>.Propagate(createInvicationArguments.ToResult<object[]?>());
+
+        return createInvicationArguments.Value;
+    }
+    
     private static Result<object[]> RetrieveInvocationArguments(MethodInfo func, string rawArguments)
     {
         try

@@ -25,6 +25,25 @@ namespace JOSYN.Core.PropertyBag;
 public interface IPropertyBag
 {
     /// <summary>
+    /// TODO
+    /// </summary>
+    /// <typeparam name="TRecord"></typeparam>
+    /// <param name="record"></param>
+    /// <returns></returns>
+    static abstract Result<string> Serialize<TRecord>(TRecord record)
+        where TRecord : class;
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="record"></param>
+    /// <param name="recordType"></param>
+    /// <returns></returns>
+    static abstract Result<string> Serialize(object record, Type recordType);
+
+
+    /// <summary>
     /// Serializes a <c>record class</c> instance to a string using the provided format serializer.
     /// </summary>
     /// <typeparam name="TRecord">

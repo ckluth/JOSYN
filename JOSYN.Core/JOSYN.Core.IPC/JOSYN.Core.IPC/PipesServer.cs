@@ -5,9 +5,8 @@ using JOSYN.Core.ResultPattern;
 
 namespace JOSYN.Core.IPC;
 
-/// <summary>
-/// TODO
-/// </summary>
+
+/// <inheritdoc/>
 public class PipesServer : IPipesServer
 {
     /// <inheritdoc/>
@@ -219,7 +218,8 @@ public class PipesServer : IPipesServer
             using var writer = new BinaryWriter(resPipe, Encoding.UTF8, leaveOpen: true);
 
             // When cancellation fires, close the pipe to unblock the synchronous ReadInt32() call below.
-            using var _ = cancellationToken.Register(() => reqPipe.Close());
+            // ReSharper disable once UseAwaitUsing
+            using var _ = cancellationToken.Register(reqPipe.Close);
 
             while (reqPipe.IsConnected && !cancellationToken.IsCancellationRequested)
             {
