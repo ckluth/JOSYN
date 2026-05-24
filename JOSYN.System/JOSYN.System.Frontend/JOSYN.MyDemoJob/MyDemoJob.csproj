@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JOSYN.System.Frontend\JOSYN.System.Frontend.csproj" />
+    <ProjectReference Include="..\JOSYN.System.Frontend.JobHost\JOSYN.System.Frontend.JobHost.csproj" />
   </ItemGroup>
 
 </Project>

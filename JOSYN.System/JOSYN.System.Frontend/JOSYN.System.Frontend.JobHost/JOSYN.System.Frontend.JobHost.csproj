@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.0.0-preview01</Version>
+    <PackageId>JOSYN.System.Frontend.JobHost</PackageId>
+    <AssemblyName>JOSYN.System.Frontend.JobHost</AssemblyName>
+    <RootNamespace>JOSYN.System.Frontend.JobHost</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JOSYN.Foundation.JIP" Version="1.0.0-preview01" />
+    <PackageReference Include="JOSYN.Foundation.PropertyBag" Version="1.0.0-preview01" />
+    <PackageReference Include="JOSYN.Foundation.ResultPattern" Version="1.0.0-preview01" />
+    <PackageReference Include="JOSYN.System.Contract" Version="1.0.0-preview01" />
+  </ItemGroup>
+
+</Project>

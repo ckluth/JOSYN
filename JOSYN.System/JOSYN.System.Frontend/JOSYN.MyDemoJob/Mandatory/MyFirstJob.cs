@@ -1,4 +1,4 @@
-﻿using JOSYN.System.Frontend.Attributes;
+using JOSYN.System.Frontend.JobHost.Attributes;
 
 #pragma warning disable IDE0130
 namespace MyDemoJob;
@@ -41,7 +41,7 @@ public static class MyFirstJob
     {
         Console.WriteLine("\nEXECUTING: MyResult Execute(MyArguments args)\n");
 
-        throw new Exception("MyDemoJob fucked up...");
+        // throw new Exception("MyDemoJob fucked up...");
         Console.WriteLine(args.Msg);
         
         return new MyResult

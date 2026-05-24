@@ -1,0 +1,16 @@
+@echo off
+setlocal
+
+:: ================================================================
+:: JOSYN — Build + Test All
+:: Führt build-all.cmd und danach test-all.cmd aus.
+:: ================================================================
+
+call "%~dp0build-all.cmd"
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+echo.
+call "%~dp0test-all.cmd"
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
+
+exit /b 0

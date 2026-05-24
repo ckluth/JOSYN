@@ -5,31 +5,35 @@ setlocal
 set NUGET_BASE=C:\Users\chris\.nuget\packages
 
 :: ============================================================
-:: Zu löschende Pakete hier eintragen (Verzeichnisnamen exakt)
+:: Zu lÃ¶schende Pakete hier eintragen (Verzeichnisnamen exakt)
 :: ============================================================
 set PACKAGES=^
-  josyn.core.ipc ^
-  josyn.core.propertybag ^
-  josyn.core.resultpattern
+  josyn.foundation.resultpattern ^
+  josyn.foundation.propertybag ^
+  josyn.foundation.jip ^
+  josyn.system.contract ^
+  josyn.system.frontend ^
+  josyn.system.backend
 
 :: ============================================================
 
 for %%P in (%PACKAGES%) do (
-    set "DIR=%NUGET_BASE%\%%P"
     if exist "%NUGET_BASE%\%%P" (
-        echo Lösche: %NUGET_BASE%\%%P
+        echo LÃ¶sche: %NUGET_BASE%\%%P
         rd /s /q "%NUGET_BASE%\%%P"
         if errorlevel 1 (
-            echo   FEHLER beim Löschen von %%P
+            echo   FEHLER beim LÃ¶schen von %%P
         ) else (
             echo   OK
         )
     ) else (
-        echo Nicht gefunden, übersprungen: %NUGET_BASE%\%%P
+        echo Nicht gefunden, Ã¼bersprungen: %NUGET_BASE%\%%P
     )
 )
 
 echo.
 echo Fertig.
 endlocal
-pause
+
+:: Pause nur wenn direkt aufgerufen (nicht per CALL aus einem anderen Skript)
+if /i "%~1" neq "NOPAUSE" pause
