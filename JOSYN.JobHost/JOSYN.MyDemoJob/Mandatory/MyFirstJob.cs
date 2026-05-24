@@ -15,9 +15,9 @@ public static class MyFirstJob
         Console.WriteLine("Hey, executing MyFirstJob (ohne Parameter)\n");
 
         //throw new Exception("MyDemoJob fucked up...");
+        
         Console.WriteLine("HELLO");
-
-        Console.ReadKey();
+        
 
         //return new MyResult
         //{
@@ -39,13 +39,11 @@ public static class MyFirstJob
     [JobEntryPoint]
     public static MyResult Execute(MyArguments args)
     {
-        Console.WriteLine("Hey, executing MyFirstJob\n");
+        Console.WriteLine("\nEXECUTING: MyResult Execute(MyArguments args)\n");
 
-        //throw new Exception("MyDemoJob fucked up...");
+        throw new Exception("MyDemoJob fucked up...");
         Console.WriteLine(args.Msg);
-
-        Console.ReadKey();
-
+        
         return new MyResult
         {
             Count = args.Count + 1,

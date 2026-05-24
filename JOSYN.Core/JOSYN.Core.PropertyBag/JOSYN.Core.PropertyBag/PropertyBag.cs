@@ -7,9 +7,23 @@ namespace JOSYN.Core.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <inheritdoc cref="IPropertyBag"/>
-public static class PropertyBag
+public class PropertyBag : IPropertyBag
 {
+    private static readonly DictionaryToStringSerializer DefaultDictionaryToStringSerializer = IniDictionarySerializer.Serialize;
+
     #region Serializer
+
+    /// <inheritdoc/>/>
+    public static Result<string> Serialize<TRecord>(TRecord record) where TRecord : class
+    {
+        return Serialize(record, typeof(TRecord));
+    }
+
+    /// <inheritdoc/>/>
+    public static Result<string> Serialize(object record, Type recordType)
+    {
+        return Serialize(record, recordType, DefaultDictionaryToStringSerializer);
+    }
 
     /// <inheritdoc cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>
     public static Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString) where TRecord : class
@@ -30,7 +44,7 @@ public static class PropertyBag
     #region Deserializer
 
     /// <inheritdoc cref="IPropertyBag.Deserialize(string, Type)"/>
-    public static Result<object> Deserialize(string raw, Type recordType )
+    public static Result<object> Deserialize(string raw, Type recordType)
     {
         var serializer = DetectRequiredDeserializer(raw);
         return Deserialize(raw, recordType, serializer);
@@ -171,60 +185,59 @@ public static class PropertyBag
                 }
                 return instance;
             }
-            else
-            {
-                // primary-constructor (positional) style: find matching ctor and invoke with args
-                var ctors = recordType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
-                var primaryCtor = ctors
-                    .OrderByDescending(c => c.GetParameters().Length)
-                    .FirstOrDefault(c => c.GetParameters().All(p =>
-                    {
-                        if (p.Name == null) return false;
-                        // nullable params may be absent from the dictionary
-                        var isNullableParam = Nullable.GetUnderlyingType(p.ParameterType) != null
-                            || (!p.ParameterType.IsValueType && new NullabilityInfoContext().Create(p).WriteState == NullabilityState.Nullable);
-                        if (isNullableParam) return true;
-                        return raw.Keys.Any(k => string.Equals(k, p.Name, StringComparison.OrdinalIgnoreCase));
-                    }));
 
-                if (primaryCtor == null)
-                    return Result.Error($"Kein passender Konstruktor für {recordType.Name} gefunden.");
-
-                var ctorParams = primaryCtor.GetParameters();
-                var args = new object?[ctorParams.Length];
-                for (int i = 0; i < ctorParams.Length; i++)
+            // primary-constructor (positional) style: find matching ctor and invoke with args
+            var ctors = recordType.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+            var primaryCtor = ctors
+                .OrderByDescending(c => c.GetParameters().Length)
+                .FirstOrDefault(c => c.GetParameters().All(p =>
                 {
-                    var param = ctorParams[i];
-                    var (targetType, isNullable) = GetNullableTypeInfoFromParam(param);
+                    if (p.Name == null) return false;
+                    // nullable params may be absent from the dictionary
+                    var isNullableParam = Nullable.GetUnderlyingType(p.ParameterType) != null
+                        || (!p.ParameterType.IsValueType && new NullabilityInfoContext().Create(p).WriteState == NullabilityState.Nullable);
+                    if (isNullableParam) return true;
+                    return raw.Keys.Any(k => string.Equals(k, p.Name, StringComparison.OrdinalIgnoreCase));
+                }));
 
-                    var matchedKey = raw.Keys.FirstOrDefault(k =>
-                        string.Equals(k, param.Name, StringComparison.OrdinalIgnoreCase));
+            if (primaryCtor == null)
+                return Result.Error($"Kein passender Konstruktor für {recordType.Name} gefunden.");
 
-                    if (matchedKey == null)
-                    {
-                        if (isNullable)
-                        {
-                            args[i] = null;
-                            continue;
-                        }
-                        return Result.Error($"Non-Nullable Konstruktorparameter ist nicht im Dictionary: {param.Name}");
-                    }
+            var ctorParams = primaryCtor.GetParameters();
+            var args = new object?[ctorParams.Length];
+            for (var i = 0; i < ctorParams.Length; i++)
+            {
+                var param = ctorParams[i];
+                var (targetType, isNullable) = GetNullableTypeInfoFromParam(param);
 
-                    var rawValue = raw[matchedKey];
-                    if (isNullable && rawValue == string.Empty)
+                var matchedKey = raw.Keys.FirstOrDefault(k =>
+                    string.Equals(k, param.Name, StringComparison.OrdinalIgnoreCase));
+
+                if (matchedKey == null)
+                {
+                    if (isNullable)
                     {
                         args[i] = null;
                         continue;
                     }
-
-                    var conversion = ConvertFromString(rawValue, targetType);
-                    if (!conversion.Succeeded)
-                        return Result.Error(conversion.ErrorMessage, conversion.Exception);
-                    args[i] = conversion.Value;
+                    return Result.Error($"Non-Nullable Konstruktorparameter ist nicht im Dictionary: {param.Name}");
                 }
 
-                return primaryCtor.Invoke(args);
+                var rawValue = raw[matchedKey];
+                if (isNullable && rawValue == string.Empty)
+                {
+                    args[i] = null;
+                    continue;
+                }
+
+                var conversion = ConvertFromString(rawValue, targetType);
+                if (!conversion.Succeeded)
+                    return Result.Error(conversion.ErrorMessage, conversion.Exception);
+                args[i] = conversion.Value;
             }
+
+            return primaryCtor.Invoke(args);
+
         }
         catch (Exception ex) { return ex; }
 
@@ -308,6 +321,6 @@ public static class PropertyBag
 
         return IniDictionarySerializer.DeserializeSingleSection;
     }
-    
+
     #endregion
 }

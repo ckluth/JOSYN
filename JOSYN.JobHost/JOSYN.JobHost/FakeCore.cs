@@ -11,7 +11,7 @@ internal static class FakeCore
         Console.WriteLine(result.ErrorMessage);
         Console.WriteLine(result.Exception);
         Console.ResetColor();
-        Console.ReadKey();
+        //Console.ReadKey();
     }
 
     internal static void LogLocalError(string msg)
@@ -20,7 +20,7 @@ internal static class FakeCore
         Console.WriteLine("Keine IPC-Server verfügbar. Fehler wird lokal gespeichert.\n");
         Console.WriteLine(msg);
         Console.ResetColor();
-        Console.ReadKey();
+        //Console.ReadKey();
     }
 
     internal static void LogError(Result result)
@@ -30,7 +30,7 @@ internal static class FakeCore
         Console.WriteLine(result.ErrorMessage);
         Console.WriteLine(result.Exception);
         Console.ResetColor();
-        Console.ReadKey();
+        //Console.ReadKey();
     }
 
     internal static void LogError(string msg)
@@ -39,7 +39,7 @@ internal static class FakeCore
         Console.WriteLine("Fehler wird an IPC-Server geschickt (und lokal gespeichert).\n");
         Console.WriteLine(msg);
         Console.ResetColor();
-        Console.ReadKey();
+        //Console.ReadKey();
     }
 
 }
