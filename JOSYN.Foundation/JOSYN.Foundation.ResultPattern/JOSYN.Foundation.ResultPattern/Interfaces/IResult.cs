@@ -2,27 +2,20 @@
 using System.Runtime.CompilerServices;
 
 #pragma warning disable IDE0130
-namespace JOSYN.Core.ResultPattern;
+namespace JOSYN.Foundation.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Contract for a typed result. Implemented by <see cref="Result{TValue}"/>.
+/// Contract for a void result. Implemented by <see cref="Result"/>.
 /// </summary>
-public interface IResult<TSelf, TValue> where TSelf : IResult<TSelf, TValue>
+public interface IResult<out TSelf> where TSelf : IResult<TSelf>
 {
     /// <summary>
-    /// <see langword="true"/> if the operation succeeded and <see cref="Value"/> is set.
+    /// <see langword="true"/> if the operation succeeded.
     /// When <see langword="false"/>, <see cref="ErrorMessage"/> is guaranteed non-null.
     /// </summary>
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
-    [MemberNotNullWhen(true, nameof(Value))]
     bool Succeeded { get; }
-
-    /// <summary>
-    /// The result value. <see langword="null"/> / default when <see cref="Succeeded"/> is <see langword="false"/>.
-    /// Always check <see cref="Succeeded"/> before accessing.
-    /// </summary>
-    TValue? Value { get; }
 
     /// <summary>
     /// The error message. Only set when <see cref="Succeeded"/> is <see langword="false"/>.
@@ -45,21 +38,9 @@ public interface IResult<TSelf, TValue> where TSelf : IResult<TSelf, TValue>
     string CallStackAsString { get; }
 
     /// <summary>
-    /// Creates a succeeded result wrapping <paramref name="value"/>.
-    /// Prefer the implicit conversion from <typeparamref name="TValue"/> in return statements.
+    /// A succeeded result.
     /// </summary>
-    static abstract TSelf Success(TValue value);
-
-    /// <summary>
-    /// Strips the value and returns a plain <see cref="Result"/>. Preserves error and call chain.
-    /// </summary>
-    Result ToResult();
-
-    /// <summary>
-    /// Reinterprets this failure as a <see cref="Result{TOther}"/>.
-    /// Only call on a failed result — calling on success yields a silent failure.
-    /// </summary>
-    Result<TOther> ToResult<TOther>();
+    static abstract TSelf Success { get; }
 
     /// <summary>
     /// Creates a failed result with an error message.
@@ -85,16 +66,23 @@ public interface IResult<TSelf, TValue> where TSelf : IResult<TSelf, TValue>
     /// Appends the current caller to the propagation chain and returns the failure unchanged.
     /// Always call this behind <c>if (!result.Succeeded)</c>.
     /// </summary>
-    static abstract TSelf Propagate(
-        TSelf result,
+    static abstract Result Propagate(
+        Result result,
         [CallerMemberName] string internal_ignore_callermembername = "",
         [CallerFilePath] string internal_ignore_callerfilepath = "",
         [CallerLineNumber] int internal_ignore_callerlinenumber = 0);
 
     /// <summary>
-    /// Enables <c>return myValue;</c> in methods returning <see cref="Result{TValue}"/>.
+    /// Converts this failed result to a typed <see cref="Result{TValue}"/>.
+    /// Only call on a failed result — calling on success yields a silent failure.
     /// </summary>
-    static abstract implicit operator TSelf(TValue value);
+    Result<TValue> ToResult<TValue>();
+
+    /// <summary>
+    /// Creates an <see cref="Error"/> value that implicitly converts to <see cref="Result"/> or <see cref="Result{T}"/>.
+    /// Idiomatic for returning failures: <c>return Result.Error("Something went wrong");</c>
+    /// </summary>
+    static abstract Error Error(string error, Exception? exception = null);
 
     /// <summary>
     /// Use <c>catch (Exception ex) { return ex; }</c> in catch blocks.
@@ -105,4 +93,9 @@ public interface IResult<TSelf, TValue> where TSelf : IResult<TSelf, TValue>
     /// Enables returning an <see cref="Error"/> value directly from a method.
     /// </summary>
     static abstract implicit operator TSelf(Error error);
+
+    /// <summary>
+    /// Enables <c>return Result.Success;</c> syntax.
+    /// </summary>
+    static abstract implicit operator TSelf(ResultSuccess _);
 }

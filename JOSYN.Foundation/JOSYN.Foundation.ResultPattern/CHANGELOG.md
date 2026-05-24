@@ -5,10 +5,12 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
-## [1.0.0-preview01] — 2026-05-20
+## [1.0.0-preview01] — 2026-05-24
 
-Erste stabile Kandidatenversion. Das Paket gilt als produktionsreif für den internen
-Einsatz; die Preview-Kennzeichnung spiegelt den noch offenen Abnahme-Prozess wider.
+Erste stabile Kandidatenversion unter dem neuen Namen `JOSYN.Foundation.ResultPattern`
+(umbenannt von `JOSYN.Core.ResultPattern` im Rahmen der JOSYN-PoC-Strukturbereinigung).
+Das Paket gilt als produktionsreif für den internen Einsatz; die Preview-Kennzeichnung
+spiegelt den noch offenen Abnahme-Prozess wider.
 
 ### Hinzugefügt
 
@@ -23,3 +25,7 @@ Einsatz; die Preview-Kennzeichnung spiegelt den noch offenen Abnahme-Prozess wid
 - `README.md` mit Schnellstart, Kernkonzepten und Referenztabelle
 - Build-Skripte unter `.local-build\`
 - Nullable Reference Types durchgängig aktiviert
+
+### Geändert
+
+- Paketname und Namespaces von `JOSYN.Core.ResultPattern` auf `JOSYN.Foundation.ResultPattern` umgestellt

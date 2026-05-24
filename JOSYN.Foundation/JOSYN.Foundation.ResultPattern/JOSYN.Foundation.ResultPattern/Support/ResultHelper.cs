@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 
 #pragma warning disable IDE0130
-namespace JOSYN.Core.ResultPattern;
+namespace JOSYN.Foundation.ResultPattern;
 #pragma warning restore IDE0130
 
 internal static class ResultHelper

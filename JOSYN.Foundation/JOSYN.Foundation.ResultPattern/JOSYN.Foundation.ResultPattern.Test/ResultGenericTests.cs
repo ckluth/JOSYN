@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace JOSYN.Core.ResultPattern.Test;
+namespace JOSYN.Foundation.ResultPattern.Test;
 
 [TestFixture]
 public class ResultGenericTests

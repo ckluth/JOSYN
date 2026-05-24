@@ -1,4 +1,4 @@
-# JOSYN.Core.ResultPattern
+# JOSYN.Foundation.ResultPattern
 
 **Exceptions sind kein Rückgabekanal.** Dieses Paket stellt das *Result-Pattern* bereit:
 eine typsichere Alternative zu `throw`/`catch`, bei der jede Operation ihren Erfolg oder
@@ -197,7 +197,7 @@ ist in `CHANGELOG.md` dokumentiert.
 
 ### Bauen, Testen, Packen
 
-Ausführen aus dem Repo-Wurzelverzeichnis (`JOSYN.Core.ResultPattern\`):
+Ausführen aus dem Repo-Wurzelverzeichnis (`JOSYN.Foundation.ResultPattern\`):
 
 ```
 .local-build\build.cmd          # Release-Build
@@ -215,7 +215,7 @@ Ausführen aus dem Repo-Wurzelverzeichnis (`JOSYN.Core.ResultPattern\`):
 ### Projektstruktur
 
 ```
-JOSYN.Core.ResultPattern\
+JOSYN.Foundation.ResultPattern\
 ├── Result.cs                   # void-Result
 ├── Result.generic.cs           # Result<T>
 ├── Support\
@@ -244,4 +244,4 @@ Keine externen Abhängigkeiten.
 
 ---
 
-*JOSYN.Core.ResultPattern — © 2026 HAEVG AG — MIT License*
+*JOSYN.Foundation.ResultPattern — © 2026 HAEVG AG — MIT License*
