@@ -39,9 +39,9 @@ public static class MyFirstJob
     [JobEntryPoint]
     public static MyResult Execute(MyArguments args)
     {
-        Console.WriteLine("Hey, executing MyFirstJob\n");
+        Console.WriteLine("\nEXECUTING: MyResult Execute(MyArguments args)\n");
 
-        //throw new Exception("MyDemoJob fucked up...");
+        throw new Exception("MyDemoJob fucked up...");
         Console.WriteLine(args.Msg);
         
         return new MyResult

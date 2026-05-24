@@ -12,7 +12,7 @@ public class Core : ICore
         try
         {
             var createJAPClient = await JAPClient.CreateConnectedClient(args);
-            if (!createJAPClient.Succeeded || createJAPClient.Value == null)
+            if (!createJAPClient.Succeeded)
             {
                 FakeCore.LogLocalError(createJAPClient.ToResult());
                 return -1;

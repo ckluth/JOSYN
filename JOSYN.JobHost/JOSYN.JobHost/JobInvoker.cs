@@ -3,6 +3,7 @@ using System.Text;
 using JOSYN.Core.PropertyBag;
 using JOSYN.JobHost.Attributes;
 using JOSYN.Core.ResultPattern;
+using JOSYN.JAP;
 
 namespace JOSYN.JobHost;
 
@@ -94,8 +95,8 @@ internal static class JobInvoker
 #if DEBUG
         if (res.Succeeded)
         {
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("[JobResult successfuly processed]");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("\n[JobResult successfuly processed]");
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine(getResultAsString.Value);
             Console.ResetColor();
@@ -149,6 +150,17 @@ internal static class JobInvoker
         if (!rawArguments.Succeeded)
             return Result<object[]?>.Propagate(rawArguments.ToResult<object[]?>());
 
+#if DEBUG
+      
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("[JobArguments successfuly retrieved]");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine(rawArguments.Value);
+            Console.ResetColor();
+        }
+#endif
+        
         var createInvicationArguments = RetrieveInvocationArguments(func, rawArguments.Value);
         if (!createInvicationArguments.Succeeded)
             return Result<object[]?>.Propagate(createInvicationArguments.ToResult<object[]?>());
@@ -174,11 +186,11 @@ internal static class JobInvoker
                 return getInvokeArgs.Value;
             }
 
-            var getARgumentsRecord = PropertyBag.Deserialize(rawArguments, parameters.First().ParameterType);
-            if (!getARgumentsRecord.Succeeded)
-                return Result.Error(getARgumentsRecord.ErrorMessage, getARgumentsRecord.Exception);
+            var getArgumentsRecord = PropertyBag.Deserialize(rawArguments, parameters.First().ParameterType);
+            if (!getArgumentsRecord.Succeeded)
+                return Result.Error(getArgumentsRecord.ErrorMessage, getArgumentsRecord.Exception);
 
-            return new List<object> { getARgumentsRecord.Value }.ToArray();
+            return new List<object> { getArgumentsRecord.Value }.ToArray();
 
         }
         catch (Exception ex) { return ex; }
