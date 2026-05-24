@@ -1,9 +1,10 @@
 @echo off
+CHCP 1252
 setlocal
 
 :: ================================================================
-:: JOSYN â€” Test All
-:: FÃ¼hrt alle Tests in allen Sub-Repos aus (Release).
+:: JOSYN — Test All
+:: Führt alle Tests in allen Sub-Repos aus (Release).
 :: Stoppt beim ersten Fehler.
 :: ================================================================
 

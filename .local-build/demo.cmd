@@ -1,8 +1,9 @@
 @echo off
+CHCP 1252
 setlocal
 
 :: ================================================================
-:: JOSYN â€” Demo
+:: JOSYN — Demo
 :: Startet JAPServer und MyDemoJob mit den Hardcoded-Session-Args
 :: aus deren launchSettings.json.
 ::

@@ -1,9 +1,10 @@
 @echo off
+CHCP 1252
 setlocal
 
 :: ================================================================
-:: JOSYN â€” Build + Test All
-:: FÃ¼hrt build-all.cmd und danach test-all.cmd aus.
+:: JOSYN — Build + Test All
+:: Führt build-all.cmd und danach test-all.cmd aus.
 :: ================================================================
 
 call "%~dp0build-all.cmd"

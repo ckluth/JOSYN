@@ -1,8 +1,9 @@
 @echo off
+CHCP 1252
 setlocal
 
 :: ================================================================
-:: JOSYN â€” Demo (DEBUG)
+:: JOSYN — Demo (DEBUG)
 :: 1. Baut JAPServer + MyDemoJob im Debug-Modus
 :: 2. Startet beide in separaten Konsolfenstern
 ::

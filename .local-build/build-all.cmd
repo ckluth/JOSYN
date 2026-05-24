@@ -1,11 +1,12 @@
 @echo off
+CHCP 1252
 setlocal
 
 :: ================================================================
-:: JOSYN â€” Build All
+:: JOSYN — Build All
 :: 1. Leert den "Local Packages"-Ordner (*.nupkg)
 :: 2. Bereinigt den globalen NuGet-Cache (alle JOSYN-Pakete)
-:: 3. Baut + packt alle Sub-Repos in AbhÃ¤ngigkeitsreihenfolge
+:: 3. Baut + packt alle Sub-Repos in Abhängigkeitsreihenfolge
 ::    (jedes Paket wird sofort nach dem Build gepackt, damit
 ::     nachfolgende Sub-Repos es per NuGet-Restore finden)
 :: Stoppt beim ersten Fehler.
@@ -23,7 +24,7 @@ echo ================================================================
 
 :: --- 1. Local Packages leeren -----------------------------------
 echo.
-echo [CLEAN] LÃ¶sche *.nupkg aus "%LOCALPKG%"
+echo [CLEAN] Lösche *.nupkg aus "%LOCALPKG%"
 del /q "%LOCALPKG%\*.nupkg" 2>nul
 echo        OK
 
@@ -33,7 +34,7 @@ echo [CLEAN] NuGet-Cache (JOSYN-Pakete)
 call "%LOCALPKG%\cleanup-nuget-cache.cmd" NOPAUSE
 echo.
 
-:: --- 3. Build + Pack in AbhÃ¤ngigkeitsreihenfolge ---------------
+:: --- 3. Build + Pack in Abhängigkeitsreihenfolge ---------------
 
 call :build_and_pack ^
   "JOSYN.Foundation\JOSYN.Foundation.ResultPattern\JOSYN.Foundation.ResultPattern.slnx" ^
@@ -63,7 +64,7 @@ call :build_and_pack ^
 call :build_and_pack ^
   "JOSYN.System\JOSYN.System.Backend\JOSYN.System.Backend.slnx" ^
   "" ^
-  "6/6  JOSYN.System.Backend  [exe â€” not packed]"
+  "6/6  JOSYN.System.Backend  [exe — not packed]"
 
 echo.
 echo ================================================================
