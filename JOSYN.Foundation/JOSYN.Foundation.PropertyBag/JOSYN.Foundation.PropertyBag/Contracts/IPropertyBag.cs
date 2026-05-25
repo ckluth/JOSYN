@@ -25,21 +25,39 @@ namespace JOSYN.Foundation.PropertyBag;
 public interface IPropertyBag
 {
     /// <summary>
-    /// TODO
+    /// Serializes a <c>record class</c> instance to a sectionless INI string using the default format.
     /// </summary>
-    /// <typeparam name="TRecord"></typeparam>
-    /// <param name="record"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// Convenience overload that uses <see cref="IniDictionarySerializer"/> as the serializer.
+    /// When a specific output format is required, use
+    /// <see cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/> instead.
+    /// </remarks>
+    /// <typeparam name="TRecord">The record type to serialize. Must be a <c>record class</c>.</typeparam>
+    /// <param name="record">The record instance to serialize.</param>
+    /// <returns>
+    /// A <see cref="Result{T}"/> containing the serialized INI string on success, or an error if the
+    /// type is not a <c>record class</c>, contains unsupported property types, or serialization fails.
+    /// </returns>
     static abstract Result<string> Serialize<TRecord>(TRecord record)
         where TRecord : class;
 
 
     /// <summary>
-    /// 
+    /// Serializes a <c>record class</c> instance supplied as <see cref="object"/> to a sectionless
+    /// INI string using the default format.
     /// </summary>
-    /// <param name="record"></param>
-    /// <param name="recordType"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// Convenience overload that uses <see cref="IniDictionarySerializer"/> as the serializer.
+    /// Use this overload when the concrete record type is only known at runtime. For compile-time
+    /// known types, prefer <see cref="IPropertyBag.Serialize{TRecord}(TRecord)"/>.
+    /// </remarks>
+    /// <param name="record">The record instance to serialize.</param>
+    /// <param name="recordType">The exact <see cref="Type"/> of the record. Must correspond to a <c>record class</c>.</param>
+    /// <returns>
+    /// A <see cref="Result{T}"/> containing the serialized INI string on success, or an error if
+    /// <paramref name="recordType"/> is not a <c>record class</c>, contains unsupported property
+    /// types, or serialization fails.
+    /// </returns>
     static abstract Result<string> Serialize(object record, Type recordType);
 
 

@@ -13,13 +13,13 @@ public sealed class PropertyBag : IPropertyBag
 
     #region Serializer
 
-    /// <inheritdoc/>/>
+    /// <inheritdoc/>
     public static Result<string> Serialize<TRecord>(TRecord record) where TRecord : class
     {
         return Serialize(record, typeof(TRecord));
     }
 
-    /// <inheritdoc/>/>
+    /// <inheritdoc/>
     public static Result<string> Serialize(object record, Type recordType)
     {
         return Serialize(record, recordType, DefaultDictionaryToStringSerializer);
