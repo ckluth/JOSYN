@@ -1,3 +1,4 @@
+using JOSYN.Foundation.PropertyBag;
 using JOSYN.Foundation.ResultPattern;
 using JOSYN.System.Shared.Contract;
 using JOSYN.System.Shared.Log;
@@ -28,7 +29,15 @@ internal sealed class JAPServer : IJosynApplicationProtocol
 
     public async Task<Result> PutError(string serializedError)
     {
-        LocalLog.Error($"Fehler vom JobHost empfangen:\n{serializedError}");
+        var deserialize = PropertyBag.Deserialize<ErrorReport>(serializedError);
+        if (!deserialize.Succeeded)
+        {
+            LocalLog.Error($"ErrorReport konnte nicht deserialisiert werden: {deserialize.ErrorMessage}\nRaw: {serializedError}");
+            return Result.Success;
+        }
+
+        var report = deserialize.Value;
+        LocalLog.Error(report.Causer, report.Message, report.CallStack, report.ExceptionDetails);
         return await Task.FromResult(Result.Success);
     }
 

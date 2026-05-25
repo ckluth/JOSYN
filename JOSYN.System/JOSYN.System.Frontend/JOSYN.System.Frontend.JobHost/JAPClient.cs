@@ -1,4 +1,5 @@
 using JOSYN.Foundation.JIP;
+using JOSYN.Foundation.PropertyBag;
 using JOSYN.Foundation.ResultPattern;
 using JOSYN.System.Shared.Contract;
 
@@ -48,5 +49,15 @@ internal sealed class JAPClient : IJosynApplicationProtocol
     {
         var result = await JipClient.SendAsync(Pipes, nameof(IJosynApplicationProtocol.PutError), serializedError);
         return !result.Succeeded ? Result.Propagate(result.ToResult()) : Result.Success;
+    }
+    
+    internal async Task<Result> PutError(ErrorReport report)
+    {
+        var serialized = PropertyBag.Serialize(report);
+        if (!serialized.Succeeded)
+            return Result.Propagate(serialized.ToResult());
+        IJosynApplicationProtocol protocolImpl = this; 
+        var put = await protocolImpl.PutError(serialized.Value);        
+        return !put.Succeeded ? Result.Propagate(put) : put;
     }
 }

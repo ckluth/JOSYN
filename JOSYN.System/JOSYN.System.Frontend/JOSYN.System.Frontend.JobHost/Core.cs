@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using JOSYN.Foundation.PropertyBag;
 using JOSYN.Foundation.ResultPattern;
@@ -43,24 +44,23 @@ public sealed class Core : ICore
         }
     }
 
+
     // -------------------------------------------------------------------------
+
+    public static readonly string ProcessName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
 
     private static async Task ReportErrorToServer(IJosynApplicationProtocol client, Result error)
     {
         var report = new ErrorReport(
+            ProcessName,
             error.ErrorMessage ?? string.Empty,
             error.CallStackAsString,
             error.Exception?.ToString(),
             DateTimeOffset.Now);
 
-        var serialized = PropertyBag.Serialize(report, IniDictionarySerializer.Serialize);
-        if (!serialized.Succeeded)
-        {
-            LocalLog.Error($"ErrorReport konnte nicht serialisiert werden: {serialized.ErrorMessage}");
-            return;
-        }
-
-        var put = await client.PutError(serialized.Value);
+        // TODO: wie dirty ist dieser cast hier? - geht das besser?
+        var put = await (client as JAPClient)!.PutError(report);
+        
         if (!put.Succeeded)
             LocalLog.Error($"PutError an Server fehlgeschlagen: {put.ErrorMessage}");
     }

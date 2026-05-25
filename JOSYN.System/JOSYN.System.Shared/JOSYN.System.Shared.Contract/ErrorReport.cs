@@ -8,6 +8,7 @@ namespace JOSYN.System.Shared.Contract;
 /// <see cref="IJosynApplicationProtocol.PutError"/> übertragen.
 /// </summary>
 public record ErrorReport(
+    string  Causer,
     string  Message,
     string? CallStack,
     string? ExceptionDetails,

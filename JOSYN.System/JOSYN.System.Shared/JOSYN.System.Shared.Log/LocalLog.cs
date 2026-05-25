@@ -6,10 +6,11 @@ namespace JOSYN.System.Shared.Log;
 
 /// <summary>
 /// Prozess-lokaler Datei-Logger für JOSYN-EXE-Prozesse.
-/// Schreibt Einträge nach <c>&lt;RootPath&gt;\&lt;ProcessName&gt;\&lt;yyyy-MM-dd&gt;.log</c>.
-/// Standard-Wurzelpfad ist <c>&lt;ExeDir&gt;\logs\</c> — unabhängig vom Benutzerprofil,
+/// Schreibt Einträge nach <c>&lt;LogDirectory&gt;\&lt;yyyy-MM-dd&gt;.log</c>.
+/// Standard: <c>&lt;ExeDir&gt;\logs\</c> — unabhängig vom Benutzerprofil,
 /// geeignet für impersonierte technische AD-Benutzer ohne lokales Benutzerprofil.
-/// Der Pfad kann vor dem ersten Log-Aufruf über <see cref="RootPath"/> überschrieben werden.
+/// <see cref="LogDirectory"/> kann vor dem ersten Log-Aufruf überschrieben werden.
+/// Die Überladungen mit <c>causer</c>-Parameter schreiben in einen gleichnamigen Unterordner.
 /// Wenn <see cref="EnableConsoleOutput"/> gesetzt ist, wird zusätzlich auf die Konsole
 /// geschrieben — typischerweise aktiviert der Aufrufer dieses Flag im DEBUG-Build.
 /// Schreibfehler werden stillschweigend ignoriert — der Logger darf
@@ -18,20 +19,11 @@ namespace JOSYN.System.Shared.Log;
 public static class LocalLog
 {
     /// <summary>
-    /// Name des aktuellen Entry-Assembly (ohne Erweiterung) — kann als Sender-Parameter
-    /// an die Überladungen mit Unterordner übergeben werden.
-    /// </summary>
-    public static readonly string ProcessName =
-        Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
-
-    /// <summary>
-    /// Wurzelpfad für alle Log-Dateien. Standard: <c>&lt;ExeDir&gt;\logs\</c>.
+    /// Wurzelpfad für alle Log-Dateien dieses Prozesses. Standard: <c>&lt;ExeDir&gt;\logs\</c>.
     /// Muss vor dem ersten Log-Aufruf gesetzt werden, falls eine andere Ablage gewünscht ist.
+    /// Bei zentralisierter Ablage empfiehlt sich ein Pfad der Form <c>&lt;Root&gt;\&lt;ProcessName&gt;\</c>.
     /// </summary>
-    public static string RootPath { get; set; } =
-        Path.Combine(AppContext.BaseDirectory, "logs");
-
-    private static string LogDirectory => Path.Combine(RootPath, ProcessName);
+    public static string LogDirectory { get; set; } = Path.Combine(AppContext.BaseDirectory, "logs");
 
     /// <summary>
     /// Steuert, ob Log-Einträge zusätzlich auf die Konsole geschrieben werden.
@@ -52,18 +44,18 @@ public static class LocalLog
     public static void Error(Result result) =>
         Error(result.ErrorMessage ?? string.Empty, result.CallStackAsString, result.Exception?.ToString());
 
-    /// <summary>Schreibt einen Fehlereintrag unter dem angegebenen Sender-Unterordner.</summary>
-    public static void Error(string sender, string message, string? callStack = null, string? exceptionDetails = null)
+    /// <summary>Schreibt einen Fehlereintrag in den Unterordner des angegebenen Verursachers.</summary>
+    public static void Error(string causer, string message, string? callStack = null, string? exceptionDetails = null)
     {
         var entry = FormatEntry("ERROR", message, callStack, exceptionDetails);
-        WriteToFile(Path.Combine(LogDirectory, sender), entry);
+        WriteToFile(Path.Combine(LogDirectory, causer), entry);
         if (EnableConsoleOutput)
             WriteToConsole(entry, ConsoleColor.Red);
     }
 
-    /// <summary>Schreibt einen Fehlereintrag aus einem <see cref="Result"/> unter dem angegebenen Sender-Unterordner.</summary>
-    public static void Error(string sender, Result result) =>
-        Error(sender, result.ErrorMessage ?? string.Empty, result.CallStackAsString, result.Exception?.ToString());
+    /// <summary>Schreibt einen Fehlereintrag aus einem <see cref="Result"/> in den Unterordner des angegebenen Verursachers.</summary>
+    public static void Error(string causer, Result result) =>
+        Error(causer, result.ErrorMessage ?? string.Empty, result.CallStackAsString, result.Exception?.ToString());
 
     /// <summary>Schreibt einen Info-Eintrag.</summary>
     public static void Info(string message)
@@ -74,11 +66,11 @@ public static class LocalLog
             WriteToConsole(entry, ConsoleColor.Gray);
     }
 
-    /// <summary>Schreibt einen Info-Eintrag unter dem angegebenen Sender-Unterordner.</summary>
-    public static void Info(string sender, string message)
+    /// <summary>Schreibt einen Info-Eintrag in den Unterordner des angegebenen Verursachers.</summary>
+    public static void Info(string causer, string message)
     {
         var entry = FormatEntry("INFO", message);
-        WriteToFile(Path.Combine(LogDirectory, sender), entry);
+        WriteToFile(Path.Combine(LogDirectory, causer), entry);
         if (EnableConsoleOutput)
             WriteToConsole(entry, ConsoleColor.Gray);
     }
