@@ -6,7 +6,10 @@ namespace JOSYN.System.Shared.Log;
 
 /// <summary>
 /// Prozess-lokaler Datei-Logger für JOSYN-EXE-Prozesse.
-/// Schreibt Einträge nach <c>%TEMP%\JOSYN\&lt;ProcessName&gt;\&lt;yyyy-MM-dd&gt;.log</c>.
+/// Schreibt Einträge nach <c>&lt;RootPath&gt;\&lt;ProcessName&gt;\&lt;yyyy-MM-dd&gt;.log</c>.
+/// Standard-Wurzelpfad ist <c>&lt;ExeDir&gt;\logs\</c> — unabhängig vom Benutzerprofil,
+/// geeignet für impersonierte technische AD-Benutzer ohne lokales Benutzerprofil.
+/// Der Pfad kann vor dem ersten Log-Aufruf über <see cref="RootPath"/> überschrieben werden.
 /// Wenn <see cref="EnableConsoleOutput"/> gesetzt ist, wird zusätzlich auf die Konsole
 /// geschrieben — typischerweise aktiviert der Aufrufer dieses Flag im DEBUG-Build.
 /// Schreibfehler werden stillschweigend ignoriert — der Logger darf
@@ -21,8 +24,14 @@ public static class LocalLog
     public static readonly string ProcessName =
         Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
 
-    private static readonly string LogDirectory =
-        Path.Combine(Path.GetTempPath(), "JOSYN", ProcessName);
+    /// <summary>
+    /// Wurzelpfad für alle Log-Dateien. Standard: <c>&lt;ExeDir&gt;\logs\</c>.
+    /// Muss vor dem ersten Log-Aufruf gesetzt werden, falls eine andere Ablage gewünscht ist.
+    /// </summary>
+    public static string RootPath { get; set; } =
+        Path.Combine(AppContext.BaseDirectory, "logs");
+
+    private static string LogDirectory => Path.Combine(RootPath, ProcessName);
 
     /// <summary>
     /// Steuert, ob Log-Einträge zusätzlich auf die Konsole geschrieben werden.
