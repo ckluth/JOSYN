@@ -21,6 +21,7 @@
 | 15 | `ErrorReport.Causer` (first parameter) flows from JobHost → JSON-serialized IPC → JAPServer.PutError deserialization → `LocalLog.Error(causer, ...)` subfolder; JSON serialization required (INI truncates multi-line `CallStack`/`ExceptionDetails`) |
 | 16 | Three canonical csproj templates (NuGet Library / Exe / Test) documented in `copilot-instructions/C# Project Files/AGENT.md`; single PropertyGroup, tabs, no `PackageReleaseNotes`; `GenerateDocumentationFile` on NuGet libraries only; each NuGet project has its own `icon.png` copy; each exe project has its own `icon.ico` copy |
 | 17 | Exe icon in Explorer requires both `<ApplicationIcon>icon.ico</ApplicationIcon>` AND `<Content Include="icon.ico" />`; `<None Include>` alone is insufficient |
+| 18 | XML-Dokumentationskommentare werden projekteinheitlich auf **Deutsch** verfasst — kein Split, keine Ausnahmen |
 
 ## Open Questions
 
@@ -57,3 +58,4 @@
 | 0020 | session-0020-access-modifier-tightening-summary.md | Full codebase access-modifier audit; 2 fixes: JAPServer implicit → explicit interface impl; ArgumentsComparer public → internal |
 | 0021 | session-0021-unit-test-coverage-generation.md | Comprehensive unit test gap-fill: +48 tests (JIP new project), +14 (PropertyBag), +12 (ResultPattern), +3 (Frontend); 161 → 238 total |
 | 0022 | session-0022-sealed-types-audit-summary.md | Repo-wide sealed audit: 24 types sealed across 15 files (1 prod record, 4 prod classes, 10 test fixtures, 9 test data records); 238 tests green |
+| 0023 | session-0023-xmldoc-german-translation-summary.md | Sprachentscheidung Deutsch für XML-Docs; 18 Dateien übersetzt; Build/Tests grün |
