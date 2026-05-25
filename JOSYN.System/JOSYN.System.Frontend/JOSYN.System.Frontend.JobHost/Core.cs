@@ -49,7 +49,7 @@ public sealed class Core : ICore
 
     public static readonly string ProcessName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
 
-    private static async Task ReportErrorToServer(IJosynApplicationProtocol client, Result error)
+    private static async Task ReportErrorToServer(JAPClient client, Result error)
     {
         var report = new ErrorReport(
             ProcessName,
@@ -58,8 +58,7 @@ public sealed class Core : ICore
             error.Exception?.ToString(),
             DateTimeOffset.Now);
 
-        // TODO: wie dirty ist dieser cast hier? - geht das besser?
-        var put = await (client as JAPClient)!.PutError(report);
+        var put = await client.PutError(report);
         
         if (!put.Succeeded)
             LocalLog.Error($"PutError an Server fehlgeschlagen: {put.ErrorMessage}");
