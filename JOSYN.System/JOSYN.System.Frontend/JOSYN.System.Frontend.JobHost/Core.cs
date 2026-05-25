@@ -47,6 +47,10 @@ public sealed class Core : ICore
 
     // -------------------------------------------------------------------------
 
+    /// <summary>
+    /// The name of the entry assembly (the job exe filename without extension).
+    /// Used as the error causer identifier when reporting failures back to the server.
+    /// </summary>
     public static readonly string ProcessName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
 
     private static async Task ReportErrorToServer(JAPClient client, Result error)
