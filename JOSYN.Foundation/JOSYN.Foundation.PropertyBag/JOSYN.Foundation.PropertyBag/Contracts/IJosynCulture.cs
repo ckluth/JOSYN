@@ -5,18 +5,18 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Vertragsdefinition für die kanonische JOSYN-Prozesskultur.
-/// Legt die Kultur fest, die für alle Serialisierungen (PropertyBag INI/JSON,
-/// Zahlen, Datumsangaben) im gesamten JOSYN-Ökosystem verwendet wird.
+/// Contract definition for the canonical JOSYN process culture.
+/// Defines the culture used for all serializations (PropertyBag INI/JSON,
+/// numbers, dates) throughout the JOSYN ecosystem.
 /// </summary>
 /// <remarks>
-/// Die Kultur ist zur Kompilierzeit fest verdrahtet — niemals als Laufzeitkonfiguration änderbar,
-/// da eine Kulturdiskrepanz zwischen Schreiber und Leser zu stiller Datenkorrumpierung führt.
+/// The culture is hard-wired at compile time — never changeable as a runtime configuration,
+/// because a culture mismatch between writer and reader leads to silent data corruption.
 /// </remarks>
 public interface IJosynCulture
 {
     /// <summary>
-    /// Die kanonische Kultur aller JOSYN-Prozesse. Aktuell <c>de-DE</c>.
+    /// The canonical culture for all JOSYN processes. Currently <c>de-DE</c>.
     /// </summary>
     static abstract CultureInfo Default { get; }
 }

@@ -6,45 +6,45 @@ namespace JOSYN.Foundation.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Vertrag für ein void-Ergebnis. Implementiert durch <see cref="Result"/>.
+/// Contract for a void result. Implemented by <see cref="Result"/>.
 /// </summary>
 public interface IResult<out TSelf> where TSelf : IResult<TSelf>
 {
     /// <summary>
-    /// <see langword="true"/>, wenn die Operation erfolgreich war.
-    /// Ist der Wert <see langword="false"/>, ist <see cref="ErrorMessage"/> garantiert nicht null.
+    /// <see langword="true"/> if the operation succeeded.
+    /// When <see langword="false"/>, <see cref="ErrorMessage"/> is guaranteed to be non-null.
     /// </summary>
     [MemberNotNullWhen(false, nameof(ErrorMessage))]
     bool Succeeded { get; }
 
     /// <summary>
-    /// Die Fehlermeldung. Nur gesetzt, wenn <see cref="Succeeded"/> <see langword="false"/> ist.
+    /// The error message. Set only when <see cref="Succeeded"/> is <see langword="false"/>.
     /// </summary>
     string? ErrorMessage { get; }
 
     /// <summary>
-    /// Die auslösende Ausnahme, falls vorhanden.
+    /// The originating exception, if any.
     /// </summary>
     Exception? Exception { get; }
 
     /// <summary>
-    /// Die durch <see cref="Propagate"/> aufgebaute Aufrufkette. Bei einem neu erstellten Fehler leer.
+    /// The call chain built up by <see cref="Propagate"/>. Empty on a freshly created failure.
     /// </summary>
     IReadOnlyList<CallerInfo> Callers { get; }
 
     /// <summary>
-    /// Lesbare Darstellung von <see cref="Callers"/> für Logging oder Ausgabe.
+    /// Human-readable representation of <see cref="Callers"/> for logging or display.
     /// </summary>
     string CallStackAsString { get; }
 
     /// <summary>
-    /// Ein erfolgreiches Ergebnis.
+    /// A successful result.
     /// </summary>
     static abstract TSelf Success { get; }
 
     /// <summary>
-    /// Erstellt ein Fehlerergebnis mit einer Fehlermeldung.
-    /// Optional kann eine <paramref name="exception"/> angefügt werden.
+    /// Creates a failed result with an error message.
+    /// Optionally attaches an <paramref name="exception"/>.
     /// </summary>
     static abstract TSelf Fail(
         string error,
@@ -54,7 +54,7 @@ public interface IResult<out TSelf> where TSelf : IResult<TSelf>
         [CallerLineNumber] int internal_ignore_lineNumber = 0);
 
     /// <summary>
-    /// Erstellt ein Fehlerergebnis aus einer Ausnahme.
+    /// Creates a failed result from an exception.
     /// </summary>
     static abstract TSelf Fail(
         Exception exception,
@@ -63,8 +63,8 @@ public interface IResult<out TSelf> where TSelf : IResult<TSelf>
         [CallerLineNumber] int internal_ignore_lineNumber = 0);
 
     /// <summary>
-    /// Hängt den aktuellen Aufrufer an die Weiterleitungskette an und gibt den Fehler unverändert zurück.
-    /// Immer hinter <c>if (!result.Succeeded)</c> aufrufen.
+    /// Appends the current caller to the propagation chain and returns the failure unchanged.
+    /// Always call immediately after <c>if (!result.Succeeded)</c>.
     /// </summary>
     static abstract Result Propagate(
         Result result,
@@ -73,29 +73,29 @@ public interface IResult<out TSelf> where TSelf : IResult<TSelf>
         [CallerLineNumber] int internal_ignore_callerlinenumber = 0);
 
     /// <summary>
-    /// Konvertiert dieses Fehlerergebnis in ein typisiertes <see cref="Result{TValue}"/>.
-    /// Nur auf einem Fehlerergebnis aufrufen — bei Erfolg entsteht ein stiller Fehler.
+    /// Converts this failure to a typed <see cref="Result{TValue}"/>.
+    /// Call only on a failed result — calling on a successful result produces a silent failure.
     /// </summary>
     Result<TValue> ToResult<TValue>();
 
     /// <summary>
-    /// Erstellt einen <see cref="Error"/>-Wert, der implizit in <see cref="Result"/> oder <see cref="Result{T}"/> konvertiert.
-    /// Idiomatisch für die Rückgabe von Fehlern: <c>return Result.Error("Fehler aufgetreten");</c>
+    /// Creates an <see cref="Error"/> value that implicitly converts to <see cref="Result"/> or <see cref="Result{T}"/>.
+    /// The idiomatic pattern for returning failures: <c>return Result.Error("Fehler aufgetreten");</c>
     /// </summary>
     static abstract Error Error(string error, Exception? exception = null);
 
     /// <summary>
-    /// In catch-Blöcken verwenden: <c>catch (Exception ex) { return ex; }</c>
+    /// Use in catch blocks: <c>catch (Exception ex) { return ex; }</c>
     /// </summary>
     static abstract implicit operator TSelf(Exception exception);
 
     /// <summary>
-    /// Ermöglicht die direkte Rückgabe eines <see cref="Error"/>-Werts aus einer Methode.
+    /// Enables returning an <see cref="Error"/> value directly from a method.
     /// </summary>
     static abstract implicit operator TSelf(Error error);
 
     /// <summary>
-    /// Ermöglicht die Syntax <c>return Result.Success;</c>.
+    /// Enables the <c>return Result.Success;</c> syntax.
     /// </summary>
     static abstract implicit operator TSelf(ResultSuccess _);
 }

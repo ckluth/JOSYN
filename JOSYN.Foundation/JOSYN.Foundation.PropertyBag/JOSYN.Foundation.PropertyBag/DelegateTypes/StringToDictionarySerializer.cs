@@ -6,20 +6,20 @@ namespace JOSYN.Foundation.PropertyBag;
 
 
 /// <summary>
-/// Repräsentiert eine Methode, die einen serialisierten String in ein flaches String-zu-String-Dictionary parst.
+/// Represents a method that parses a serialized string into a flat string-to-string dictionary.
 /// </summary>
 /// <remarks>
-/// In dieser Bibliothek enthaltene Implementierungen:
+/// Implementations included in this library:
 /// <list type="bullet">
-///   <item><see cref="IniDictionarySerializer.DeserializeSingleSection(string)"/> — parst sektionsfreies INI.</item>
-///   <item><see cref="JsonDictionarySerializer.Deserialize(string)"/> — parst flaches JSON.</item>
+///   <item><see cref="IniDictionarySerializer.DeserializeSingleSection(string)"/> — parses section-less INI.</item>
+///   <item><see cref="JsonDictionarySerializer.Deserialize(string)"/> — parses flat JSON.</item>
 /// </list>
-/// Die automatische Formaterkennung (zwischen diesen beiden) ist in
-/// <see cref="PropertyBag.Deserialize{TRecord}(string)"/> und seinen Überladungen eingebaut, sodass
-/// Aufrufer in der Regel keinen <see cref="StringToDictionarySerializer"/> manuell auswählen müssen.
+/// Automatic format detection (between these two) is built into
+/// <see cref="PropertyBag.Deserialize{TRecord}(string)"/> and its overloads, so
+/// callers generally do not need to select a <see cref="StringToDictionarySerializer"/> manually.
 /// </remarks>
-/// <param name="str">Der zu parsende serialisierte String.</param>
+/// <param name="str">The serialized string to parse.</param>
 /// <returns>
-/// Ein <see cref="Result{T}"/> mit dem geparsten flachen Dictionary bei Erfolg, oder ein Fehler, wenn das Parsing fehlschlägt.
+/// A <see cref="Result{T}"/> containing the parsed flat dictionary on success, or a failure if parsing fails.
 /// </returns>
 public delegate Result<Dictionary<string, string>> StringToDictionarySerializer(string str);

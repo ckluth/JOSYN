@@ -5,92 +5,92 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Serialisiert und deserialisiert INI-formatierte Daten in und aus <c>Dictionary</c>-Darstellungen.
+/// Serializes and deserializes INI-formatted data to and from <c>Dictionary</c> representations.
 /// </summary>
 /// <remarks>
-/// Unterstützt sowohl sektioniertes INI (<c>[Sektionsname]</c>-Header gefolgt von <c>Schlüssel=Wert</c>-Zeilen)
-/// als auch sektionsfreies INI (einfache <c>Schlüssel=Wert</c>-Zeilen ohne Sektions-Header).
+/// Supports both sectioned INI (<c>[SectionName]</c> header followed by <c>Key=Value</c> lines)
+/// and section-less INI (plain <c>Key=Value</c> lines without a section header).
 /// <para>
-/// Werte werden unverändert gespeichert — auf der rechten Seite des <c>=</c> wird kein Trimming angewendet.
-/// Ein manuell erstellter INI-Eintrag wie <c>Key= value</c> erfasst das führende Leerzeichen als Teil des
-/// Werts. Der Aufrufer ist für den genauen Inhalt auf beiden Seiten des <c>=</c> verantwortlich.
+/// Values are stored verbatim — no trimming is applied to the right-hand side of the <c>=</c>.
+/// A manually crafted INI entry such as <c>Key= value</c> captures the leading space as part of the
+/// value. The caller is responsible for the exact content on both sides of the <c>=</c>.
 /// </para>
 /// <para>
-/// Zeilen, die mit <c>;</c> beginnen, und Leerzeilen werden als Kommentare bzw. Leerzeichen behandelt
-/// und bei der Deserialisierung ignoriert.
+/// Lines starting with <c>;</c> and blank lines are treated as comments or whitespace
+/// and are ignored during deserialization.
 /// </para>
 /// <para>
-/// Alle Operationen geben <see cref="Result"/> oder <see cref="Result{T}"/> zurück — Ausnahmen werden
-/// nicht weitergegeben.
+/// All operations return <see cref="Result"/> or <see cref="Result{T}"/> — exceptions are
+/// not propagated.
 /// </para>
 /// </remarks>
 public interface IIniDictionarySerializer
 {
     /// <summary>
-    /// Serialisiert ein mehrsektioniges INI-Dictionary in einen String.
+    /// Serializes a multi-section INI dictionary to a string.
     /// </summary>
     /// <remarks>
-    /// Enthält das Dictionary genau einen Eintrag mit dem Schlüssel <see cref="string.Empty"/>, wird die
-    /// Ausgabe ohne Sektions-Header erstellt (sektionsfreies INI). Andernfalls wird jeder Eintragsschlüssel
-    /// zu einem <c>[Sektionsname]</c>-Header, gefolgt von seinen Schlüssel-Wert-Paaren, mit einer Leerzeile
-    /// zwischen den Sektionen.
+    /// If the dictionary contains exactly one entry with the key <see cref="string.Empty"/>, the
+    /// output is produced without a section header (section-less INI). Otherwise each entry key
+    /// becomes a <c>[SectionName]</c> header followed by its key-value pairs, with a blank line
+    /// between sections.
     /// </remarks>
     /// <param name="data">
-    /// Ein Dictionary, das Sektionsnamen auf ihre Schlüssel-Wert-Paare abbildet. Einen leeren String als
-    /// Sektionsschlüssel verwenden, um ein sektionsfreies INI-Dokument zu erzeugen.
+    /// A dictionary mapping section names to their key-value pairs. Use an empty string as the
+    /// section key to produce a section-less INI document.
     /// </param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem INI-formatierten String bei Erfolg, oder ein Fehler, wenn die
-    /// Serialisierung fehlschlägt.
+    /// A <see cref="Result{T}"/> containing the INI-formatted string on success, or a failure if
+    /// serialization fails.
     /// </returns>
     static abstract Result<string> Serialize(Dictionary<string, Dictionary<string, string>> data);
 
     /// <summary>
-    /// Serialisiert ein flaches Schlüssel-Wert-Dictionary in einen sektionsfreien INI-String.
+    /// Serializes a flat key-value dictionary to a section-less INI string.
     /// </summary>
     /// <remarks>
-    /// Jeder Eintrag in <paramref name="data"/> wird zu einer <c>Schlüssel=Wert</c>-Zeile. Es wird kein
-    /// Sektions-Header geschrieben. Um Sektions-Header einzufügen,
-    /// <see cref="IIniDictionarySerializer.Serialize(Dictionary{string,Dictionary{string,string}})"/> verwenden.
+    /// Each entry in <paramref name="data"/> becomes a <c>Key=Value</c> line. No section header is
+    /// written. To include section headers, use
+    /// <see cref="IIniDictionarySerializer.Serialize(Dictionary{string,Dictionary{string,string}})"/>.
     /// </remarks>
-    /// <param name="data">Die zu serialisierenden Schlüssel-Wert-Paare.</param>
+    /// <param name="data">The key-value pairs to serialize.</param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem sektionsfreien INI-formatierten String bei Erfolg, oder ein
-    /// Fehler, wenn die Serialisierung fehlschlägt.
+    /// A <see cref="Result{T}"/> containing the section-less INI-formatted string on success, or a
+    /// failure if serialization fails.
     /// </returns>
     static abstract Result<string> Serialize(Dictionary<string, string> data);
 
     /// <summary>
-    /// Parst einen sektionsfreien INI-String in ein flaches Schlüssel-Wert-Dictionary.
+    /// Parses a section-less INI string into a flat key-value dictionary.
     /// </summary>
     /// <remarks>
-    /// Hilfsmethode um <see cref="IIniDictionarySerializer.Deserialize(string)"/>, die eine
-    /// Einzel-Sektion-Einschränkung durchsetzt. Verwenden, wenn die Eingabe ein einfaches
-    /// <c>Schlüssel=Wert</c>-Dokument ohne Sektions-Header ist — z.&#160;B. beim Deserialisieren von
-    /// Ausgaben von <see cref="IIniDictionarySerializer.Serialize(Dictionary{string,string})"/>.
+    /// Helper method wrapping <see cref="IIniDictionarySerializer.Deserialize(string)"/> that enforces
+    /// a single-section constraint. Use when the input is a simple <c>Key=Value</c> document without
+    /// section headers — for example when deserializing output produced by
+    /// <see cref="IIniDictionarySerializer.Serialize(Dictionary{string,string})"/>.
     /// </remarks>
     /// <param name="raw">
-    /// Ein sektionsfreier INI-String. Kann Kommentarzeilen (beginnend mit <c>;</c>) und Leerzeilen enthalten.
+    /// A section-less INI string. May contain comment lines (starting with <c>;</c>) and blank lines.
     /// </param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem geparsten flachen Dictionary bei Erfolg, oder ein Fehler, wenn
-    /// die Eingabe leer ist, keine parsebaren Sektionen enthält, mehr als eine Sektion enthält oder das
-    /// Parsing fehlschlägt.
+    /// A <see cref="Result{T}"/> containing the parsed flat dictionary on success, or a failure if
+    /// the input is empty, contains no parseable sections, contains more than one section, or parsing
+    /// fails.
     /// </returns>
     static abstract Result<Dictionary<string, string>> DeserializeSingleSection(string raw);
 
     /// <summary>
-    /// Parst einen INI-String in ein verschachteltes Dictionary, indiziert nach Sektionsname.
+    /// Parses an INI string into a nested dictionary indexed by section name.
     /// </summary>
     /// <remarks>
-    /// Zeilen vor dem ersten Sektions-Header werden unter einem leeren Sektionsschlüssel gesammelt.
-    /// Doppelte Schlüssel innerhalb derselben Sektion führen zu einem Fehler. Schlüssel in verschiedenen
-    /// Sektionen dürfen sich wiederholen.
+    /// Lines before the first section header are collected under an empty section key.
+    /// Duplicate keys within the same section produce a failure. Keys in different sections
+    /// may repeat.
     /// </remarks>
-    /// <param name="raw">Der zu parsende INI-formatierte String.</param>
+    /// <param name="raw">The INI-formatted string to parse.</param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem geparsten verschachtelten Dictionary bei Erfolg, oder ein
-    /// Fehler, wenn ein doppelter Schlüssel gefunden wird oder das Parsing fehlschlägt.
+    /// A <see cref="Result{T}"/> containing the parsed nested dictionary on success, or a
+    /// failure if a duplicate key is found or parsing fails.
     /// </returns>
     static abstract Result<Dictionary<string, Dictionary<string, string>>> Deserialize(string raw);
 }

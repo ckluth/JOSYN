@@ -3,9 +3,9 @@ using JOSYN.Foundation.ResultPattern;
 namespace JOSYN.Foundation.JIP;
 
 /// <summary>
-/// Vertragsdefinition für den JIP-Konventions-Layer.
-/// Trennt das Wire Format (<see cref="Request"/>, <see cref="Response"/>) von der
-/// Implementierungsebene (<see cref="Result{TValue}"/> mit <c>string?</c>).
+/// Contract definition for the JIP convention layer.
+/// Separates the wire format (<see cref="Request"/>, <see cref="Response"/>) from the
+/// implementation layer (<see cref="Result{TValue}"/> with <c>string?</c>).
 /// </summary>
 public interface IJipProtocol
 {
@@ -14,12 +14,12 @@ public interface IJipProtocol
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Deserialisiert einen rohen JSON-String in ein <see cref="Request"/>-Objekt.
+    /// Deserializes a raw JSON string into a <see cref="Request"/> object.
     /// </summary>
     static abstract Result<Request> ParseRequest(string raw);
 
     /// <summary>
-    /// Deserialisiert einen rohen JSON-String in ein <see cref="Response"/>-Objekt.
+    /// Deserializes a raw JSON string into a <see cref="Response"/> object.
     /// </summary>
     static abstract Result<Response> ParseResponse(string raw);
 
@@ -28,9 +28,9 @@ public interface IJipProtocol
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Erzeugt eine <see cref="Response"/> aus einem <see cref="Result{TValue}"/> mit
-    /// optionalem String-Payload. Der Applikations-Layer ist für die Serialisierung des
-    /// Wertes in diesen String verantwortlich.
+    /// Creates a <see cref="Response"/> from a <see cref="Result{TValue}"/> with an
+    /// optional string payload. The application layer is responsible for serializing the
+    /// value into this string.
     /// </summary>
     static abstract Response ToResponse(Result<string?> result);
 
@@ -39,9 +39,9 @@ public interface IJipProtocol
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Konvertiert eine <see cref="Response"/> in ein <see cref="Result{TValue}"/> mit
-    /// optionalem String-Payload. Der Applikations-Layer ist für die Deserialisierung
-    /// des Wertes verantwortlich.
+    /// Converts a <see cref="Response"/> to a <see cref="Result{TValue}"/> with an
+    /// optional string payload. The application layer is responsible for deserializing
+    /// the value.
     /// </summary>
     static abstract Result<string?> ToResult(Response response);
 }

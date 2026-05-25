@@ -5,7 +5,7 @@ namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Eingehende JIP-Anfrage (Wire Format). Serialisierung über <see cref="JipProtocol"/>.
+/// Incoming JIP request (wire format). Serialized via <see cref="JipProtocol"/>.
 /// </summary>
 public sealed record Request : IRequest
 {

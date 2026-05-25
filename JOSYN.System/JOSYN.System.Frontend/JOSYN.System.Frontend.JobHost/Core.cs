@@ -48,8 +48,8 @@ public sealed class Core : ICore
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Name der Entry-Assembly (Dateiname der Job-Exe ohne Erweiterung).
-    /// Wird als Fehlerverursacher-Bezeichner beim Melden von Fehlern an den Server verwendet.
+    /// Name of the entry assembly (the job executable filename without extension).
+    /// Used as the error causer identifier when reporting errors to the server.
     /// </summary>
     public static readonly string ProcessName = Path.GetFileNameWithoutExtension(Assembly.GetEntryAssembly()?.Location ?? "unknown");
 

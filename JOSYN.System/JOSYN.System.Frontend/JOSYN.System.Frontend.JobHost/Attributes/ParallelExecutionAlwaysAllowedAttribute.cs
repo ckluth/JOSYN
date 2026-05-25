@@ -1,13 +1,13 @@
 namespace JOSYN.System.Frontend.JobHost.Attributes;
 
 /// <summary>
-/// Deklariert, dass die zugehörige Job-Methode parallel ausgeführt werden darf.
-/// Der Parameter <paramref name="isAllowed"/> steuert, ob die parallele Ausführung
-/// aktiviert (<c>true</c>, Standard) oder explizit deaktiviert (<c>false</c>) ist.
+/// Declares that the associated job method may be executed in parallel.
+/// The <paramref name="isAllowed"/> parameter controls whether parallel execution is
+/// enabled (<c>true</c>, default) or explicitly disabled (<c>false</c>).
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class ParallelExecutionAllowedAttribute(bool isAllowed = true) : Attribute
 {
-    /// <summary>Gibt an, ob parallele Ausführung erlaubt ist.</summary>
+    /// <summary>Indicates whether parallel execution is permitted.</summary>
     public bool IsAllowed => isAllowed;
 }

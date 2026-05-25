@@ -7,9 +7,9 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Ein <see cref="JsonConverter{T}"/> für <see cref="decimal"/>, der Werte gemäß der aktuellen
-/// Thread-Kultur (Standard: <c>de-DE</c>) formatiert und parst, unter Beibehaltung des
-/// kulturspezifischen Dezimaltrennzeichens (z.&#160;B. <c>,</c> statt <c>.</c>).
+/// A <see cref="JsonConverter{T}"/> for <see cref="decimal"/> that formats and parses values
+/// according to the current thread culture (default: <c>de-DE</c>), preserving the
+/// culture-specific decimal separator (e.g. <c>,</c> instead of <c>.</c>).
 /// </summary>
 internal sealed class CultureAwareDecimalConverter : JsonConverter<decimal>
 {

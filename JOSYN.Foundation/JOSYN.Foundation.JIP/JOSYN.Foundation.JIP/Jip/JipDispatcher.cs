@@ -14,7 +14,7 @@ public sealed class JipDispatcher : IJipDispatcher
     /// <inheritdoc/>
     public IReadOnlySet<string> RegisteredKeys => _handlers.Keys.ToHashSet();
 
-    /// <summary>Initialisiert einen neuen <see cref="JipDispatcher"/> ohne registrierte Handler.</summary>
+    /// <summary>Initializes a new <see cref="JipDispatcher"/> with no registered handlers.</summary>
     public JipDispatcher()
     {
         // Closure captures the _handlers reference — entries added via Register() are visible at dispatch time.

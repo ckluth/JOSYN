@@ -5,71 +5,71 @@ namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Vertragsdefinition für den JIP-Request-Dispatcher.
-/// Routet eingehende JIP-Anfragen anhand von <see cref="Request.What"/> an registrierte Handler
-/// und eliminiert manuelle <c>switch</c>-Ausdrücke auf der Serverseite.
+/// Contract definition for the JIP request dispatcher.
+/// Routes incoming JIP requests by <see cref="Request.What"/> to registered handlers,
+/// eliminating manual <c>switch</c> expressions on the server side.
 /// </summary>
 public interface IJipDispatcher
 {
     /// <summary>
-    /// Die Menge der bisher registrierten Schlüssel.
-    /// Gedacht für Test-Assertions, die Protokollvollständigkeit prüfen.
+    /// The set of keys registered so far.
+    /// Intended for test assertions that verify protocol completeness.
     /// </summary>
     IReadOnlySet<string> RegisteredKeys { get; }
 
     /// <summary>
-    /// Registriert einen asynchronen Handler ohne Eingabedaten mit String-Rückgabe.
-    /// Geeignet für Methoden der Form <c>Task&lt;Result&lt;string&gt;&gt; GetXxx()</c>.
+    /// Registers an asynchronous handler with no input data and a string return value.
+    /// Suitable for methods of the form <c>Task&lt;Result&lt;string&gt;&gt; GetXxx()</c>.
     /// </summary>
     IJipDispatcher Register(string key, Func<Task<Result<string>>> handler);
 
     /// <summary>
-    /// Registriert einen asynchronen Handler mit erforderlichem String-Argument ohne Rückgabewert.
-    /// Gibt einen Fehler zurück, wenn die Anfrage keine Daten enthält.
-    /// Geeignet für Methoden der Form <c>Task&lt;Result&gt; PutXxx(string value)</c>.
+    /// Registers an asynchronous handler with a required string argument and no return value.
+    /// Returns a failure if the request contains no data.
+    /// Suitable for methods of the form <c>Task&lt;Result&gt; PutXxx(string value)</c>.
     /// </summary>
     IJipDispatcher Register(string key, Func<string, Task<Result>> handler);
 
     /// <summary>
-    /// Registriert einen asynchronen Handler mit optionalem Eingabe- und Ausgabe-String.
-    /// Geeignet für die allgemeinste async-Handler-Form.
+    /// Registers an asynchronous handler with an optional input and output string.
+    /// Suitable for the most general async handler form.
     /// </summary>
     IJipDispatcher Register(string key, Func<string?, Task<Result<string?>>> handler);
 
     /// <summary>
-    /// Registriert einen synchronen Handler mit optionalem Eingabe- und Ausgabe-String.
-    /// Geeignet für Inline-Funktionen der Form <c>(data) => Result&lt;string?&gt;.Success(...)</c>.
+    /// Registers a synchronous handler with an optional input and output string.
+    /// Suitable for inline functions of the form <c>(data) => Result&lt;string?&gt;.Success(...)</c>.
     /// </summary>
     IJipDispatcher Register(string key, Func<string?, Result<string?>> handler);
 
     /// <summary>
-    /// Registriert ein konstantes Ergebnis — nützlich für feste Antworten wie PING oder
-    /// hart verdrahtete Konfigurationswerte.
+    /// Registers a constant result — useful for fixed responses such as PING or
+    /// hard-coded configuration values.
     /// </summary>
     IJipDispatcher Register(string key, Result<string?> constantResult);
 
     /// <summary>
-    /// Registriert alle Methoden von <typeparamref name="TProtocol"/> per Konvention:
-    /// Der Methodenname wird zum <c>What</c>-Schlüssel, die Signatur bestimmt die Handler-Form.
+    /// Registers all methods of <typeparamref name="TProtocol"/> by convention:
+    /// the method name becomes the <c>What</c> key, and the signature determines the handler form.
     /// </summary>
     /// <remarks>
-    /// Unterstützte Signaturen:
+    /// Supported signatures:
     /// <list type="bullet">
     /// <item><c>Task&lt;Result&lt;string&gt;&gt; Method()</c></item>
     /// <item><c>Task&lt;Result&gt; Method(string data)</c></item>
     /// </list>
-    /// Wirft <see cref="InvalidOperationException"/> bei der Registrierung nicht unterstützter Signaturen.
+    /// Throws <see cref="InvalidOperationException"/> during registration if an unsupported signature is encountered.
     /// </remarks>
     /// <typeparam name="TProtocol">
-    /// Der Protokoll-Interface-Typ. Immer explizit das Interface angeben, nicht die konkrete Klasse,
-    /// um die Registrierung von Nicht-Protokoll-Mitgliedern zu vermeiden.
+    /// The protocol interface type. Always specify the interface explicitly, not the concrete class,
+    /// to avoid registering non-protocol members.
     /// </typeparam>
     IJipDispatcher RegisterAll<TProtocol>(TProtocol impl) where TProtocol : class;
 
     /// <summary>
-    /// Dispatcht einen rohen JIP-Anfrage-String. Unbekannte <c>What</c>-Werte werden mit
-    /// einer Fehler-Response beantwortet.
-    /// Diese Methode als <see cref="ServerStartArguments.HandleStringRequest"/> übergeben.
+    /// Dispatches a raw JIP request string. Unknown <c>What</c> values are answered with
+    /// an error response.
+    /// Pass this method as <see cref="ServerStartArguments.HandleStringRequest"/>.
     /// </summary>
     Task<string> Dispatch(string requestStr);
 }

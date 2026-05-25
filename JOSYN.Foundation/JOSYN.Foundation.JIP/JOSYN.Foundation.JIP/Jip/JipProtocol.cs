@@ -4,9 +4,9 @@ using JOSYN.Foundation.ResultPattern;
 namespace JOSYN.Foundation.JIP;
 
 /// <summary>
-/// Implementierung des JIP-Konventions-Layers.
-/// Vermittelt zwischen dem Wire Format (<see cref="Request"/>, <see cref="Response"/>)
-/// und der Implementierungsebene (<see cref="Result{TValue}"/> mit <c>string?</c>).
+/// Implementation of the JIP convention layer.
+/// Mediates between the wire format (<see cref="Request"/>, <see cref="Response"/>)
+/// and the implementation layer (<see cref="Result{TValue}"/> with <c>string?</c>).
 /// </summary>
 public sealed class JipProtocol : IJipProtocol
 {

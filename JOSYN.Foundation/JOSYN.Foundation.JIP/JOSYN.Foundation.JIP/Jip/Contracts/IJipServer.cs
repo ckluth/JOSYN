@@ -5,32 +5,32 @@ namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Vertragsdefinition für den JIP-Konventions-Server-Helfer.
-/// Kapselt Request-Parsing, Response-Serialisierung und Fehler-Wrapping,
-/// sodass Handler-Code ausschließlich mit <see cref="Result{TValue}"/> arbeitet —
-/// ohne Kenntnis des Wire-Formats.
+/// Contract definition for the JIP convention server helper.
+/// Encapsulates request parsing, response serialization, and error wrapping,
+/// so that handler code works exclusively with <see cref="Result{TValue}"/> —
+/// without any knowledge of the wire format.
 /// </summary>
 public interface IJipServer
 {
     /// <summary>
-    /// Kapselt einen synchronen Request-Handler in die vom <see cref="PipesServer"/> erwartete
-    /// <c>Func&lt;string, Task&lt;string&gt;&gt;</c>-Signatur.
-    /// Parse-Fehler werden als Fehler-Response zurückgegeben.
+    /// Wraps a synchronous request handler into the
+    /// <c>Func&lt;string, Task&lt;string&gt;&gt;</c> signature expected by <see cref="PipesServer"/>.
+    /// Parse failures are returned as error responses.
     /// </summary>
     /// <param name="handler">
-    /// Empfängt das geparste <see cref="Request"/> und liefert <see cref="Result{TValue}"/>
-    /// mit optionalem String-Payload.
+    /// Receives the parsed <see cref="Request"/> and returns a <see cref="Result{TValue}"/>
+    /// with an optional string payload.
     /// </param>
     static abstract Func<string, Task<string>> WrapHandler(Func<Request, Result<string?>> handler);
 
     /// <summary>
-    /// Kapselt einen asynchronen Request-Handler in die vom <see cref="PipesServer"/> erwartete
-    /// <c>Func&lt;string, Task&lt;string&gt;&gt;</c>-Signatur.
-    /// Parse-Fehler werden als Fehler-Response zurückgegeben.
+    /// Wraps an asynchronous request handler into the
+    /// <c>Func&lt;string, Task&lt;string&gt;&gt;</c> signature expected by <see cref="PipesServer"/>.
+    /// Parse failures are returned as error responses.
     /// </summary>
     /// <param name="handler">
-    /// Empfängt das geparste <see cref="Request"/> und liefert asynchron <see cref="Result{TValue}"/>
-    /// mit optionalem String-Payload.
+    /// Receives the parsed <see cref="Request"/> and asynchronously returns a <see cref="Result{TValue}"/>
+    /// with an optional string payload.
     /// </param>
     static abstract Func<string, Task<string>> WrapHandler(Func<Request, Task<Result<string?>>> handler);
 }

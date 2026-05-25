@@ -1,24 +1,24 @@
 namespace JOSYN.System.Shared.Contract;
 
 /// <summary>
-/// Vertragsdefinition für einen strukturierten Fehlerbericht.
-/// Wird vom JobHost (Frontend) an den JAPServer (Backend) übermittelt,
-/// wenn ein Job-Fehler aufgetreten ist, der Pipe-Transport aber noch funktionsfähig war.
+/// Contract definition for a structured error report.
+/// Transmitted from the JobHost (frontend) to the JAPServer (backend)
+/// when a job error occurred but the pipe transport was still functional.
 /// </summary>
 public interface IErrorReport
 {
-    /// <summary>Bezeichner des fehlgeschlagenen Jobs oder Prozesses.</summary>
+    /// <summary>Identifier of the failed job or process.</summary>
     string Causer { get; init; }
 
-    /// <summary>Fehlermeldung.</summary>
+    /// <summary>Error message.</summary>
     string Message { get; init; }
 
-    /// <summary>Optionaler serialisierter Call-Stack.</summary>
+    /// <summary>Optional serialized call stack.</summary>
     string? CallStack { get; init; }
 
-    /// <summary>Optionale serialisierte Exception-Details.</summary>
+    /// <summary>Optional serialized exception details.</summary>
     string? ExceptionDetails { get; init; }
 
-    /// <summary>Zeitpunkt des Auftretens.</summary>
+    /// <summary>The point in time when the error occurred.</summary>
     DateTimeOffset OccurredAt { get; init; }
 }

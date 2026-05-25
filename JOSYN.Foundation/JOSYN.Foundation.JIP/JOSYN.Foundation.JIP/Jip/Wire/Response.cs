@@ -6,7 +6,7 @@ namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Ausgehende JIP-Antwort (Wire Format). Serialisierung über <see cref="JipProtocol"/>.
+/// Outgoing JIP response (wire format). Serialized via <see cref="JipProtocol"/>.
 /// </summary>
 public sealed record Response : IResponse
 {

@@ -1,18 +1,18 @@
 namespace JOSYN.System.Frontend.JobHost;
 
 /// <summary>
-/// Vertrag für den Einstiegspunkt einer Job-Exe.
+/// Contract for the entry point of a job executable.
 /// </summary>
 public interface ICore
 {
     /// <summary>
-    /// Einstiegspunkt jeder Job-Exe. Liest die IPC-Session-Argumente, verbindet sich mit dem
-    /// JAPServer, ruft den Job via Reflection auf und gibt das Ergebnis zurück.
+    /// Entry point of every job executable. Reads the IPC session arguments, connects to the
+    /// JAPServer, invokes the job via reflection, and returns the result.
     /// </summary>
-    /// <param name="args">Kommandozeilenargumente, die den IPC-Session-Key enthalten.</param>
+    /// <param name="args">Command-line arguments containing the IPC session key.</param>
     /// <returns>
-    /// <c>0</c> bei Erfolg; negative Werte kodieren spezifische Fehlerszenarien:
-    /// <c>-1</c> = IPC-Verbindung fehlgeschlagen, <c>-2</c> = Job-Aufruf fehlgeschlagen.
+    /// <c>0</c> on success; negative values encode specific failure scenarios:
+    /// <c>-1</c> = IPC connection failed, <c>-2</c> = job invocation failed.
     /// </returns>
     public static abstract Task<int> Run(string[] args);
 }

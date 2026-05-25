@@ -1,19 +1,19 @@
 namespace JOSYN.Foundation.JIP;
 
 /// <summary>
-/// Vertragsdefinition für eine eingehende JIP-Anfrage.
-/// Beschreibt ausschließlich die Datenform (Wire Format) — keine Serialisierungslogik.
+/// Contract definition for an incoming JIP request.
+/// Describes only the data shape (wire format) — no serialization logic.
 /// </summary>
 public interface IRequest
 {
     /// <summary>
-    /// Bezeichner der aufzurufenden Funktion (z. B. "GET-CONFIG").
+    /// Identifier of the function to invoke (e.g. "GET-CONFIG").
     /// </summary>
     string What { get; init; }
 
     /// <summary>
-    /// Optionaler Nutzlast-String. Der Applikations-Layer ist für Interpretation und
-    /// Serialisierung verantwortlich.
+    /// Optional payload string. The application layer is responsible for interpretation and
+    /// serialization.
     /// </summary>
     string? Data { get; init; }
 }

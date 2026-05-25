@@ -5,44 +5,44 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Serialisiert und deserialisiert JSON-Daten in und aus <c>Dictionary&lt;string, string&gt;</c>-Darstellungen.
+/// Serializes and deserializes JSON data to and from <c>Dictionary&lt;string, string&gt;</c> representations.
 /// </summary>
 /// <remarks>
-/// Erzeugt eingerücktes JSON mit Enum-Werten als Strings. Kulturabhängige
-/// <see cref="System.Text.Json.Serialization.JsonConverter{T}"/>-Instanzen werden für
-/// <see cref="System.DateTime"/>, <see cref="System.DateOnly"/>, <see cref="System.TimeOnly"/> und
-/// <see cref="decimal"/> angewendet, sodass Werte gemäß der aktuellen Thread-Kultur
-/// (Standard: <c>de-DE</c>) formatiert und geparst werden.
+/// Produces indented JSON with enum values as strings. Culture-aware
+/// <see cref="System.Text.Json.Serialization.JsonConverter{T}"/> instances are applied for
+/// <see cref="System.DateTime"/>, <see cref="System.DateOnly"/>, <see cref="System.TimeOnly"/>, and
+/// <see cref="decimal"/>, so values are formatted and parsed according to the current thread culture
+/// (default: <c>de-DE</c>).
 /// <para>
-/// Alle Operationen geben <see cref="Result"/> oder <see cref="Result{T}"/> zurück — Ausnahmen werden
-/// nicht weitergegeben.
+/// All operations return <see cref="Result"/> or <see cref="Result{T}"/> — exceptions are
+/// not propagated.
 /// </para>
 /// </remarks>
 public interface IJsonDictionarySerializer
 {
     /// <summary>
-    /// Serialisiert einen beliebigen Wert mithilfe kulturabhängiger Konverter in einen eingerückten JSON-String.
+    /// Serializes an arbitrary value to an indented JSON string using culture-aware converters.
     /// </summary>
-    /// <typeparam name="T">Der Typ des zu serialisierenden Werts.</typeparam>
-    /// <param name="obj">Der zu serialisierende Wert.</param>
+    /// <typeparam name="T">The type of the value to serialize.</typeparam>
+    /// <param name="obj">The value to serialize.</param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem JSON-String bei Erfolg, oder ein Fehler, wenn die
-    /// Serialisierung fehlschlägt.
+    /// A <see cref="Result{T}"/> containing the JSON string on success, or a failure if
+    /// serialization fails.
     /// </returns>
     static abstract Result<string> Serialize<T>(T obj);
 
     /// <summary>
-    /// Parst einen JSON-String in ein flaches <c>Dictionary&lt;string, string&gt;</c>.
+    /// Parses a JSON string into a flat <c>Dictionary&lt;string, string&gt;</c>.
     /// </summary>
     /// <remarks>
-    /// Das JSON muss ein flaches Objekt darstellen, bei dem jeder Wert ein JSON-String ist, z.&#160;B.
-    /// <c>{"Key": "Value"}</c>. Verschachtelte Objekte oder Nicht-String-Werte werden nicht unterstützt
-    /// und führen zu einem Deserialisierungsfehler.
+    /// The JSON must represent a flat object where every value is a JSON string, e.g.
+    /// <c>{"Key": "Value"}</c>. Nested objects or non-string values are not supported
+    /// and will produce a deserialization failure.
     /// </remarks>
-    /// <param name="raw">Der zu parsende JSON-String.</param>
+    /// <param name="raw">The JSON string to parse.</param>
     /// <returns>
-    /// Ein <see cref="Result{T}"/> mit dem geparsten Dictionary bei Erfolg, oder ein Fehler, wenn das
-    /// JSON fehlerhaft ist oder nicht als String-zu-String-Dictionary deserialisiert werden kann.
+    /// A <see cref="Result{T}"/> containing the parsed dictionary on success, or a failure if the
+    /// JSON is malformed or cannot be deserialized as a string-to-string dictionary.
     /// </returns>
     static abstract Result<Dictionary<string, string>> Deserialize(string raw);
 }

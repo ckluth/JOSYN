@@ -3,26 +3,26 @@ using System.Diagnostics.CodeAnalysis;
 namespace JOSYN.Foundation.JIP;
 
 /// <summary>
-/// Vertragsdefinition für eine ausgehende JIP-Antwort.
-/// Beschreibt ausschließlich die Datenform (Wire Format) — keine Serialisierungslogik.
+/// Contract definition for an outgoing JIP response.
+/// Describes only the data shape (wire format) — no serialization logic.
 /// </summary>
 public interface IResponse
 {
     /// <summary>
-    /// <see langword="true"/> bei Erfolg. Wenn <see langword="false"/>, ist
-    /// <see cref="Error"/> garantiert gesetzt.
+    /// <see langword="true"/> on success. When <see langword="false"/>,
+    /// <see cref="Error"/> is guaranteed to be set.
     /// </summary>
     [MemberNotNullWhen(false, nameof(Error))]
     bool Succeeded { get; init; }
 
     /// <summary>
-    /// Fehlermeldung; nur gesetzt wenn <see cref="Succeeded"/> <see langword="false"/> ist.
+    /// Error message; set only when <see cref="Succeeded"/> is <see langword="false"/>.
     /// </summary>
     string? Error { get; init; }
 
     /// <summary>
-    /// Optionaler Nutzlast-String. Der Applikations-Layer ist für Interpretation und
-    /// Deserialisierung verantwortlich.
+    /// Optional payload string. The application layer is responsible for interpretation and
+    /// deserialization.
     /// </summary>
     string? Data { get; init; }
 }

@@ -8,8 +8,8 @@ namespace JOSYN.Foundation.PropertyBag;
 
 
 /// <summary>
-/// Ein <see cref="JsonConverter{T}"/> für <see cref="TimeOnly"/>, der Werte gemäß der aktuellen
-/// Thread-Kultur (Standard: <c>de-DE</c>) formatiert und parst.
+/// A <see cref="JsonConverter{T}"/> for <see cref="TimeOnly"/> that formats and parses values
+/// according to the current thread culture (default: <c>de-DE</c>).
 /// </summary>
 internal sealed class CultureAwareTimeOnlyConverter : JsonConverter<TimeOnly>
 {

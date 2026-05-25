@@ -3,28 +3,28 @@ namespace JOSYN.Foundation.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Repräsentiert einen einzelnen Eintrag in der Weiterleitungskette eines Ergebnisses.
-/// Wird automatisch befüllt — manuelle Erzeugung ist nicht vorgesehen.
+/// Represents a single entry in the propagation chain of a result.
+/// Populated automatically — manual construction is not intended.
 /// </summary>
 public sealed record CallerInfo
 {
     /// <summary>
-    /// Methodenname.
+    /// Method name.
     /// </summary>
     public string MethodName { get; init; } = "";
 
     /// <summary>
-    /// Name des deklarierenden Typs.
+    /// Name of the declaring type.
     /// </summary>
     public string ClassName { get; init; } = "";
 
     /// <summary>
-    /// Pfad zur Quelldatei. Leer, wenn keine PDB-Datei verfügbar ist.
+    /// Path to the source file. Empty if no PDB file is available.
     /// </summary>
     public string FilePath { get; init; } = "";
 
     /// <summary>
-    /// Zeilennummer. Null, wenn keine PDB-Datei verfügbar ist.
+    /// Line number. Zero if no PDB file is available.
     /// </summary>
     public int LineNumber { get; init; }
 

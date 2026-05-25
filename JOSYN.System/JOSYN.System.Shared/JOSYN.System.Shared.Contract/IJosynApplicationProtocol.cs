@@ -3,45 +3,45 @@ using JOSYN.Foundation.ResultPattern;
 namespace JOSYN.System.Shared.Contract;
 
 /// <summary>
-/// Vertragsdefinition für das JOSYN Application Protocol (JAP).
-/// Beschreibt die Kommunikation zwischen <b>JobHost</b> (Frontend) und
-/// <b>JAPServer</b> (Backend) auf Applikationsebene — unabhängig vom
-/// Transportmechanismus.
+/// Contract definition for the JOSYN Application Protocol (JAP).
+/// Describes the communication between the <b>JobHost</b> (frontend) and
+/// the <b>JAPServer</b> (backend) at the application layer — independent of
+/// the transport mechanism.
 /// <para>
-/// Der Aufrufer (<c>JobHost</c>) ruft <see cref="GetRawArguments"/> ab,
-/// um den Job-Auftrag zu empfangen, führt den Job aus und übermittelt
-/// das Ergebnis über <see cref="PutRawResult"/> — oder einen aufgetretenen
-/// Fehler über <see cref="PutError"/>.
+/// The caller (<c>JobHost</c>) retrieves <see cref="GetRawArguments"/>
+/// to receive the job assignment, executes the job, and submits
+/// the result via <see cref="PutRawResult"/> — or any error that occurred
+/// via <see cref="PutError"/>.
 /// </para>
 /// </summary>
 public interface IJosynApplicationProtocol
 {
     /// <summary>
-    /// Ruft die serialisierten Job-Argumente als rohen String ab.
-    /// Der Aufrufer ist für die Deserialisierung verantwortlich.
+    /// Retrieves the serialized job arguments as a raw string.
+    /// The caller is responsible for deserialization.
     /// </summary>
     /// <returns>
-    /// Serialisierter Argumente-String bei Erfolg;
-    /// Fehler, wenn keine Argumente verfügbar sind oder der Transport fehlschlägt.
+    /// Serialized argument string on success;
+    /// failure if no arguments are available or the transport fails.
     /// </returns>
     Task<Result<string>> GetRawArguments();
 
     /// <summary>
-    /// Übermittelt das Job-Ergebnis als serialisierten String.
-    /// Der Aufrufer ist für die Serialisierung verantwortlich.
+    /// Submits the job result as a serialized string.
+    /// The caller is responsible for serialization.
     /// </summary>
-    /// <param name="result">Serialisiertes Job-Ergebnis.</param>
+    /// <param name="result">Serialized job result.</param>
     /// <returns>
-    /// Erfolgreich, wenn das Ergebnis übermittelt wurde;
-    /// Fehler, wenn der Transport fehlschlägt.
+    /// Successful when the result has been submitted;
+    /// failure if the transport fails.
     /// </returns>
     Task<Result> PutRawResult(string result);
 
     /// <summary>
-    /// Übermittelt einen aufgetretenen Fehler als serialisierten <see cref="ErrorReport"/>.
-    /// Dient der Fehlerprotokollierung auf der Server-Seite.
-    /// Schlägt der Transport selbst fehl, verbleibt der Fehler im lokalen Log des Aufrufers.
+    /// Submits an error that occurred as a serialized <see cref="ErrorReport"/>.
+    /// Serves for error logging on the server side.
+    /// If the transport itself fails, the error remains in the caller's local log.
     /// </summary>
-    /// <param name="serializedError">Via PropertyBag serialisierter <see cref="ErrorReport"/>.</param>
+    /// <param name="serializedError">A <see cref="ErrorReport"/> serialized via PropertyBag.</param>
     Task<Result> PutError(string serializedError);
 }

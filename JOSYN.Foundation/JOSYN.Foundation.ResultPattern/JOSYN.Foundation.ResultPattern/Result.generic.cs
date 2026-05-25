@@ -7,8 +7,8 @@ namespace JOSYN.Foundation.ResultPattern;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Repräsentiert das Ergebnis einer Operation, die bei Erfolg <typeparamref name="TValue"/> zurückgibt.
-/// Entweder erfolgreich mit einem Wert oder mit Fehlermeldung, optionaler Ausnahme und einer Weiterleitungskette.
+/// Represents the result of an operation that returns <typeparamref name="TValue"/> on success.
+/// Either successful with a value, or carrying an error message, an optional exception, and a propagation chain.
 /// </summary>
 public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
 {
@@ -116,6 +116,6 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public string CallStackAsString => ResultHelper.CallStackToString(Callers);
 
-    /// <summary>Erstellt ein Fehlerergebnis ohne Aufrufer-Informationen. Intern von den ToResult()-Überladungen verwendet.</summary>
+    /// <summary>Creates a failed result without caller information. Used internally by the ToResult() overloads.</summary>
     internal static Result<TValue> FailSilent(string error, Exception? exception = null) => new(default, error, exception);
 }

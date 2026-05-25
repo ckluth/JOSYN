@@ -1,58 +1,58 @@
 namespace JOSYN.Foundation.JIP;
 
 /// <summary>
-/// Startkonfiguration für <see cref="PipesServer"/>.
-/// Kapselt Handler, Session-Key, Timeout und optionalen Client-Pfad
-/// als unveränderlicher Record.
+/// Start configuration for <see cref="PipesServer"/>.
+/// Encapsulates handler, session key, timeout, and optional client path
+/// as an immutable record.
 /// </summary>
 public interface IServerStartArguments
 {
     /// <summary>
-    /// Eindeutiger Session-Key, aus dem die Pipe-Namen abgeleitet werden.
-    /// Standard: automatisch generierte <see cref="Guid"/>.
+    /// Unique session key from which the pipe names are derived.
+    /// Default: an automatically generated <see cref="Guid"/>.
     /// </summary>
     Guid SessionKey { get; init; }
 
     /// <summary>
-    /// Optionaler Pfad zur Client-Exe, die der Server beim Start startet.
-    /// Wenn <see langword="null"/>, muss der Client eigenständig gestartet worden sein.
+    /// Optional path to the client executable that the server starts on launch.
+    /// If <see langword="null"/>, the client must have been started independently.
     /// </summary>
     string? ClientExePath { get; init; }
 
     /// <summary>
-    /// String-Request-Handler (UTF-8). Genau einer von
-    /// <see cref="HandleStringRequest"/> oder <see cref="HandleRawRequest"/> muss gesetzt sein.
+    /// String request handler (UTF-8). Exactly one of
+    /// <see cref="HandleStringRequest"/> or <see cref="HandleRawRequest"/> must be set.
     /// </summary>
     Func<string, Task<string>>? HandleStringRequest { get; init; }
 
     /// <summary>
-    /// Binär-Request-Handler. Genau einer von
-    /// <see cref="HandleRawRequest"/> oder <see cref="HandleStringRequest"/> muss gesetzt sein.
+    /// Binary request handler. Exactly one of
+    /// <see cref="HandleRawRequest"/> or <see cref="HandleStringRequest"/> must be set.
     /// </summary>
     Func<byte[], Task<byte[]>>? HandleRawRequest { get; init; }
     
     /// <summary>
-    /// <see langword="true"/>, wenn <see cref="HandleStringRequest"/> gesetzt ist;
-    /// <see langword="false"/>, wenn <see cref="HandleRawRequest"/> verwendet wird.
+    /// <see langword="true"/> if <see cref="HandleStringRequest"/> is set;
+    /// <see langword="false"/> if <see cref="HandleRawRequest"/> is used.
     /// </summary>
     bool HasStringRequestHandler { get; }
 
     /// <summary>
-    /// Maximale Wartezeit auf eine eingehende Client-Verbindung.
-    /// Standard: 10 Sekunden.
+    /// Maximum wait time for an incoming client connection.
+    /// Default: 10 seconds.
     /// </summary>
     TimeSpan ConnectionTimeout { get; init; }
 
     /// <summary>
-    /// Callback für nicht-kritische Fehler im Request-Loop.
-    /// Empfängt den Anfrage-String und die aufgetretene Exception zur Fehlerprotokollierung.
+    /// Callback for non-critical errors in the request loop.
+    /// Receives the request string and the thrown exception for error logging.
     /// </summary>
     Func<string, Exception, Task> HandleErrorNotification { get; init; }
 
     /// <summary>
-    /// Optionaler asynchroner Abbruch-Callback. Wird im Polling-Intervall (100 ms)
-    /// abgefragt. Gibt <see langword="true"/> zurück, wenn der Server anhalten soll.
-    /// Wenn <see langword="null"/>, läuft der Server bis zum Verbindungsende.
+    /// Optional asynchronous cancellation callback. Polled at the polling interval (100 ms).
+    /// Returns <see langword="true"/> when the server should stop.
+    /// If <see langword="null"/>, the server runs until the connection ends.
     /// </summary>
     Func<Task<bool>>? IsCancellationRequested { get; init; }
 

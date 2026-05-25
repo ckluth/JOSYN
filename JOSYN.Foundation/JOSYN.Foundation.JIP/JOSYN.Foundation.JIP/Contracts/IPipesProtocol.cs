@@ -5,63 +5,63 @@ namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Vertragsdefinition für das JIP-Wire-Protokoll.
-/// Enthält Protokoll-Konstanten, CLI-Hilfsmethoden und die Pipe-Namensableitung.
+/// Contract definition for the JIP wire protocol.
+/// Contains protocol constants, CLI helper methods, and pipe name derivation.
 /// </summary>
 public interface IPipesProtocol
 {
     /// <summary>
-    /// Protokoll-Identifier: Präfix für CLI-Argumente und Session-Key-Übergabe.
-    /// Wert: <c>"JOSYN-IPC"</c>.
+    /// Protocol identifier: prefix for CLI arguments and session key handoff.
+    /// Value: <c>"JOSYN-IPC"</c>.
     /// </summary>
     public const string MagicToken = "JOSYN-IPC";
 
     /// <summary>
-    /// Präfix für Fehlerantworten vom Server.
-    /// Wert: <c>"JOSYN-IPC-ERROR"</c>.
+    /// Prefix for error responses from the server.
+    /// Value: <c>"JOSYN-IPC-ERROR"</c>.
     /// </summary>
     public const string MagicErrorToken = $"{MagicToken}-ERROR";
 
     /// <summary>
-    /// Antwortwert, wenn der Client bereits eine ausstehende Anfrage hat
-    /// (Single-in-Flight-Schutz über Busy-Guard).
-    /// Wert: <c>"JOSYN-IPC-ERROR-BUSY"</c>.
+    /// Response value when the client already has a pending request
+    /// (single-in-flight protection via busy guard).
+    /// Value: <c>"JOSYN-IPC-ERROR-BUSY"</c>.
     /// </summary>
     public const string MagicBusyToken = $"{MagicErrorToken}-BUSY";
 
     /// <summary>
-    /// Anfrage- und Bestätigungs-Token für einen geordneten Server-Shutdown,
-    /// ausgelöst durch <see cref="IPipesClient.DisconnectAsync"/>.
-    /// Wert: <c>"JOSYN-IPC-SHUTDOWN"</c>.
+    /// Request and acknowledgement token for an orderly server shutdown,
+    /// triggered by <see cref="IPipesClient.DisconnectAsync"/>.
+    /// Value: <c>"JOSYN-IPC-SHUTDOWN"</c>.
     /// </summary>
     public const string MagicShutdownToken = $"{MagicToken}-SHUTDOWN";
 
     /// <summary>
-    /// Erstellt den CLI-Argument-String, den der Server beim Start an den
-    /// Client-Prozess übergibt, um den Session-Key zu übermitteln.
+    /// Creates the CLI argument string that the server passes to the client process
+    /// on startup to transmit the session key.
     /// </summary>
-    /// <param name="sessionKey">Session-Key als String.</param>
-    /// <returns>CLI-Argument im Format <c>"JOSYN-IPC &lt;sessionKey&gt;"</c>.</returns>
+    /// <param name="sessionKey">Session key as a string.</param>
+    /// <returns>CLI argument in the format <c>"JOSYN-IPC &lt;sessionKey&gt;"</c>.</returns>
     static abstract string CreateClientStartCLIArguments(string sessionKey);
 
     /// <summary>
-    /// Parst den Session-Key aus den CLI-Argumenten, die durch
-    /// <see cref="CreateClientStartCLIArguments"/> erzeugt wurden.
+    /// Parses the session key from the CLI arguments produced by
+    /// <see cref="CreateClientStartCLIArguments"/>.
     /// </summary>
-    /// <param name="args">CLI-Argumente des Prozesses (<c>args</c> aus <c>Main</c>).</param>
+    /// <param name="args">Process CLI arguments (<c>args</c> from <c>Main</c>).</param>
     /// <returns>
-    /// Geparter Session-Key bei Erfolg;
-    /// <see cref="Guid.Empty"/>, wenn die Argumente nicht dem erwarteten Format entsprechen.
+    /// Parsed session key on success;
+    /// <see cref="Guid.Empty"/> if the arguments do not match the expected format.
     /// </returns>
     static abstract Guid ParseSessionKeyCLIArguments(string[] args);
 
     /// <summary>
-    /// Leitet Request- und Response-Pipe-Namen aus dem Session-Key ab.
+    /// Derives the request and response pipe names from the session key.
     /// </summary>
-    /// <param name="sessionKey">Session-Key als String.</param>
+    /// <param name="sessionKey">Session key as a string.</param>
     /// <returns>
-    /// Tupel mit Request-Pipe-Name (<c>"req-pipe-&lt;key&gt;"</c>)
-    /// und Response-Pipe-Name (<c>"res-pipe-&lt;key&gt;"</c>).
+    /// Tuple containing the request pipe name (<c>"req-pipe-&lt;key&gt;"</c>)
+    /// and the response pipe name (<c>"res-pipe-&lt;key&gt;"</c>).
     /// </returns>
     static abstract (string requestPipeName, string responsePipeName) DerivePipeNamesFromSessionKey(string sessionKey);
 }
