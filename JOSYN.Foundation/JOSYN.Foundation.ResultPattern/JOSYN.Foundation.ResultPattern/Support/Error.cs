@@ -4,8 +4,8 @@ namespace JOSYN.Foundation.ResultPattern;
 
 
 /// <summary>
-/// A lightweight error value that implicitly converts to <see cref="Result"/> or <see cref="Result{T}"/>.
-/// Idiomatic for returning failures: <c>return Result.Error("Something went wrong");</c>
+/// Leichtgewichtiger Fehlerwert, der implizit in <see cref="Result"/> oder <see cref="Result{T}"/> konvertiert.
+/// Idiomatisch für die Rückgabe von Fehlern: <c>return Result.Error("Fehler aufgetreten");</c>
 /// </summary>
 public readonly record struct Error(string ErrorMessage, Exception? Exception = null) : IError<Error>
 {

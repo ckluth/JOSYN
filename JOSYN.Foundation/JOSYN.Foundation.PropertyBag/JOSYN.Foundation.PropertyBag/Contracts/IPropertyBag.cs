@@ -6,162 +6,162 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Serializes and deserializes C# <c>record class</c> types to and from string-based formats.
+/// Serialisiert und deserialisiert C#-<c>record class</c>-Typen in und aus zeichenkettenbasierten Formaten.
 /// </summary>
 /// <remarks>
-/// Supported formats are sectionless INI (<c>Key=Value</c> lines) and JSON. When deserializing,
-/// the format is auto-detected: a string whose first non-whitespace character is <c>{</c> is treated
-/// as JSON; everything else is treated as INI.
+/// Unterstützte Formate sind sektionsfreies INI (<c>Schlüssel=Wert</c>-Zeilen) und JSON. Bei der
+/// Deserialisierung wird das Format automatisch erkannt: Beginnt das erste Nicht-Leerzeichen-Zeichen
+/// mit <c>{</c>, wird JSON angenommen; andernfalls INI.
 /// <para>
-/// Only <c>record class</c> types are accepted (detected at runtime via the compiler-generated
-/// <c>&lt;Clone&gt;$</c> method). Property types must belong to the set of supported primitive and
-/// well-known BCL types.
+/// Es werden ausschließlich <c>record class</c>-Typen akzeptiert (zur Laufzeit über die vom Compiler
+/// erzeugte Methode <c>&lt;Clone&gt;$</c> erkannt). Eigenschaftstypen müssen zur Menge der
+/// unterstützten primitiven und bekannten BCL-Typen gehören.
 /// </para>
 /// <para>
-/// All operations return <see cref="Result"/> or <see cref="Result{T}"/> — no exceptions propagate
-/// up the call stack.
+/// Alle Operationen geben <see cref="Result"/> oder <see cref="Result{T}"/> zurück — Ausnahmen werden
+/// nicht weitergegeben.
 /// </para>
 /// </remarks>
 public interface IPropertyBag
 {
     /// <summary>
-    /// Serializes a <c>record class</c> instance to a sectionless INI string using the default format.
+    /// Serialisiert eine <c>record class</c>-Instanz in einen sektionsfreien INI-String im Standardformat.
     /// </summary>
     /// <remarks>
-    /// Convenience overload that uses <see cref="IniDictionarySerializer"/> as the serializer.
-    /// When a specific output format is required, use
-    /// <see cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/> instead.
+    /// Überladung mit <see cref="IniDictionarySerializer"/> als Serialisierer.
+    /// Für ein bestimmtes Ausgabeformat stattdessen
+    /// <see cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/> verwenden.
     /// </remarks>
-    /// <typeparam name="TRecord">The record type to serialize. Must be a <c>record class</c>.</typeparam>
-    /// <param name="record">The record instance to serialize.</param>
+    /// <typeparam name="TRecord">Der zu serialisierende Record-Typ. Muss eine <c>record class</c> sein.</typeparam>
+    /// <param name="record">Die zu serialisierende Record-Instanz.</param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the serialized INI string on success, or an error if the
-    /// type is not a <c>record class</c>, contains unsupported property types, or serialization fails.
+    /// Ein <see cref="Result{T}"/> mit dem serialisierten INI-String bei Erfolg, oder ein Fehler, wenn der
+    /// Typ keine <c>record class</c> ist, nicht unterstützte Eigenschaftstypen enthält oder die Serialisierung fehlschlägt.
     /// </returns>
     static abstract Result<string> Serialize<TRecord>(TRecord record)
         where TRecord : class;
 
 
     /// <summary>
-    /// Serializes a <c>record class</c> instance supplied as <see cref="object"/> to a sectionless
-    /// INI string using the default format.
+    /// Serialisiert eine als <see cref="object"/> übergebene <c>record class</c>-Instanz in einen
+    /// sektionsfreien INI-String im Standardformat.
     /// </summary>
     /// <remarks>
-    /// Convenience overload that uses <see cref="IniDictionarySerializer"/> as the serializer.
-    /// Use this overload when the concrete record type is only known at runtime. For compile-time
-    /// known types, prefer <see cref="IPropertyBag.Serialize{TRecord}(TRecord)"/>.
+    /// Überladung mit <see cref="IniDictionarySerializer"/> als Serialisierer.
+    /// Diese Überladung verwenden, wenn der konkrete Record-Typ erst zur Laufzeit bekannt ist. Für zur
+    /// Compilezeit bekannte Typen <see cref="IPropertyBag.Serialize{TRecord}(TRecord)"/> bevorzugen.
     /// </remarks>
-    /// <param name="record">The record instance to serialize.</param>
-    /// <param name="recordType">The exact <see cref="Type"/> of the record. Must correspond to a <c>record class</c>.</param>
+    /// <param name="record">Die zu serialisierende Record-Instanz.</param>
+    /// <param name="recordType">Der exakte <see cref="Type"/> des Records. Muss einer <c>record class</c> entsprechen.</param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the serialized INI string on success, or an error if
-    /// <paramref name="recordType"/> is not a <c>record class</c>, contains unsupported property
-    /// types, or serialization fails.
+    /// Ein <see cref="Result{T}"/> mit dem serialisierten INI-String bei Erfolg, oder ein Fehler, wenn
+    /// <paramref name="recordType"/> keine <c>record class</c> ist, nicht unterstützte Eigenschaftstypen
+    /// enthält oder die Serialisierung fehlschlägt.
     /// </returns>
     static abstract Result<string> Serialize(object record, Type recordType);
 
 
     /// <summary>
-    /// Serializes a <c>record class</c> instance to a string using the provided format serializer.
+    /// Serialisiert eine <c>record class</c>-Instanz mithilfe des angegebenen Format-Serialisierers in einen String.
     /// </summary>
     /// <typeparam name="TRecord">
-    /// The record type to serialize. Must be a <c>record class</c>.
+    /// Der zu serialisierende Record-Typ. Muss eine <c>record class</c> sein.
     /// </typeparam>
-    /// <param name="record">The record instance to serialize.</param>
+    /// <param name="record">Die zu serialisierende Record-Instanz.</param>
     /// <param name="serializeToString">
-    /// A <see cref="DictionaryToStringSerializer"/> delegate that converts the intermediate flat
-    /// <c>Dictionary&lt;string, string&gt;</c> representation into the final string.
-    /// Use <see cref="IniDictionarySerializer.Serialize(Dictionary{string,string})"/> for INI
-    /// or <see cref="JsonDictionarySerializer.Serialize{T}(T)"/> for JSON.
+    /// Ein <see cref="DictionaryToStringSerializer"/>-Delegat, der das intermediäre flache
+    /// <c>Dictionary&lt;string, string&gt;</c> in den finalen String konvertiert.
+    /// Für INI <see cref="IniDictionarySerializer.Serialize(Dictionary{string,string})"/>,
+    /// für JSON <see cref="JsonDictionarySerializer.Serialize{T}(T)"/> verwenden.
     /// </param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the serialized string on success, or an error if the
-    /// type is not a <c>record class</c>, contains unsupported property types, or serialization fails.
+    /// Ein <see cref="Result{T}"/> mit dem serialisierten String bei Erfolg, oder ein Fehler, wenn der
+    /// Typ keine <c>record class</c> ist, nicht unterstützte Eigenschaftstypen enthält oder die Serialisierung fehlschlägt.
     /// </returns>
     static abstract Result<string> Serialize<TRecord>(TRecord record, DictionaryToStringSerializer serializeToString)
         where TRecord : class;
 
     /// <summary>
-    /// Serializes a <c>record class</c> instance supplied as <see cref="object"/> to a string
-    /// using the provided format serializer.
+    /// Serialisiert eine als <see cref="object"/> übergebene <c>record class</c>-Instanz mithilfe des
+    /// angegebenen Format-Serialisierers in einen String.
     /// </summary>
     /// <remarks>
-    /// Use this overload when the concrete record type is only known at runtime. For compile-time
-    /// known types, prefer <see cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>.
+    /// Diese Überladung verwenden, wenn der konkrete Record-Typ erst zur Laufzeit bekannt ist. Für zur
+    /// Compilezeit bekannte Typen <see cref="IPropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/> bevorzugen.
     /// </remarks>
-    /// <param name="record">The record instance to serialize.</param>
+    /// <param name="record">Die zu serialisierende Record-Instanz.</param>
     /// <param name="recordType">
-    /// The exact <see cref="Type"/> of the record. Must correspond to a <c>record class</c>.
+    /// Der exakte <see cref="Type"/> des Records. Muss einer <c>record class</c> entsprechen.
     /// </param>
     /// <param name="serializeToString">
-    /// A <see cref="DictionaryToStringSerializer"/> delegate that converts the intermediate flat
-    /// <c>Dictionary&lt;string, string&gt;</c> representation into the final string.
+    /// Ein <see cref="DictionaryToStringSerializer"/>-Delegat, der das intermediäre flache
+    /// <c>Dictionary&lt;string, string&gt;</c> in den finalen String konvertiert.
     /// </param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the serialized string on success, or an error if
-    /// <paramref name="recordType"/> is not a <c>record class</c>, contains unsupported property
-    /// types, or serialization fails.
+    /// Ein <see cref="Result{T}"/> mit dem serialisierten String bei Erfolg, oder ein Fehler, wenn
+    /// <paramref name="recordType"/> keine <c>record class</c> ist, nicht unterstützte Eigenschaftstypen
+    /// enthält oder die Serialisierung fehlschlägt.
     /// </returns>
     static abstract Result<string> Serialize(object record, Type recordType, DictionaryToStringSerializer serializeToString);
 
     /// <summary>
-    /// Auto-detects the string format (INI or JSON) and deserializes the input into an instance
-    /// of <paramref name="recordType"/>, returned as <see cref="object"/>.
+    /// Erkennt das Zeichenkettenformat (INI oder JSON) automatisch und deserialisiert die Eingabe in
+    /// eine Instanz von <paramref name="recordType"/>, zurückgegeben als <see cref="object"/>.
     /// </summary>
     /// <remarks>
-    /// Use this overload when the target type is only known at runtime. For compile-time known
-    /// types, prefer <see cref="IPropertyBag.Deserialize{TRecord}(string)"/>.
+    /// Diese Überladung verwenden, wenn der Zieltyp erst zur Laufzeit bekannt ist. Für zur Compilezeit
+    /// bekannte Typen <see cref="IPropertyBag.Deserialize{TRecord}(string)"/> bevorzugen.
     /// </remarks>
     /// <param name="raw">
-    /// The serialized string to parse. Must be in sectionless INI or JSON format.
+    /// Der zu parsende serialisierte String. Muss im sektionsfreien INI- oder JSON-Format vorliegen.
     /// </param>
-    /// <param name="recordType">The target <c>record class</c> type to deserialize into.</param>
+    /// <param name="recordType">Der Ziel-<c>record class</c>-Typ, in den deserialisiert werden soll.</param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the deserialized record as <see cref="object"/> on
-    /// success, or an error if format detection, parsing, type validation, or property conversion fails.
+    /// Ein <see cref="Result{T}"/> mit dem deserialisierten Record als <see cref="object"/> bei Erfolg,
+    /// oder ein Fehler, wenn Formaterkennung, Parsing, Typvalidierung oder Eigenschaftskonvertierung fehlschlägt.
     /// </returns>
     static abstract Result<object> Deserialize(string raw, Type recordType);
 
     /// <summary>
-    /// Auto-detects the string format (INI or JSON) and deserializes the input into a
-    /// strongly-typed <typeparamref name="TRecord"/> instance.
+    /// Erkennt das Zeichenkettenformat (INI oder JSON) automatisch und deserialisiert die Eingabe in
+    /// eine typisierte <typeparamref name="TRecord"/>-Instanz.
     /// </summary>
     /// <typeparam name="TRecord">
-    /// The target <c>record class</c> type. Must have a parameterless constructor (all record
-    /// classes generated by the compiler satisfy this requirement).
+    /// Der Ziel-<c>record class</c>-Typ. Muss einen parameterlosen Konstruktor besitzen (alle vom
+    /// Compiler erzeugten Record-Klassen erfüllen diese Anforderung).
     /// </typeparam>
     /// <param name="raw">
-    /// The serialized string to parse. Must be in sectionless INI or JSON format.
+    /// Der zu parsende serialisierte String. Muss im sektionsfreien INI- oder JSON-Format vorliegen.
     /// </param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing the deserialized <typeparamref name="TRecord"/> on
-    /// success, or an error if format detection, parsing, type validation, or property conversion fails.
+    /// Ein <see cref="Result{T}"/> mit dem deserialisierten <typeparamref name="TRecord"/> bei Erfolg,
+    /// oder ein Fehler, wenn Formaterkennung, Parsing, Typvalidierung oder Eigenschaftskonvertierung fehlschlägt.
     /// </returns>
     static abstract Result<TRecord> Deserialize<TRecord>(string raw)
         where TRecord : class;
 
     /// <summary>
-    /// Auto-detects the string format (INI or JSON) and deserializes the input into an array of
-    /// converted method invocation arguments.
+    /// Erkennt das Zeichenkettenformat (INI oder JSON) automatisch und deserialisiert die Eingabe in
+    /// ein Array konvertierter Methodenaufruf-Argumente.
     /// </summary>
     /// <remarks>
-    /// Keys in the serialized data are matched against parameter names case-insensitively on the
-    /// first character. Nullable parameters that are absent from the data are silently set to
-    /// <see langword="null"/>. Non-nullable parameters that are absent cause an error.
+    /// Schlüssel in den serialisierten Daten werden am ersten Zeichen case-insensitiv gegen Parameternamen
+    /// abgeglichen. Nullable-Parameter, die in den Daten fehlen, werden stillschweigend auf
+    /// <see langword="null"/> gesetzt. Nicht-nullable Parameter, die fehlen, führen zu einem Fehler.
     /// <para>
-    /// The returned array is positionally aligned with <paramref name="parameters"/> and can be
-    /// passed directly to <see cref="System.Reflection.MethodBase.Invoke(object?, object?[])"/>.
+    /// Das zurückgegebene Array ist positionell auf <paramref name="parameters"/> ausgerichtet und kann
+    /// direkt an <see cref="System.Reflection.MethodBase.Invoke(object?, object?[])"/> übergeben werden.
     /// </para>
     /// </remarks>
     /// <param name="raw">
-    /// The serialized string to parse. Must be in sectionless INI or JSON format.
+    /// Der zu parsende serialisierte String. Muss im sektionsfreien INI- oder JSON-Format vorliegen.
     /// </param>
     /// <param name="parameters">
-    /// The method parameter descriptors to match against the parsed key-value pairs.
+    /// Die Methodenparameter-Deskriptoren, gegen die die geparsten Schlüssel-Wert-Paare abgeglichen werden.
     /// </param>
     /// <returns>
-    /// A <see cref="Result{T}"/> containing an <see cref="object"/>[] of converted argument values
-    /// on success, or an error if a required argument is missing or a type conversion fails.
+    /// Ein <see cref="Result{T}"/> mit einem <see cref="object"/>[] konvertierter Argumentwerte bei Erfolg,
+    /// oder ein Fehler, wenn ein erforderliches Argument fehlt oder eine Typkonvertierung fehlschlägt.
     /// </returns>
     static abstract Result<object[]> Deserialize(string raw, ParameterInfo[] parameters);
 }

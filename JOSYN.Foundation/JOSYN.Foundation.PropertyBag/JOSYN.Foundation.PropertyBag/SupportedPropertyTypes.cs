@@ -3,22 +3,22 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Defines the set of property types that <see cref="PropertyBag"/> can serialize and deserialize.
+/// Legt die Menge der Eigenschaftstypen fest, die <see cref="PropertyBag"/> serialisieren und deserialisieren kann.
 /// </summary>
 /// <remarks>
-/// Nullable wrappers (<c>T?</c>) of any supported type are also accepted.
-/// All <see langword="enum"/> types are supported regardless of their underlying type.
+/// Nullable-Wrapper (<c>T?</c>) jedes unterstützten Typs werden ebenfalls akzeptiert.
+/// Alle <see langword="enum"/>-Typen werden unabhängig von ihrem zugrunde liegenden Typ unterstützt.
 /// </remarks>
 internal static class SupportedPropertyTypes
 {
     /// <summary>
-    /// Determines whether <paramref name="type"/> is a supported property type, including nullable
-    /// wrappers and all <see langword="enum"/> types.
+    /// Ermittelt, ob <paramref name="type"/> ein unterstützter Eigenschaftstyp ist, einschließlich
+    /// Nullable-Wrapper und aller <see langword="enum"/>-Typen.
     /// </summary>
-    /// <param name="type">The property type to check.</param>
+    /// <param name="type">Der zu prüfende Eigenschaftstyp.</param>
     /// <returns>
-    /// <see langword="true"/> if the type can be handled by <see cref="PropertyBag"/>;
-    /// otherwise <see langword="false"/>.
+    /// <see langword="true"/>, wenn der Typ von <see cref="PropertyBag"/> verarbeitet werden kann;
+    /// andernfalls <see langword="false"/>.
     /// </returns>
     internal static bool IsMatch(Type type)
     {

@@ -7,8 +7,8 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// A <see cref="JsonConverter{T}"/> for <see cref="DateOnly"/> that formats and parses values
-/// using the current thread culture (default: <c>de-DE</c>).
+/// Ein <see cref="JsonConverter{T}"/> für <see cref="DateOnly"/>, der Werte gemäß der aktuellen
+/// Thread-Kultur (Standard: <c>de-DE</c>) formatiert und parst.
 /// </summary>
 internal sealed class CultureAwareDateOnlyConverter : JsonConverter<DateOnly>
 {

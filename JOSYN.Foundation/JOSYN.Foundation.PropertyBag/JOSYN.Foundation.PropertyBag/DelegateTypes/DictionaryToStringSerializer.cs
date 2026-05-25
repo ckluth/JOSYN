@@ -5,19 +5,19 @@ namespace JOSYN.Foundation.PropertyBag;
 #pragma warning restore IDE0130
 
 /// <summary>
-/// Represents a method that converts a flat string-to-string dictionary into a serialized string.
+/// Repräsentiert eine Methode, die ein flaches String-zu-String-Dictionary in einen serialisierten String konvertiert.
 /// </summary>
 /// <remarks>
-/// Implementations provided by this library:
+/// In dieser Bibliothek enthaltene Implementierungen:
 /// <list type="bullet">
-///   <item><see cref="IniDictionarySerializer.Serialize(Dictionary{string,string})"/> — produces sectionless INI.</item>
-///   <item><see cref="JsonDictionarySerializer.Serialize{T}(T)"/> — produces indented JSON.</item>
+///   <item><see cref="IniDictionarySerializer.Serialize(Dictionary{string,string})"/> — erzeugt sektionsfreies INI.</item>
+///   <item><see cref="JsonDictionarySerializer.Serialize{T}(T)"/> — erzeugt eingerücktes JSON.</item>
 /// </list>
-/// Pass an implementation to <see cref="PropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>
-/// or <see cref="PropertyBag.Serialize(object, Type, DictionaryToStringSerializer)"/> to select the output format.
+/// Eine Implementierung an <see cref="PropertyBag.Serialize{TRecord}(TRecord, DictionaryToStringSerializer)"/>
+/// oder <see cref="PropertyBag.Serialize(object, Type, DictionaryToStringSerializer)"/> übergeben, um das Ausgabeformat zu wählen.
 /// </remarks>
-/// <param name="data">The flat key-value dictionary to serialize.</param>
+/// <param name="data">Das zu serialisierende flache Schlüssel-Wert-Dictionary.</param>
 /// <returns>
-/// A <see cref="Result{T}"/> containing the serialized string on success, or an error if serialization fails.
+/// Ein <see cref="Result{T}"/> mit dem serialisierten String bei Erfolg, oder ein Fehler, wenn die Serialisierung fehlschlägt.
 /// </returns>
 public delegate Result<string> DictionaryToStringSerializer(Dictionary<string, string> data);

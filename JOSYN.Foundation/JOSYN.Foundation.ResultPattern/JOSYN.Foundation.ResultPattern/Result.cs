@@ -9,8 +9,8 @@ namespace JOSYN.Foundation.ResultPattern;
 
 
 /// <summary>
-/// Represents the outcome of a void operation. Either succeeds or carries an error, optional exception,
-/// and a propagation call chain.
+/// Repräsentiert das Ergebnis einer void-Operation. Entweder erfolgreich oder mit Fehlermeldung,
+/// optionaler Ausnahme und einer Weiterleitungskette.
 /// </summary>
 public sealed record Result : IResult<Result>
 {
@@ -105,6 +105,6 @@ public sealed record Result : IResult<Result>
         return Result<TValue>.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
     }
 
-    /// <summary>Creates a failed result without capturing any caller info. Used internally by ToResult() overloads.</summary>
+    /// <summary>Erstellt ein Fehlerergebnis ohne Aufrufer-Informationen. Intern von den ToResult()-Überladungen verwendet.</summary>
     internal static Result FailSilent(string error, Exception? exception = null) => new(error, exception);
 }
