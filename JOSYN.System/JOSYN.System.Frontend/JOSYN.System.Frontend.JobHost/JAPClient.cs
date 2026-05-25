@@ -30,7 +30,7 @@ internal sealed class JAPClient : IJosynApplicationProtocol
         var getConfig = await JipClient.SendAsync(Pipes, nameof(IJosynApplicationProtocol.GetRawArguments));
 
         if (!getConfig.Succeeded)
-            return getConfig.ToResult<string>();
+            return Result<string>.Propagate(getConfig.ToResult<string>());
 
         return getConfig.Value ??
                Result<string>.Fail("Server lieferte keine Daten zurück.");

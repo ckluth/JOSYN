@@ -176,13 +176,13 @@ internal static class JobInvoker
             {
                 var getInvokeArgs = PropertyBag.Deserialize(rawArguments, parameters);
                 if (!getInvokeArgs.Succeeded)
-                    return Result.Error(getInvokeArgs.ErrorMessage, getInvokeArgs.Exception);
+                    return Result<object[]>.Propagate(getInvokeArgs);
                 return getInvokeArgs.Value;
             }
 
             var getArgumentsRecord = PropertyBag.Deserialize(rawArguments, parameters.First().ParameterType);
             if (!getArgumentsRecord.Succeeded)
-                return Result.Error(getArgumentsRecord.ErrorMessage, getArgumentsRecord.Exception);
+                return Result<object[]>.Propagate(getArgumentsRecord.ToResult<object[]>());
 
             return new List<object> { getArgumentsRecord.Value }.ToArray();
 

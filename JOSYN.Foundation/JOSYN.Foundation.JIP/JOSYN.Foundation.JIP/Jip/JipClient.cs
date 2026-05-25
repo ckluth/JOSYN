@@ -12,9 +12,9 @@ public static class JipClient
     {
         var request = new Request { What = what, Data = data };
         var getRaw  = await PipesClient.SendRequestAsync(request.ToString(), pipes);
-        if (!getRaw.Succeeded) return getRaw.ToResult<string?>();
+        if (!getRaw.Succeeded) return Result<string?>.Propagate(getRaw.ToResult<string?>());
         var parseResponse = JipProtocol.ParseResponse(getRaw.Value);
-        if (!parseResponse.Succeeded) return parseResponse.ToResult<string?>();
+        if (!parseResponse.Succeeded) return Result<string?>.Propagate(parseResponse.ToResult<string?>());
         return JipProtocol.ToResult(parseResponse.Value);
     }
 }

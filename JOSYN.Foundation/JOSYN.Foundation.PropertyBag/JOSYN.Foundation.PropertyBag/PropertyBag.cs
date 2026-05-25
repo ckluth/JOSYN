@@ -179,7 +179,7 @@ public sealed class PropertyBag : IPropertyBag
                         if (conversion.Succeeded)
                             converted = conversion.Value;
                         else
-                            return Result.Error(conversion.ErrorMessage, conversion.Exception);
+                            return Result<object>.Propagate(conversion.ToResult<object>());
                     }
                     prop.SetValue(instance, converted);
                 }
@@ -232,7 +232,7 @@ public sealed class PropertyBag : IPropertyBag
 
                 var conversion = ConvertFromString(rawValue, targetType);
                 if (!conversion.Succeeded)
-                    return Result.Error(conversion.ErrorMessage, conversion.Exception);
+                    return Result<object>.Propagate(conversion.ToResult<object>());
                 args[i] = conversion.Value;
             }
 
@@ -270,16 +270,16 @@ public sealed class PropertyBag : IPropertyBag
     private static Result<object> Deserialize(string raw, Type recordType, StringToDictionarySerializer deserializeToDictionary)
     {
         var getDict = deserializeToDictionary(raw);
-        return getDict.Succeeded ? DeserializeFromDictionary(getDict.Value, recordType) : Result.Error(getDict.ErrorMessage, getDict.Exception);
+        return getDict.Succeeded ? DeserializeFromDictionary(getDict.Value, recordType) : Result<object>.Propagate(getDict.ToResult<object>());
     }
 
     private static Result<TRecord> Deserialize<TRecord>(string raw, StringToDictionarySerializer deserializeToDictionary) where TRecord : class
     {
         var getDict = deserializeToDictionary(raw);
-        if (!getDict.Succeeded) return Result.Error(getDict.ErrorMessage, getDict.Exception);
+        if (!getDict.Succeeded) return Result<TRecord>.Propagate(getDict.ToResult<TRecord>());
 
         var getRecord = DeserializeFromDictionary(getDict.Value, typeof(TRecord));
-        if (!getRecord.Succeeded) return Result.Error(getRecord.ErrorMessage, getRecord.Exception);
+        if (!getRecord.Succeeded) return Result<TRecord>.Propagate(getRecord.ToResult<TRecord>());
 
         return (getRecord.Value as TRecord)!;
     }

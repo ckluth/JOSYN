@@ -60,3 +60,4 @@
 | 0022 | session-0022-sealed-types-audit-summary.md | Repo-wide sealed audit: 24 types sealed across 15 files (1 prod record, 4 prod classes, 10 test fixtures, 9 test data records); 238 tests green |
 | 0023 | session-0023-xmldoc-german-translation-summary.md | Sprachentscheidung Deutsch für XML-Docs; 18 Dateien übersetzt; Build/Tests grün |
 | 0024 | session-0024-xmldoc-english-retranslation-summary.md | Decision reversed: all XML doc comments translated from German → English; 44 files, ~476 lines; all 6 solutions build clean |
+| 0025 | session-0025-propagate-callstack-audit-summary.md | Full codebase `Result.Propagate` audit; 10 violations fixed across 5 files; 238 tests green |

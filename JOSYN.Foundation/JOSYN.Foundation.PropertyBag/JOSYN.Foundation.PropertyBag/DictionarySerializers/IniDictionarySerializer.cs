@@ -47,7 +47,7 @@ public static class IniDictionarySerializer
         var d = Deserialize(raw);
         
         if (!d.Succeeded)
-            return Result.Error(d.ErrorMessage, d.Exception);
+            return Result<Dictionary<string, string>>.Propagate(d.ToResult<Dictionary<string, string>>());
         
         return d.Value.Count switch
         {
