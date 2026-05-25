@@ -53,3 +53,4 @@
 | 0016 | session-0016-csproj-standardization-summary.md | LocalLog finalized (causer, exe-adjacent path, JSON fix); all 13 csproj files standardized to 3 templates; copilot-instructions template doc created |
 | 0017 | session-0017-exe-icon-embedding-summary.md | Exe icon embedding: `ApplicationIcon` + `<Content Include="icon.ico" />` required; applied to all 4 exe projects; Template 2 in AGENT.md updated |
 | 0018 | session-0018-contracts-grooming-summary.md | Full codebase contract audit; 8 missing interfaces created across JIP, PropertyBag, Shared.Log, Shared.Contract |
+| 0019 | session-0019-xmldoc-grooming-summary.md | PoC-wide XML comment grooming: 4 findings reviewed, 3 fixes applied, full build/test/pack/commit/push completed |
