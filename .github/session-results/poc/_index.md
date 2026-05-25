@@ -17,7 +17,7 @@
 | 11 | Root `.local-build/` orchestrates crystal-clean build-all (6 sub-repos, 7 NuGet packages) and demo launchers (Release + Debug) |
 | 12 | `JOSYN.System.Contract` is superseded by `JOSYN.System.Shared.Contract`; old folder still on disk, not referenced |
 | 13 | Error routing in `Core.cs` (Frontend): pipe failure → `LocalLog` only; job failure → `LocalLog` + `PutError`; `PutError` failure → `LocalLog` fallback |
-| 14 | `LocalLog` (Shared.Log) logs to `%TEMP%\JOSYN\<ProcessName>\<date>.log`; flush-on-write; never throws |
+| 14 | `LocalLog` (Shared.Log) logs to `%TEMP%\JOSYN\<ProcessName>\<date>.log`; flush-on-write; never throws; `EnableConsoleOutput` flag controls console mirroring; sender overloads write to a named subfolder |
 
 ## Open Questions
 
@@ -46,4 +46,4 @@
 | 0011 | session-0011-backend-generation.md | `JOSYN.System.JAPServer` → `JOSYN.System.Backend`; scaffold, namespace, README, NuGet packed; `JOSYN.JobHost` tombstone removed |
 | 0012 | session-0012-milestone-ariadne-v4.md | Milestone checkpoint + Ariadne's Thread v4 (supersedes session-0010); all 6 sub-repos complete, demo runnable, commit & push |
 | 0013 | session-0013-shared-layer-discussion-summary.md | Discussion: JOSYN.System.Shared layer introduced; FakeCore eliminated; LocalLog + PutError wired; Contract renamed to Shared.Contract |
-| 0014 | session-0014-milestone-ariadne-v5.md | Milestone checkpoint + Ariadne's Thread v5 (supersedes session-0012); Shared layer complete, 7 NuGet packages |
+| 0015 | session-0015-locallog-enhancements-summary.md | LocalLog: EnableConsoleOutput flag, entry-assembly ProcessName, sender subfolder overloads, pause cleanup in cmd files |

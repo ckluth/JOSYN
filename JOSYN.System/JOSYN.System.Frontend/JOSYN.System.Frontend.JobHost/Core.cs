@@ -14,6 +14,9 @@ public sealed class Core : ICore
     {
         Console.InputEncoding = new UTF8Encoding();
         Console.OutputEncoding = new UTF8Encoding();
+#if DEBUG
+        LocalLog.EnableConsoleOutput = true;
+#endif
 
         try
         {

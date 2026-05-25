@@ -1,4 +1,5 @@
 using JOSYN.System.Frontend.JobHost.Attributes;
+using System.Diagnostics;
 
 #pragma warning disable IDE0130
 namespace MyDemoJob;
@@ -6,6 +7,33 @@ namespace MyDemoJob;
 
 public static class MyFirstJob
 {
+    [JobEntryPoint]
+    public static MyResult Execute(MyArguments args)
+    {
+        Console.WriteLine("\nEXECUTING: MyResult Execute(MyArguments args)\n");
+        
+        //var s = Path.Combine(Path.GetTempPath(), "JOSYN", Process.GetCurrentProcess().ProcessName);
+        //Console.WriteLine(s);
+        //Console.ReadKey(true);
+
+        throw new Exception("MyDemoJob fucked up...");
+        Console.WriteLine(args.Msg);
+
+        return new MyResult
+        {
+            Count = args.Count + 1,
+            Message = "Echo: " + args.Msg,
+            Succeeded = true,
+        };
+    }
+
+
+
+
+
+
+
+
 
 
     //[JobEntryPoint]
@@ -36,21 +64,7 @@ public static class MyFirstJob
     //[ParallelExecutionAllowed]
 
 
-    [JobEntryPoint]
-    public static MyResult Execute(MyArguments args)
-    {
-        Console.WriteLine("\nEXECUTING: MyResult Execute(MyArguments args)\n");
 
-        // throw new Exception("MyDemoJob fucked up...");
-        Console.WriteLine(args.Msg);
-        
-        return new MyResult
-        {
-            Count = args.Count + 1,
-            Message = "Echo: " + args.Msg,
-            Succeeded = true,
-        };
-    }
 
     //[JobEntryPoint]
     //public static MyResult Execute2(string msg, int count)

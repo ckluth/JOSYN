@@ -5,15 +5,15 @@ setlocal
 set NUGET_BASE=C:\Users\chris\.nuget\packages
 
 :: ============================================================
-:: Zu löschende Pakete hier eintragen (Verzeichnisnamen exakt)
+:: Zu löschende Pakete hier eintragen 
 :: ============================================================
 set PACKAGES=^
   josyn.foundation.resultpattern ^
   josyn.foundation.propertybag ^
   josyn.foundation.jip ^
-  josyn.system.contract ^
-  josyn.system.frontend ^
-  josyn.system.backend
+  josyn.system.shared.contract ^
+  josyn.system.shared.log ^
+  josyn.system.frontend.jobhost   
 
 :: ============================================================
 

@@ -16,4 +16,4 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo [OK] Beide Pakete erfolgreich gepackt.
-pause
+REM pause
