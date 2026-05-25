@@ -27,7 +27,7 @@ The session key must match the one passed to `PipesClient.ConnectAsync` on the j
 
 ```
 Server.exe
- └── Backend.Run(args)
+ └── Host.Run(args)
       ├── PipesServer          — JIP named-pipe server (session-isolated via GUID key)
       └── JipDispatcher
            ├── RegisterAll<IJosynApplicationProtocol>   — maps JAP methods via reflection

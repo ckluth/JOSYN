@@ -2,5 +2,5 @@
 
 internal class Program
 {
-    private static async Task<int> Main(string[] args) => await Backend.Run(args);
+    private static async Task<int> Main(string[] args) => await Host.Run(args);
 }

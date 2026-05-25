@@ -6,7 +6,7 @@ using System.Text;
 
 namespace JOSYN.System.Backend.JAPServer;
 
-internal static class Backend
+internal static class Host
 {
     internal static async Task<int> Run(string[] args)
     {
