@@ -109,8 +109,7 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
     /// <inheritdoc />
     public Result<TOther> ToResult<TOther>()
     {
-        Debug.Assert(!Succeeded, "ToResult<T>() wurde auf einem succeeded Result aufgerufen.");
-        if (Succeeded) return Result<TOther>.FailSilent("Kein Wert vorhanden");
+        if (Succeeded) throw new InvalidOperationException("ToResult<T>() wurde auf einem succeeded Result aufgerufen.");
         return Result<TOther>.FailSilent(ErrorMessage!, Exception) with { Callers = Callers };
     }
     

@@ -14,4 +14,6 @@ echo.
 call "%~dp0test-all.cmd"
 if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
+pause
+
 exit /b 0
