@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text;
 using JOSYN.Foundation.PropertyBag;
 using JOSYN.Foundation.ResultPattern;
-using JOSYN.System.Contract;
+using JOSYN.System.Shared.Contract;
 using JOSYN.System.Frontend.JobHost.Attributes;
 
 namespace JOSYN.System.Frontend.JobHost;

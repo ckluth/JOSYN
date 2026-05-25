@@ -1,5 +1,6 @@
 using JOSYN.Foundation.ResultPattern;
-using JOSYN.System.Contract;
+using JOSYN.System.Shared.Contract;
+using JOSYN.System.Shared.Log;
 
 namespace JOSYN.System.Backend.JAPServer;
 
@@ -22,6 +23,12 @@ internal sealed class JAPServer : IJosynApplicationProtocol
         Console.WriteLine();
         Console.ResetColor();
 
+        return await Task.FromResult(Result.Success);
+    }
+
+    public async Task<Result> PutError(string serializedError)
+    {
+        LocalLog.Error($"Fehler vom JobHost empfangen:\n{serializedError}");
         return await Task.FromResult(Result.Success);
     }
 

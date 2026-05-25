@@ -1,6 +1,7 @@
 using JOSYN.Foundation.JIP;
 using JOSYN.Foundation.ResultPattern;
-using JOSYN.System.Contract;
+using JOSYN.System.Shared.Contract;
+using JOSYN.System.Shared.Log;
 using System.Diagnostics;
 using System.Text;
 
@@ -18,12 +19,16 @@ internal static class Host
             Console.WriteLine("ARGS: " + string.Join(" | ", args));
             var sessionKey = PipesProtocol.ParseSessionKeyCLIArguments(args);
             if (sessionKey == Guid.Empty)
-                return LogError("Keine IPC-Session-UID angegeben.", 1);
+            {
+                LocalLog.Error("Keine IPC-Session-UID angegeben.");
+                return 1;
+            }
 
             return await RunServer(sessionKey);
         }
         catch (Exception ex)
         {
+            LocalLog.Error("Unbehandelte Exception im Host.", exceptionDetails: ex.ToString());
             Console.WriteLine(ex);
             return 1;
         }
@@ -62,7 +67,14 @@ internal static class Host
         });
 
         Console.WriteLine($"Finished after {sw.Elapsed}");
-        return res.Succeeded ? TerminateWithSuccess() : LogErrorResult(res, 1);
+        if (!res.Succeeded)
+        {
+            LocalLog.Error(res);
+            return 1;
+        }
+
+        LocalLog.Info("Server terminiert.");
+        return 0;
     }
 
     private static Task<bool> WasEscapePressed()
@@ -92,68 +104,7 @@ internal static class Host
 
     private static async Task HandleHandlerError(string request, Exception ex)
     {
-        PrintHandlerError(request, ex);
+        LocalLog.Error($"Fehler beim Verarbeiten der Anfrage: {request}", exceptionDetails: ex.ToString());
         await Task.CompletedTask;
     }
-
-    // -------------------------------------------------------------------------
-    // Console helpers
-    // -------------------------------------------------------------------------
-
-    #region Console Helpers
-
-    private static void PrintHandlerError(string request, Exception ex)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine();
-        Console.WriteLine($"Fehler beim Verarbeiten der Anfrage: {request}");
-        Console.WriteLine($"Exception: {ex}");
-        Console.WriteLine();
-        Console.ResetColor();
-    }
-
-
-    private static int TerminateWithSuccess()
-    {
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("Terminated...");
-        Console.ResetColor();
-        return 0;
-    }
-
-    private static int LogErrorResult(Result result, int exitCode, string? msg = null)
-    {
-        if (!string.IsNullOrEmpty(msg))
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(msg);
-            Console.ResetColor();
-            Console.WriteLine();
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine("[Fehlermeldung]");
-        sb.AppendLine(result.ErrorMessage);
-        sb.AppendLine();
-        sb.AppendLine("[Callstack]");
-        sb.AppendLine(result.CallStackAsString);
-        if (result.Exception != null)
-        {
-            sb.AppendLine();
-            sb.AppendLine("[Exception]");
-            sb.AppendLine(result.Exception.ToString());
-        }
-
-        return LogError(sb.ToString(), exitCode);
-    }
-
-    private static int LogError(string msg, int exitCode)
-    {
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine(msg);
-        Console.ResetColor();
-        return exitCode;
-    }
-
-    #endregion
 }

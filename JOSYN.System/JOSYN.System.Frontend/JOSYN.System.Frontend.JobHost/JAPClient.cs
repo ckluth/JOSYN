@@ -1,6 +1,6 @@
 using JOSYN.Foundation.JIP;
 using JOSYN.Foundation.ResultPattern;
-using JOSYN.System.Contract;
+using JOSYN.System.Shared.Contract;
 
 namespace JOSYN.System.Frontend.JobHost;
 
@@ -38,9 +38,15 @@ internal sealed class JAPClient : IJosynApplicationProtocol
     async Task<Result> IJosynApplicationProtocol.PutRawResult(string result)
     {
         var putJobResult = await JipClient.SendAsync(Pipes, nameof(IJosynApplicationProtocol.PutRawResult), result);
-        
-        return !putJobResult.Succeeded 
-            ? Result.Propagate(putJobResult.ToResult()) 
+
+        return !putJobResult.Succeeded
+            ? Result.Propagate(putJobResult.ToResult())
             : Result.Success;
+    }
+
+    async Task<Result> IJosynApplicationProtocol.PutError(string serializedError)
+    {
+        var result = await JipClient.SendAsync(Pipes, nameof(IJosynApplicationProtocol.PutError), serializedError);
+        return !result.Succeeded ? Result.Propagate(result.ToResult()) : Result.Success;
     }
 }
