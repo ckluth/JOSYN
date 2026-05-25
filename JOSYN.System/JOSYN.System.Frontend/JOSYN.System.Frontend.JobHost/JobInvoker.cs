@@ -83,28 +83,20 @@ internal static class JobInvoker
 
         if (jobResult == null)
             return Result.Error("Job hat unerwartet NULL zurückgegeben.");
-        
+
         var getResultAsString = PropertyBag.Serialize(jobResult, resultType, IniDictionarySerializer.Serialize);
 
         if (!getResultAsString.Succeeded)
             return Result.Propagate(getResultAsString.ToResult());
-        
+
         var res = await japClient.PutRawResult(getResultAsString.Value);
 
-        
 #if DEBUG
+        // ReSharper disable once InvertIf
         if (res.Succeeded)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("\n[JobResult successfuly processed]");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(getResultAsString.Value);
-            Console.ResetColor();
-        }
+            DbgPrint("JobResult successfuly processed", getResultAsString.Value);
 #endif
-        
         return !res.Succeeded ? Result.Propagate(res) : Result.Success;
-        
     }
 
     private static Result<Assembly> FindEntryPointAssembly(Type? entrypointType = null)
@@ -118,11 +110,11 @@ internal static class JobInvoker
             sb.AppendLine("Das Entrypoint-Assembly wurde nicht gefunden.");
             sb.AppendLine($"Explicit Enrypoint-Type: {(entrypointType == null ? "<NULL>" : entrypointType.FullName)}");
             return Result.Error(sb.ToString());
-            
+
         }
         catch (Exception ex) { return ex; }
     }
-    
+
     private static Result<MethodInfo> FindJobFunction(Assembly asm)
     {
         try
@@ -140,7 +132,7 @@ internal static class JobInvoker
         }
         catch (Exception ex) { return ex; }
     }
-    
+
     private static async Task<Result<object[]?>> CreateInvocationArguments(MethodInfo func, IJosynApplicationProtocol japClient)
     {
         var parameters = func.GetParameters();
@@ -149,25 +141,27 @@ internal static class JobInvoker
         var rawArguments = await japClient.GetRawArguments();
         if (!rawArguments.Succeeded)
             return Result<object[]?>.Propagate(rawArguments.ToResult<object[]?>());
-
 #if DEBUG
-      
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("[JobArguments successfuly retrieved]");
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(rawArguments.Value);
-            Console.ResetColor();
-        }
+        DbgPrint("JobArguments successfuly retrieved", rawArguments.Value);
 #endif
-        
         var createInvicationArguments = RetrieveInvocationArguments(func, rawArguments.Value);
         if (!createInvicationArguments.Succeeded)
             return Result<object[]?>.Propagate(createInvicationArguments.ToResult<object[]?>());
 
         return createInvicationArguments.Value;
     }
-    
+
+#if DEBUG
+    private static void DbgPrint(string head, string content)
+    {
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"\n[{head}]");
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(content);
+        Console.ResetColor();
+    }
+#endif    
+
     private static Result<object[]> RetrieveInvocationArguments(MethodInfo func, string rawArguments)
     {
         try

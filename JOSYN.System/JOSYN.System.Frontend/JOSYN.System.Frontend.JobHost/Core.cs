@@ -30,7 +30,7 @@ public sealed class Core : ICore
         finally
         {
 #if DEBUG            
-            Console.WriteLine("\n[PRESS ANY KEY]\n");
+            Console.Write("\n[PRESS ANY KEY TO EXIT...]");
             Console.ReadKey(true);
 #endif
         }
