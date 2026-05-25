@@ -3,6 +3,9 @@ using JOSYN.System.Contract;
 
 namespace JOSYN.System.Backend.JAPServer;
 
+/// <summary>
+/// This is a fake-implementation by now...
+/// </summary>
 internal sealed class JAPServer : IJosynApplicationProtocol
 {
     public async Task<Result<string>> GetRawArguments()

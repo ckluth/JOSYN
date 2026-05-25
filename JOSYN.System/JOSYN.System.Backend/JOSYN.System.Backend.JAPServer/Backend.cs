@@ -30,7 +30,7 @@ internal static class Backend
         finally
         {
 #if DEBUG
-            Console.WriteLine("\n[PRESS ANY KEY]\n");
+            Console.Write("\n[PRESS ANY KEY TO EXIT...]");
             Console.ReadKey(true);
 #endif
         }
@@ -92,18 +92,26 @@ internal static class Backend
 
     private static async Task HandleHandlerError(string request, Exception ex)
     {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine();
-        Console.WriteLine($"Fehler beim Verarbeiten der Anfrage: {request}");
-        Console.WriteLine($"Exception: {ex}");
-        Console.WriteLine();
-        Console.ResetColor();
+        PrintHandlerError(request, ex);
         await Task.CompletedTask;
     }
 
     // -------------------------------------------------------------------------
     // Console helpers
     // -------------------------------------------------------------------------
+
+    #region Console Helpers
+
+    private static void PrintHandlerError(string request, Exception ex)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine();
+        Console.WriteLine($"Fehler beim Verarbeiten der Anfrage: {request}");
+        Console.WriteLine($"Exception: {ex}");
+        Console.WriteLine();
+        Console.ResetColor();
+    }
+
 
     private static int TerminateWithSuccess()
     {
@@ -146,4 +154,6 @@ internal static class Backend
         Console.ResetColor();
         return exitCode;
     }
+
+    #endregion
 }
