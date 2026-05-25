@@ -61,3 +61,4 @@
 | 0023 | session-0023-xmldoc-german-translation-summary.md | Sprachentscheidung Deutsch für XML-Docs; 18 Dateien übersetzt; Build/Tests grün |
 | 0024 | session-0024-xmldoc-english-retranslation-summary.md | Decision reversed: all XML doc comments translated from German → English; 44 files, ~476 lines; all 6 solutions build clean |
 | 0025 | session-0025-propagate-callstack-audit-summary.md | Full codebase `Result.Propagate` audit; 10 violations fixed across 5 files; 238 tests green |
+| 0026 | session-0026-poc-grooming-closure-summary.md | Grooming phase closure (sessions 0015–0025): test counts, conventions locked, open items unchanged from Ariadne v5 |
