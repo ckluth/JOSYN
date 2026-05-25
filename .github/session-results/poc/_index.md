@@ -17,7 +17,9 @@
 | 11 | Root `.local-build/` orchestrates crystal-clean build-all (6 sub-repos, 7 NuGet packages) and demo launchers (Release + Debug) |
 | 12 | `JOSYN.System.Contract` is superseded by `JOSYN.System.Shared.Contract`; old folder still on disk, not referenced |
 | 13 | Error routing in `Core.cs` (Frontend): pipe failure → `LocalLog` only; job failure → `LocalLog` + `PutError`; `PutError` failure → `LocalLog` fallback |
-| 14 | `LocalLog` (Shared.Log) logs to `%TEMP%\JOSYN\<ProcessName>\<date>.log`; flush-on-write; never throws; `EnableConsoleOutput` flag controls console mirroring; sender overloads write to a named subfolder |
+| 14 | `LocalLog` (Shared.Log) logs to `<ExeDir>\logs\<date>.log`; default root is `AppContext.BaseDirectory\logs` (impersonation-safe, no user profile dependency); `LogDirectory` is a settable `public static string`; `EnableConsoleOutput` flag mirrors to console; causer overloads write to `Path.Combine(LogDirectory, causer)` subfolder |
+| 15 | `ErrorReport.Causer` (first parameter) flows from JobHost → JSON-serialized IPC → JAPServer.PutError deserialization → `LocalLog.Error(causer, ...)` subfolder; JSON serialization required (INI truncates multi-line `CallStack`/`ExceptionDetails`) |
+| 16 | Three canonical csproj templates (NuGet Library / Exe / Test) documented in `copilot-instructions/C# Project Files/AGENT.md`; single PropertyGroup, tabs, no `PackageReleaseNotes`; `GenerateDocumentationFile` on NuGet libraries only; each NuGet project has its own `icon.png` copy |
 
 ## Open Questions
 
@@ -47,3 +49,4 @@
 | 0012 | session-0012-milestone-ariadne-v4.md | Milestone checkpoint + Ariadne's Thread v4 (supersedes session-0010); all 6 sub-repos complete, demo runnable, commit & push |
 | 0013 | session-0013-shared-layer-discussion-summary.md | Discussion: JOSYN.System.Shared layer introduced; FakeCore eliminated; LocalLog + PutError wired; Contract renamed to Shared.Contract |
 | 0015 | session-0015-locallog-enhancements-summary.md | LocalLog: EnableConsoleOutput flag, entry-assembly ProcessName, sender subfolder overloads, pause cleanup in cmd files |
+| 0016 | session-0016-csproj-standardization-summary.md | LocalLog finalized (causer, exe-adjacent path, JSON fix); all 13 csproj files standardized to 3 templates; copilot-instructions template doc created |
