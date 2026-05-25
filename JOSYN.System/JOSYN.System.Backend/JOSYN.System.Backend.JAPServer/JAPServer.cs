@@ -10,12 +10,12 @@ namespace JOSYN.System.Backend.JAPServer;
 /// </summary>
 internal sealed class JAPServer : IJosynApplicationProtocol
 {
-    public async Task<Result<string>> GetRawArguments()
+    async Task<Result<string>> IJosynApplicationProtocol.GetRawArguments()
     {
         return await Task.FromResult(FakeReadArgumentsFromFile());
     }
 
-    public async Task<Result> PutRawResult(string result)
+    async Task<Result> IJosynApplicationProtocol.PutRawResult(string result)
     {
         Console.WriteLine();
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -27,7 +27,7 @@ internal sealed class JAPServer : IJosynApplicationProtocol
         return await Task.FromResult(Result.Success);
     }
 
-    public async Task<Result> PutError(string serializedError)
+    async Task<Result> IJosynApplicationProtocol.PutError(string serializedError)
     {
         var deserialize = PropertyBag.Deserialize<ErrorReport>(serializedError);
         if (!deserialize.Succeeded)
