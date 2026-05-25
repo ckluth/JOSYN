@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.ResultPattern.Test;
 
 [TestFixture]
-public class ResultTests
+public sealed class ResultTests
 {
 
     //// ── Success ──────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.JIP.Demo.ServerExe.Test;
 
 [TestFixture]
-public class JipDispatcherExtensionsTests
+public sealed class JipDispatcherExtensionsTests
 {
     /// <summary>
     /// Verifies that RegisterAll covers all methods defined in IJosynApplicationProtocol.

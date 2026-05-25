@@ -1,7 +1,7 @@
 namespace JOSYN.System.Shared.Contract;
 
 /// <inheritdoc cref="IErrorReport"/>
-public record ErrorReport(
+public sealed record ErrorReport(
     string  Causer,
     string  Message,
     string? CallStack,

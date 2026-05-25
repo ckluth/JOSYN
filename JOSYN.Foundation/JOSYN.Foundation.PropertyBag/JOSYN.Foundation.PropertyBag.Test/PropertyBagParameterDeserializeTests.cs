@@ -4,7 +4,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.PropertyBag.Test;
 
 [TestFixture]
-internal class PropertyBagParameterDeserializeTests
+internal sealed class PropertyBagParameterDeserializeTests
 {
     // Helper methods — their parameter metadata is the test input.
     private static void ThreeParamMethod(string name, int count, DateOnly date) { }

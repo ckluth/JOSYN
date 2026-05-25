@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.ResultPattern.Test;
 
 [TestFixture]
-public class CallerInfoTests
+public sealed class CallerInfoTests
 {
     // ── ToString — with file and line ─────────────────────────────────────────
 

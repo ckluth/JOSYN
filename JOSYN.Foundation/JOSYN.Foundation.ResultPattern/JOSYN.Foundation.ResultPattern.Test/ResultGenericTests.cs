@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.ResultPattern.Test;
 
 [TestFixture]
-public class ResultGenericTests
+public sealed class ResultGenericTests
 {
 
     // ── Success via implicit conversion ──────────────────────────────────────

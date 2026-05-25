@@ -10,7 +10,7 @@ namespace JOSYN.Foundation.PropertyBag;
 /// A <see cref="JsonConverter{T}"/> for <see cref="DateTime"/> that formats and parses values
 /// using the current thread culture (default: <c>de-DE</c>).
 /// </summary>
-internal class CultureAwareDateTimeConverter : JsonConverter<DateTime>
+internal sealed class CultureAwareDateTimeConverter : JsonConverter<DateTime>
 {
     /// <inheritdoc/>
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => DateTime.Parse(reader.GetString()!, CultureInfo.CurrentCulture);

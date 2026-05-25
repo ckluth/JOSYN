@@ -11,7 +11,7 @@ namespace JOSYN.Foundation.PropertyBag;
 /// using the current thread culture (default: <c>de-DE</c>), preserving locale-specific decimal
 /// separators (e.g. <c>,</c> instead of <c>.</c>).
 /// </summary>
-internal class CultureAwareDecimalConverter : JsonConverter<decimal>
+internal sealed class CultureAwareDecimalConverter : JsonConverter<decimal>
 {
     /// <inheritdoc/>
     public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => decimal.Parse(reader.GetString()!, CultureInfo.CurrentCulture);

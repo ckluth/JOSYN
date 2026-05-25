@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.ResultPattern.Test;
 
 [TestFixture]
-public class ResultTestsPropagate
+public sealed class ResultTestsPropagate
 {
     // ── void Result, propagated across mixed generic types ────────────────────
 

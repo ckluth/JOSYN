@@ -4,46 +4,46 @@ namespace JOSYN.Foundation.PropertyBag.Test;
 
 #region Shared test types
 
-public record SimpleRecord
+public sealed record SimpleRecord
 {
     public required string Name { get; init; }
     public int Count { get; init; }
 }
 
 // Primary-constructor (positional) style — no parameterless ctor
-public record PositionalRecord(string Title, int Value);
-public record PositionalNullableRecord(string Name, int? Count);
+public sealed record PositionalRecord(string Title, int Value);
+public sealed record PositionalNullableRecord(string Name, int? Count);
 
-public record NullablePropertiesRecord
+public sealed record NullablePropertiesRecord
 {
     public required string RequiredName { get; init; }
     public string? OptionalName { get; init; }
     public int? OptionalCount { get; init; }
 }
 
-public record UnsupportedTypeRecord
+public sealed record UnsupportedTypeRecord
 {
     public List<string> Items { get; init; } = [];
 }
 
 public enum Color { Red, Green, Blue }
 
-public record EnumRecord
+public sealed record EnumRecord
 {
     public Color Favorite { get; init; }
 }
 
-public class PlainClass
+public sealed class PlainClass
 {
     public string Name { get; set; } = "";
 }
 
-public record DateTimeOffsetRecord
+public sealed record DateTimeOffsetRecord
 {
     public DateTimeOffset Timestamp { get; init; }
 }
 
-public record AdditionalTypesRecord
+public sealed record AdditionalTypesRecord
 {
     public bool Active { get; init; }
     public decimal Price { get; init; }
@@ -57,7 +57,7 @@ public record AdditionalTypesRecord
 #endregion
 
 [TestFixture]
-internal class PropertyBagTests
+internal sealed class PropertyBagTests
 {
     // ── Serialize<TRecord> ──────────────────────────────────────────────────
 

@@ -10,7 +10,7 @@ namespace JOSYN.Foundation.PropertyBag;
 /// A <see cref="JsonConverter{T}"/> for <see cref="DateOnly"/> that formats and parses values
 /// using the current thread culture (default: <c>de-DE</c>).
 /// </summary>
-internal class CultureAwareDateOnlyConverter : JsonConverter<DateOnly>
+internal sealed class CultureAwareDateOnlyConverter : JsonConverter<DateOnly>
 {
     /// <inheritdoc/>
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => DateOnly.Parse(reader.GetString()!, CultureInfo.CurrentCulture);

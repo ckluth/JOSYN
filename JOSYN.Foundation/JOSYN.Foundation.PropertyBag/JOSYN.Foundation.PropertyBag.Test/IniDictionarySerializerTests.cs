@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.PropertyBag.Test;
 
 [TestFixture]
-internal class IniDictionarySerializerTests
+internal sealed class IniDictionarySerializerTests
 {
     // ── Serialize(Dictionary<string, string>) ───────────────────────────────
 

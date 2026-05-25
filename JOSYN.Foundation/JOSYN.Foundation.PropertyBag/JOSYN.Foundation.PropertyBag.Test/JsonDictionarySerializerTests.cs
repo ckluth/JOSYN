@@ -3,7 +3,7 @@ using NUnit.Framework;
 namespace JOSYN.Foundation.PropertyBag.Test;
 
 [TestFixture]
-internal class JsonDictionarySerializerTests
+internal sealed class JsonDictionarySerializerTests
 {
     [Test]
     public void Serialize_Dictionary_ProducesValidJsonWithKeyValuePairs()

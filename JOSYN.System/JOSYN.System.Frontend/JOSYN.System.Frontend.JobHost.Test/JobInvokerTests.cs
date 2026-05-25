@@ -7,7 +7,7 @@ using JOSYN.System.Frontend.JobHost.Test.Fixtures.Multi;
 namespace JOSYN.System.Frontend.JobHost.Test;
 
 [TestFixture]
-public class JobInvokerTests
+public sealed class JobInvokerTests
 {
     // ── Entry point discovery ──────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ namespace JOSYN.Foundation.PropertyBag;
 /// A <see cref="JsonConverter{T}"/> for <see cref="TimeOnly"/> that formats and parses values
 /// using the current thread culture (default: <c>de-DE</c>).
 /// </summary>
-internal class CultureAwareTimeOnlyConverter : JsonConverter<TimeOnly>
+internal sealed class CultureAwareTimeOnlyConverter : JsonConverter<TimeOnly>
 {
     /// <inheritdoc/>
     public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => TimeOnly.Parse(reader.GetString()!, CultureInfo.CurrentCulture);
