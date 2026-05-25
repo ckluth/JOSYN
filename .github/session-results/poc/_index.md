@@ -8,13 +8,16 @@
 | 2 | Implementation order follows logical layering: Foundation → Contract → Frontend → Backend |
 | 3 | All Foundation + Contract NuGet packages must reach high maturity (Readme, meta, XML comments) |
 | 4 | JOSYN.Contract naming is unsatisfactory and must be resolved before starting that layer |
-| 5 | `JOSYN.System` is the accepted grouping layer: `JOSYN.System.Frontend`, `JOSYN.System.Backend`, `JOSYN.System.Contract` |
-| 6 | `JOSYN.System.Contract` depends only on `JOSYN.Foundation.ResultPattern` — not on JIP (contract is transport-agnostic) |
+| 5 | `JOSYN.System` is the accepted grouping layer with three sub-layers: `JOSYN.System.Frontend`, `JOSYN.System.Backend`, `JOSYN.System.Shared` |
+| 6 | `JOSYN.System.Shared.Contract` depends only on `JOSYN.Foundation.ResultPattern` — not on JIP (contract is transport-agnostic) |
 | 7 | Layer packages follow the Foundation placement pattern: grouped under their layer folder (`JOSYN.System/`) |
-| 8 | Grouping layers (`JOSYN.System.Frontend`, `JOSYN.System.Backend`) are pure namespace containers — concrete projects live one level deeper with fully-qualified names |
+| 8 | Grouping layers (`JOSYN.System.Frontend`, `JOSYN.System.Backend`, `JOSYN.System.Shared`) are pure namespace containers — concrete projects live one level deeper with fully-qualified names |
 | 9 | `JOSYN.System.Backend.JAPServer` is an exe, not a NuGet library — it has one consumer (itself) and is never packed |
-| 10 | `JOSYN.System.Frontend.JobHost` (renamed from `JOSYN.System.Frontend`) is the library name; similarly Backend's concrete project is `JOSYN.System.Backend.JAPServer` |
-| 11 | Root `.local-build/` orchestrates crystal-clean build-all (empty Local Packages → clear NuGet cache → build+pack in order) and demo launchers (Release + Debug) |
+| 10 | `JOSYN.System.Frontend.JobHost` is the library name; `JOSYN.System.Backend.JAPServer` is the exe; `JOSYN.System.Shared` hosts two NuGet packages: `.Contract` and `.Log` |
+| 11 | Root `.local-build/` orchestrates crystal-clean build-all (6 sub-repos, 7 NuGet packages) and demo launchers (Release + Debug) |
+| 12 | `JOSYN.System.Contract` is superseded by `JOSYN.System.Shared.Contract`; old folder still on disk, not referenced |
+| 13 | Error routing in `Core.cs` (Frontend): pipe failure → `LocalLog` only; job failure → `LocalLog` + `PutError`; `PutError` failure → `LocalLog` fallback |
+| 14 | `LocalLog` (Shared.Log) logs to `%TEMP%\JOSYN\<ProcessName>\<date>.log`; flush-on-write; never throws |
 
 ## Open Questions
 
@@ -42,3 +45,5 @@
 | 0010 | session-0010-milestone-ariadne-v3.md | Milestone checkpoint + Ariadne's Thread v3 (supersedes session-0007); commit & push |
 | 0011 | session-0011-backend-generation.md | `JOSYN.System.JAPServer` → `JOSYN.System.Backend`; scaffold, namespace, README, NuGet packed; `JOSYN.JobHost` tombstone removed |
 | 0012 | session-0012-milestone-ariadne-v4.md | Milestone checkpoint + Ariadne's Thread v4 (supersedes session-0010); all 6 sub-repos complete, demo runnable, commit & push |
+| 0013 | session-0013-shared-layer-discussion-summary.md | Discussion: JOSYN.System.Shared layer introduced; FakeCore eliminated; LocalLog + PutError wired; Contract renamed to Shared.Contract |
+| 0014 | session-0014-milestone-ariadne-v5.md | Milestone checkpoint + Ariadne's Thread v5 (supersedes session-0012); Shared layer complete, 7 NuGet packages |
