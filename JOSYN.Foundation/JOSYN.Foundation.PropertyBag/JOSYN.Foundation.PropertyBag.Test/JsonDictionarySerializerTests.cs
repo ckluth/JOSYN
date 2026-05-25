@@ -56,4 +56,22 @@ internal class JsonDictionarySerializerTests
         Assert.That(result.Value!["Foo"], Is.EqualTo("bar"));
         Assert.That(result.Value["Num"], Is.EqualTo("42"));
     }
+
+    [Test]
+    public void Serialize_EmptyDictionary_ProducesEmptyJsonObject()
+    {
+        var result = JsonDictionarySerializer.Serialize(new Dictionary<string, string>());
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Trim(), Does.StartWith("{").And.EndWith("}"));
+    }
+
+    [Test]
+    public void Deserialize_EmptyJsonObject_ReturnsEmptyDictionary()
+    {
+        var result = JsonDictionarySerializer.Deserialize("{}");
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value, Is.Empty);
+    }
 }

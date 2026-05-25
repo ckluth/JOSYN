@@ -402,6 +402,42 @@ public class ResultGenericTests
         Assert.That(success, Is.Not.EqualTo(fail));
     }
 
+    // ── Exception error message format ────────────────────────────────────────
+
+    [Test]
+    public void Fail_Exception_ErrorMessage_HasAusnahmefehlerPrefix()
+    {
+        var result = Result<int>.Fail(new Exception("boom"));
+        Assert.That(result.ErrorMessage, Does.StartWith("Ausnahmefehler: "));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_ErrorMessage_HasAusnahmefehlerPrefix()
+    {
+        Result<int> result = new Exception("boom");
+        Assert.That(result.ErrorMessage, Does.StartWith("Ausnahmefehler: "));
+    }
+
+    // ── CallerInfo.MethodName is captured ─────────────────────────────────────
+
+    [Test]
+    public void Fail_String_CallerInfo_HasMethodName()
+    {
+        var result = Result<int>.Fail("oops");
+        Assert.That(result.Callers[0].MethodName, Is.Not.Empty);
+    }
+
+    // ── ToResult<TOther> on a succeeded Result<T> ─────────────────────────────
+
+    [Test]
+    public void ToResultGeneric_OnSucceeded_ThrowsDebugAssert()
+    {
+        // ToResult<TOther>() is only valid on failed Results.
+        // Calling it on a succeeded Result fires Debug.Assert (programming error).
+        Result<int> succeeded = 42;
+        Assert.That(() => succeeded.ToResult<string>(), Throws.InstanceOf<Exception>());
+    }
+
     // ── Cross-type error conversion pattern ──────────────────────────────────
 
     [Test]

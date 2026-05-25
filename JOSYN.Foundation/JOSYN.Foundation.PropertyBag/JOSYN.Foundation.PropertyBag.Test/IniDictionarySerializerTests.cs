@@ -207,4 +207,32 @@ internal class IniDictionarySerializerTests
         Assert.That(result.Value!["X"], Is.EqualTo("42"));
         Assert.That(result.Value["Y"], Is.EqualTo("hello"));
     }
+
+    // ── Edge cases ──────────────────────────────────────────────────────────
+
+    [Test]
+    public void Deserialize_CrLfLineEndings_ParsedCorrectly()
+    {
+        const string raw = "Alpha=one\r\nBeta=two";
+
+        var result = IniDictionarySerializer.Deserialize(raw);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value![string.Empty]["Alpha"], Is.EqualTo("one"));
+        Assert.That(result.Value[string.Empty]["Beta"], Is.EqualTo("two"));
+    }
+
+    [Test]
+    public void Deserialize_LineWithoutEqualsSign_IsIgnored()
+    {
+        const string raw = "ValidKey=value\nthis line has no equals sign\nOther=ok";
+
+        var result = IniDictionarySerializer.Deserialize(raw);
+
+        Assert.That(result.Succeeded, Is.True);
+        var section = result.Value![string.Empty];
+        Assert.That(section.ContainsKey("ValidKey"), Is.True);
+        Assert.That(section.ContainsKey("Other"), Is.True);
+        Assert.That(section.Count, Is.EqualTo(2));
+    }
 }

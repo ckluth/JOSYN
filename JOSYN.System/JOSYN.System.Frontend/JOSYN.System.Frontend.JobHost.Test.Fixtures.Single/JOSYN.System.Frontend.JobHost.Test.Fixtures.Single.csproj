@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<LangVersion>latest</LangVersion>
+		<AssemblyName>JOSYN.System.Frontend.JobHost.Test.Fixtures.Single</AssemblyName>
+		<RootNamespace>JOSYN.System.Frontend.JobHost.Test.Fixtures.Single</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\JOSYN.System.Frontend.JobHost\JOSYN.System.Frontend.JobHost.csproj"/>
+	</ItemGroup>
+</Project>

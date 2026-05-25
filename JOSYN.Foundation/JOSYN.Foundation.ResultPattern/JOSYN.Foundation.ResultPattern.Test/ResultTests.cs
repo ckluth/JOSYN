@@ -277,4 +277,40 @@ public class ResultTests
         var failed = Result.Fail("error");
         Assert.That(failed.ToResult<int>().Callers.Count, Is.EqualTo(failed.Callers.Count));
     }
+
+    // ── Exception error message format ────────────────────────────────────────
+
+    [Test]
+    public void Fail_Exception_ErrorMessage_HasAusnahmefehlerPrefix()
+    {
+        var result = Result.Fail(new Exception("boom"));
+        Assert.That(result.ErrorMessage, Does.StartWith("Ausnahmefehler: "));
+    }
+
+    [Test]
+    public void ImplicitConversion_FromException_ErrorMessage_HasAusnahmefehlerPrefix()
+    {
+        Result result = new Exception("boom");
+        Assert.That(result.ErrorMessage, Does.StartWith("Ausnahmefehler: "));
+    }
+
+    // ── CallerInfo.MethodName is captured ─────────────────────────────────────
+
+    [Test]
+    public void Fail_String_CallerInfo_HasMethodName()
+    {
+        var result = Result.Fail("oops");
+        Assert.That(result.Callers[0].MethodName, Is.Not.Empty);
+    }
+
+    // ── ToResult<T> on a succeeded Result ─────────────────────────────────────
+
+    [Test]
+    public void ToResult_Generic_OnSucceeded_ThrowsDebugAssert()
+    {
+        // ToResult<T>() is only valid on failed Results.
+        // Calling it on a succeeded Result fires Debug.Assert (programming error).
+        var succeeded = Result.Success;
+        Assert.That(() => succeeded.ToResult<int>(), Throws.InstanceOf<Exception>());
+    }
 }

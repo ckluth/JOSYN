@@ -43,6 +43,17 @@ public record DateTimeOffsetRecord
     public DateTimeOffset Timestamp { get; init; }
 }
 
+public record AdditionalTypesRecord
+{
+    public bool Active { get; init; }
+    public decimal Price { get; init; }
+    public DateTime When { get; init; }
+    public DateOnly Date { get; init; }
+    public TimeOnly Time { get; init; }
+    public Guid Id { get; init; }
+    public TimeSpan Duration { get; init; }
+}
+
 #endregion
 
 [TestFixture]
@@ -348,5 +359,156 @@ internal class PropertyBagTests
 
         Assert.That(result.Succeeded, Is.True);
         Assert.That(result.Value!.Timestamp, Is.EqualTo(ts));
+    }
+
+    // ── Additional supported types ──────────────────────────────────────────
+
+    [Test]
+    public void Serialize_ThenDeserialize_BoolProperty_IniRoundTrip_PreservesValue()
+    {
+        var original = new AdditionalTypesRecord { Active = true, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Active, Is.True);
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_GuidProperty_IniRoundTrip_PreservesValue()
+    {
+        var id = Guid.NewGuid();
+        var original = new AdditionalTypesRecord { Id = id };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Id, Is.EqualTo(id));
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_TimeSpanProperty_IniRoundTrip_PreservesValue()
+    {
+        var duration = TimeSpan.FromHours(1.5);
+        var original = new AdditionalTypesRecord { Duration = duration, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Duration, Is.EqualTo(duration));
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_DecimalProperty_IniRoundTrip_PreservesValue()
+    {
+        var original = new AdditionalTypesRecord { Price = 1234.56m, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Price, Is.EqualTo(1234.56m));
+    }
+
+    [Test]
+    public void Serialize_Decimal_WithDeDECulture_UsesCommaAsDecimalSeparator()
+    {
+        var saved = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = JosynCulture.Default;
+            var original = new AdditionalTypesRecord { Price = 1234.56m, Id = Guid.NewGuid() };
+
+            var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+
+            Assert.That(serialized.Succeeded, Is.True);
+            Assert.That(serialized.Value, Does.Contain("1234,56"));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = saved;
+        }
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_DateTimeProperty_IniRoundTrip_PreservesValue()
+    {
+        var when = new DateTime(2026, 5, 25, 10, 30, 0);
+        var original = new AdditionalTypesRecord { When = when, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.When, Is.EqualTo(when));
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_DateOnlyProperty_IniRoundTrip_PreservesValue()
+    {
+        var date = new DateOnly(2026, 5, 25);
+        var original = new AdditionalTypesRecord { Date = date, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Date, Is.EqualTo(date));
+    }
+
+    [Test]
+    public void Serialize_ThenDeserialize_TimeOnlyProperty_IniRoundTrip_PreservesValue()
+    {
+        var time = new TimeOnly(14, 30, 0);
+        var original = new AdditionalTypesRecord { Time = time, Id = Guid.NewGuid() };
+
+        var serialized = PropertyBag.Serialize(original, IniDictionarySerializer.Serialize);
+        Assert.That(serialized.Succeeded, Is.True);
+
+        var result = PropertyBag.Deserialize<AdditionalTypesRecord>(serialized.Value!);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value!.Time, Is.EqualTo(time));
+    }
+
+    // ── Default-serializer overloads ────────────────────────────────────────
+
+    [Test]
+    public void Serialize_DefaultOverload_Generic_UsesIniFormat()
+    {
+        var record = new SimpleRecord { Name = "Default", Count = 1 };
+
+        var result = PropertyBag.Serialize(record);
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value, Does.Contain("Name=Default"));
+        Assert.That(result.Value, Does.Contain("Count=1"));
+    }
+
+    [Test]
+    public void Serialize_DefaultOverload_ObjectAndType_UsesIniFormat()
+    {
+        var record = new SimpleRecord { Name = "ObjType", Count = 2 };
+
+        var result = PropertyBag.Serialize(record, typeof(SimpleRecord));
+
+        Assert.That(result.Succeeded, Is.True);
+        Assert.That(result.Value, Does.Contain("Name=ObjType"));
+        Assert.That(result.Value, Does.Contain("Count=2"));
     }
 }
