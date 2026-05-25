@@ -4,24 +4,10 @@ using JOSYN.Foundation.ResultPattern;
 namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// Implementierungs-Helfer für JIP-Clients.
-/// Kapselt die vollständige Send/Receive-Pipeline: Request-Erstellung, Transport,
-/// Response-Parsing und Konvertierung in <see cref="Result{TValue}"/> mit <c>string?</c>.
-/// <para>
-/// Der Applikations-Layer ist für die Interpretation und Deserialisierung des
-/// zurückgegebenen Strings verantwortlich.
-/// </para>
-/// </summary>
+/// <inheritdoc cref="IJipClient"/>
 public static class JipClient
 {
-    /// <summary>
-    /// Sendet eine Anfrage und gibt das Ergebnis als <see cref="Result{TValue}"/> mit
-    /// optionalem String-Payload zurück.
-    /// </summary>
-    /// <param name="pipes">Verbindung zum Server.</param>
-    /// <param name="what">Bezeichner der aufzurufenden Funktion.</param>
-    /// <param name="data">Optionaler Nutzlast-String.</param>
+    /// <inheritdoc cref="IJipClient.SendAsync"/>
     public static async Task<Result<string?>> SendAsync(ClientPipes pipes, string what, string? data = null)
     {
         var request = new Request { What = what, Data = data };

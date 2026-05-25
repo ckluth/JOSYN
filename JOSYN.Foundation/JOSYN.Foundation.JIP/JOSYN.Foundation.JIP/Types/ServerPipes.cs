@@ -4,18 +4,12 @@ using System.IO.Pipes;
 namespace JOSYN.Foundation.JIP;
 #pragma warning restore IDE0130
 
-/// <summary>
-/// TODO
-/// </summary>
-public sealed class ServerPipes
+/// <inheritdoc cref="IServerPipes"/>
+public sealed class ServerPipes : IServerPipes
 {
-    /// <summary>
-    /// TODO
-    /// </summary>
+    /// <inheritdoc/>
     public required NamedPipeServerStream RequestPipe { get; init; }
 
-    /// <summary>
-    /// TODO
-    /// </summary>
+    /// <inheritdoc/>
     public required NamedPipeServerStream ResponsePipe { get; init; }
 }

@@ -109,7 +109,7 @@ internal class Program
     
     private static readonly JAPServer japServer = new();
 
-    private static readonly JipDispatcher jipDispatcher = new JipDispatcher()
+    private static readonly IJipDispatcher jipDispatcher = new JipDispatcher()
         .RegisterAll<IJosynApplicationProtocol>(japServer)
         .Register("PING",       Result<string?>.Success(null))
         .Register("GET-CONFIG", Result<string?>.Success("{ \"version\": \"1.0\", \"mode\": \"demo\" }"))

@@ -52,3 +52,4 @@
 | 0015 | session-0015-locallog-enhancements-summary.md | LocalLog: EnableConsoleOutput flag, entry-assembly ProcessName, sender subfolder overloads, pause cleanup in cmd files |
 | 0016 | session-0016-csproj-standardization-summary.md | LocalLog finalized (causer, exe-adjacent path, JSON fix); all 13 csproj files standardized to 3 templates; copilot-instructions template doc created |
 | 0017 | session-0017-exe-icon-embedding-summary.md | Exe icon embedding: `ApplicationIcon` + `<Content Include="icon.ico" />` required; applied to all 4 exe projects; Template 2 in AGENT.md updated |
+| 0018 | session-0018-contracts-grooming-summary.md | Full codebase contract audit; 8 missing interfaces created across JIP, PropertyBag, Shared.Log, Shared.Contract |

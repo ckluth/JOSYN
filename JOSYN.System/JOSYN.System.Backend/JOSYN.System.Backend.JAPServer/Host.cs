@@ -94,7 +94,7 @@ internal static class Host
 
     private static readonly JAPServer _japServer = new();
 
-    private static readonly JipDispatcher _jipDispatcher =
+    private static readonly IJipDispatcher _jipDispatcher =
         new JipDispatcher().RegisterAll<IJosynApplicationProtocol>(_japServer);
 
     private static async Task<string> HandleRequest(string requestStr)

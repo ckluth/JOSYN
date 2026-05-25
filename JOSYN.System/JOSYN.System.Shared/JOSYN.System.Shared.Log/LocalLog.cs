@@ -4,34 +4,16 @@ using JOSYN.Foundation.ResultPattern;
 
 namespace JOSYN.System.Shared.Log;
 
-/// <summary>
-/// Prozess-lokaler Datei-Logger für JOSYN-EXE-Prozesse.
-/// Schreibt Einträge nach <c>&lt;LogDirectory&gt;\&lt;yyyy-MM-dd&gt;.log</c>.
-/// Standard: <c>&lt;ExeDir&gt;\logs\</c> — unabhängig vom Benutzerprofil,
-/// geeignet für impersonierte technische AD-Benutzer ohne lokales Benutzerprofil.
-/// <see cref="LogDirectory"/> kann vor dem ersten Log-Aufruf überschrieben werden.
-/// Die Überladungen mit <c>causer</c>-Parameter schreiben in einen gleichnamigen Unterordner.
-/// Wenn <see cref="EnableConsoleOutput"/> gesetzt ist, wird zusätzlich auf die Konsole
-/// geschrieben — typischerweise aktiviert der Aufrufer dieses Flag im DEBUG-Build.
-/// Schreibfehler werden stillschweigend ignoriert — der Logger darf
-/// den Host-Prozess niemals zum Absturz bringen.
-/// </summary>
+/// <inheritdoc cref="ILocalLog"/>
 public static class LocalLog
 {
-    /// <summary>
-    /// Wurzelpfad für alle Log-Dateien dieses Prozesses. Standard: <c>&lt;ExeDir&gt;\logs\</c>.
-    /// Muss vor dem ersten Log-Aufruf gesetzt werden, falls eine andere Ablage gewünscht ist.
-    /// Bei zentralisierter Ablage empfiehlt sich ein Pfad der Form <c>&lt;Root&gt;\&lt;ProcessName&gt;\</c>.
-    /// </summary>
+    /// <inheritdoc cref="ILocalLog.LogDirectory"/>
     public static string LogDirectory { get; set; } = Path.Combine(AppContext.BaseDirectory, "logs");
 
-    /// <summary>
-    /// Steuert, ob Log-Einträge zusätzlich auf die Konsole geschrieben werden.
-    /// Der Aufrufer setzt dieses Flag typischerweise im eigenen <c>#if DEBUG</c>-Block.
-    /// </summary>
+    /// <inheritdoc cref="ILocalLog.EnableConsoleOutput"/>
     public static bool EnableConsoleOutput { get; set; } = false;
 
-    /// <summary>Schreibt einen Fehlereintrag.</summary>
+    /// <inheritdoc cref="ILocalLog.Error(string, string?, string?)"/>
     public static void Error(string message, string? callStack = null, string? exceptionDetails = null)
     {
         var entry = FormatEntry("ERROR", message, callStack, exceptionDetails);
@@ -40,11 +22,11 @@ public static class LocalLog
             WriteToConsole(entry, ConsoleColor.Red);
     }
 
-    /// <summary>Schreibt einen Fehlereintrag aus einem <see cref="Result"/>.</summary>
+    /// <inheritdoc cref="ILocalLog.Error(Result)"/>
     public static void Error(Result result) =>
         Error(result.ErrorMessage ?? string.Empty, result.CallStackAsString, result.Exception?.ToString());
 
-    /// <summary>Schreibt einen Fehlereintrag in den Unterordner des angegebenen Verursachers.</summary>
+    /// <inheritdoc cref="ILocalLog.Error(string, string, string?, string?)"/>
     public static void Error(string causer, string message, string? callStack = null, string? exceptionDetails = null)
     {
         var entry = FormatEntry("ERROR", message, callStack, exceptionDetails);
@@ -53,11 +35,11 @@ public static class LocalLog
             WriteToConsole(entry, ConsoleColor.Red);
     }
 
-    /// <summary>Schreibt einen Fehlereintrag aus einem <see cref="Result"/> in den Unterordner des angegebenen Verursachers.</summary>
+    /// <inheritdoc cref="ILocalLog.Error(string, Result)"/>
     public static void Error(string causer, Result result) =>
         Error(causer, result.ErrorMessage ?? string.Empty, result.CallStackAsString, result.Exception?.ToString());
 
-    /// <summary>Schreibt einen Info-Eintrag.</summary>
+    /// <inheritdoc cref="ILocalLog.Info(string)"/>
     public static void Info(string message)
     {
         var entry = FormatEntry("INFO", message);
@@ -66,7 +48,7 @@ public static class LocalLog
             WriteToConsole(entry, ConsoleColor.Gray);
     }
 
-    /// <summary>Schreibt einen Info-Eintrag in den Unterordner des angegebenen Verursachers.</summary>
+    /// <inheritdoc cref="ILocalLog.Info(string, string)"/>
     public static void Info(string causer, string message)
     {
         var entry = FormatEntry("INFO", message);
