@@ -19,7 +19,8 @@
 | 13 | Error routing in `Core.cs` (Frontend): pipe failure → `LocalLog` only; job failure → `LocalLog` + `PutError`; `PutError` failure → `LocalLog` fallback |
 | 14 | `LocalLog` (Shared.Log) logs to `<ExeDir>\logs\<date>.log`; default root is `AppContext.BaseDirectory\logs` (impersonation-safe, no user profile dependency); `LogDirectory` is a settable `public static string`; `EnableConsoleOutput` flag mirrors to console; causer overloads write to `Path.Combine(LogDirectory, causer)` subfolder |
 | 15 | `ErrorReport.Causer` (first parameter) flows from JobHost → JSON-serialized IPC → JAPServer.PutError deserialization → `LocalLog.Error(causer, ...)` subfolder; JSON serialization required (INI truncates multi-line `CallStack`/`ExceptionDetails`) |
-| 16 | Three canonical csproj templates (NuGet Library / Exe / Test) documented in `copilot-instructions/C# Project Files/AGENT.md`; single PropertyGroup, tabs, no `PackageReleaseNotes`; `GenerateDocumentationFile` on NuGet libraries only; each NuGet project has its own `icon.png` copy |
+| 16 | Three canonical csproj templates (NuGet Library / Exe / Test) documented in `copilot-instructions/C# Project Files/AGENT.md`; single PropertyGroup, tabs, no `PackageReleaseNotes`; `GenerateDocumentationFile` on NuGet libraries only; each NuGet project has its own `icon.png` copy; each exe project has its own `icon.ico` copy |
+| 17 | Exe icon in Explorer requires both `<ApplicationIcon>icon.ico</ApplicationIcon>` AND `<Content Include="icon.ico" />`; `<None Include>` alone is insufficient |
 
 ## Open Questions
 
@@ -50,3 +51,4 @@
 | 0013 | session-0013-shared-layer-discussion-summary.md | Discussion: JOSYN.System.Shared layer introduced; FakeCore eliminated; LocalLog + PutError wired; Contract renamed to Shared.Contract |
 | 0015 | session-0015-locallog-enhancements-summary.md | LocalLog: EnableConsoleOutput flag, entry-assembly ProcessName, sender subfolder overloads, pause cleanup in cmd files |
 | 0016 | session-0016-csproj-standardization-summary.md | LocalLog finalized (causer, exe-adjacent path, JSON fix); all 13 csproj files standardized to 3 templates; copilot-instructions template doc created |
+| 0017 | session-0017-exe-icon-embedding-summary.md | Exe icon embedding: `ApplicationIcon` + `<Content Include="icon.ico" />` required; applied to all 4 exe projects; Template 2 in AGENT.md updated |

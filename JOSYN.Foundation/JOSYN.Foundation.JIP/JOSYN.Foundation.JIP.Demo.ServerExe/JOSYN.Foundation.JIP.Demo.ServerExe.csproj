@@ -10,9 +10,10 @@
 		<AssemblyName>JOSYN.Foundation.JIP.Demo.ServerExe</AssemblyName>
 		<RootNamespace>JOSYN.Foundation.JIP.Demo.ServerExe</RootNamespace>
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="icon.png"/>
+		<Content Include="icon.ico" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="JOSYN.Foundation.ResultPattern" Version="1.0.0-preview01"/>

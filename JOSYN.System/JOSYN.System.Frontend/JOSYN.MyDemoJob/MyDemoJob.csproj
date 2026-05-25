@@ -10,9 +10,10 @@
 		<AssemblyName>JOSYN.MyDemoJob</AssemblyName>
 		<RootNamespace>MyDemoJob</RootNamespace>
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="icon.png"/>
+		<Content Include="icon.ico" />
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\JOSYN.System.Frontend.JobHost\JOSYN.System.Frontend.JobHost.csproj"/>

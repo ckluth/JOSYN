@@ -10,9 +10,10 @@
 		<AssemblyName>JOSYN.System.Backend.JAPServer</AssemblyName>
 		<RootNamespace>JOSYN.System.Backend.JAPServer</RootNamespace>
 		<PlatformTarget>AnyCPU</PlatformTarget>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
 	<ItemGroup>
-		<None Include="icon.png"/>
+		<Content Include="icon.ico" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="JOSYN.Foundation.JIP" Version="1.0.0-preview01"/>
