@@ -12,8 +12,8 @@ setlocal
 :: ================================================================
 
 set "ARGS=JOSYN-IPC dea5611d-d740-437f-ad93-7a5dc5ae4299"
-set "SERVER=C:\Temp\VS.OUT\JOSYN\JOSYN.System.Backend.JAPServer\bin\Release\net10.0\JOSYN.System.Backend.JAPServer.exe"
-set "CLIENT=C:\Temp\VS.OUT\JOSYN\MyDemoJob\bin\Release\net10.0\MyDemoJob.exe"
+set "SERVER=C:\Temp\VS.OUT\JOSYN\JOSYN.System.Backend.JAPServer\bin\Release\JOSYN.System.Backend.JAPServer.exe"
+set "CLIENT=C:\Temp\VS.OUT\JOSYN\MyDemoJob\bin\Release\JOSYN.MyDemoJob.exe"
 
 if not exist "%SERVER%" (
     echo [FEHLER] Server-Exe nicht gefunden. Erst build-all ausfuehren.

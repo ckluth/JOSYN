@@ -22,8 +22,8 @@ set "ARGS=JOSYN-IPC dea5611d-d740-437f-ad93-7a5dc5ae4299"
 set "BACKEND_SLNX=%ROOT%\JOSYN.System\JOSYN.System.Backend\JOSYN.System.Backend.slnx"
 set "FRONTEND_SLNX=%ROOT%\JOSYN.System\JOSYN.System.Frontend\JOSYN.System.Frontend.slnx"
 
-set "SERVER=C:\Temp\VS.OUT\JOSYN\JOSYN.System.Backend.JAPServer\bin\Debug\net10.0\JOSYN.System.Backend.JAPServer.exe"
-set "CLIENT=C:\Temp\VS.OUT\JOSYN\MyDemoJob\bin\Debug\net10.0\MyDemoJob.exe"
+set "SERVER=C:\Temp\VS.OUT\JOSYN\JOSYN.System.Backend.JAPServer\bin\Debug\JOSYN.System.Backend.JAPServer.exe"
+set "CLIENT=C:\Temp\VS.OUT\JOSYN\MyDemoJob\bin\Debug\JOSYN.MyDemoJob.exe"
 
 echo.
 echo ================================================================
