@@ -1,3 +1,6 @@
 namespace JOSYN.System.Frontend.JobHost;
 
-public delegate bool ArgumentsComparer<in T>(T a, IEnumerable<T> b) where T : class;
+/// <summary>
+/// TODO: not used by now - for later use...
+/// </summary>
+public delegate bool ArgumentsComparer<in T>(T my, IEnumerable<T> others) where T : class;
