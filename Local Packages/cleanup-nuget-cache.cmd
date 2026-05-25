@@ -5,7 +5,7 @@ setlocal
 set NUGET_BASE=C:\Users\chris\.nuget\packages
 
 :: ============================================================
-:: Zu lÃ¶schende Pakete hier eintragen (Verzeichnisnamen exakt)
+:: Zu löschende Pakete hier eintragen (Verzeichnisnamen exakt)
 :: ============================================================
 set PACKAGES=^
   josyn.foundation.resultpattern ^
@@ -19,15 +19,15 @@ set PACKAGES=^
 
 for %%P in (%PACKAGES%) do (
     if exist "%NUGET_BASE%\%%P" (
-        echo LÃ¶sche: %NUGET_BASE%\%%P
+        echo Lösche: %NUGET_BASE%\%%P
         rd /s /q "%NUGET_BASE%\%%P"
         if errorlevel 1 (
-            echo   FEHLER beim LÃ¶schen von %%P
+            echo   FEHLER beim Löschen von %%P
         ) else (
             echo   OK
         )
     ) else (
-        echo Nicht gefunden, Ã¼bersprungen: %NUGET_BASE%\%%P
+        echo Nicht gefunden, übersprungen: %NUGET_BASE%\%%P
     )
 )
 
