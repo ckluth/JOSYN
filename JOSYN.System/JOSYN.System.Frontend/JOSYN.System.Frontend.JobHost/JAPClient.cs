@@ -58,6 +58,6 @@ internal sealed class JAPClient : IJosynApplicationProtocol
             return Result.Propagate(serialized.ToResult());
         IJosynApplicationProtocol protocolImpl = this; 
         var put = await protocolImpl.PutError(serialized.Value);        
-        return !put.Succeeded ? Result.Propagate(put) : put;
+        return !put.Succeeded ? Result.Propagate(put) : Result.Success;
     }
 }
