@@ -53,7 +53,7 @@ internal sealed class JAPClient : IJosynApplicationProtocol
     
     internal async Task<Result> PutError(ErrorReport report)
     {
-        var serialized = PropertyBag.Serialize(report);
+        var serialized = PropertyBag.Serialize(report, JsonDictionarySerializer.Serialize);
         if (!serialized.Succeeded)
             return Result.Propagate(serialized.ToResult());
         IJosynApplicationProtocol protocolImpl = this; 

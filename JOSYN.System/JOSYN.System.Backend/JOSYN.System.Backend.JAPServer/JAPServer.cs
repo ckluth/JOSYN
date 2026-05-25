@@ -33,9 +33,8 @@ internal sealed class JAPServer : IJosynApplicationProtocol
         if (!deserialize.Succeeded)
         {
             LocalLog.Error($"ErrorReport konnte nicht deserialisiert werden: {deserialize.ErrorMessage}\nRaw: {serializedError}");
-            return Result.Success;
+            return Result.Propagate(deserialize.ToResult());
         }
-
         var report = deserialize.Value;
         LocalLog.Error(report.Causer, report.Message, report.CallStack, report.ExceptionDetails);
         return await Task.FromResult(Result.Success);

@@ -16,7 +16,10 @@ public static class MyFirstJob
         //Console.WriteLine(s);
         //Console.ReadKey(true);
 
-        throw new Exception("MyDemoJob fucked up...");
+        //throw new Exception("MyDemoJob fucked up...");
+        
+        aaaaaaa();
+        
         Console.WriteLine(args.Msg);
 
         return new MyResult
@@ -28,12 +31,29 @@ public static class MyFirstJob
     }
 
 
+    private static void aaaaaaa()
+    {
+        bbbbbbbbbb();
+    }
+    private static void bbbbbbbbbb()
+    {
+        ccccccc();
+    }
+
+    private static void ccccccc()
+    {
+        Foo.Bar();
+        
+    }
 
 
-
-
-
-
+    internal class Foo
+    {
+        internal static void Bar()
+        {
+            throw new Exception("OH NO - FUCK IT...");
+        }
+    }
 
 
     //[JobEntryPoint]
