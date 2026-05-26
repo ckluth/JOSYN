@@ -101,7 +101,7 @@ await PipesClient.DisconnectAsync(pipes);
 
 The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `CancellationToken`. Callers pass a simple predicate; no `CancellationToken` management required.
 
-**Known PoC limitations** (see `.github\session-results\ipc\session-0003-poc-assessment-conclusion.md` for full analysis):
+**Known PoC limitations** (see `.github\stories\ipc\session-0003-poc-assessment-conclusion.md` for full analysis):
 - Request handler is currently synchronous (`Func<byte[], byte[]>`) — async handlers needed before building on top of this.
 - Protocol is single-in-flight (strictly sequential, no request IDs).
 - `ClientPipes` / `ServerPipes` are typed as `record` but should be `sealed class`.
@@ -112,7 +112,7 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
 - **Namespace pragma** — files whose folder path doesn't match their namespace use `#pragma warning disable/restore IDE0130` around the `namespace` declaration.
 - **Local NuGet feed** — inter-repo dependencies are resolved via `..\..\Local Packages\` (each `nuget.config` points here). Pack a dependency before referencing it from another logical repo.
 - **Error messages are in German** — maintain this for consistency (`"Verbindung durch Aufrufer abgebrochen."`, `"kein Callstack"`, etc.).
-- **Session results** are stored under `.github\session-results\` using a two-level structure: **story directory** → **session files**.
+- **Story Method** — stories live under `.github\stories\` using a two-level structure: **story directory** → **session files**.
 
   **Story directory** = a named folder for a subject area, e.g. `result-pattern\` or `ipc\`. Session files accumulate here with no setup overhead — just start writing them.
 
@@ -141,6 +141,27 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
   - At session start, the AI reads it first, paraphrases it briefly, and asks for clarification if anything is unclear, then begins working
   - Openers are purely optional; sessions without them work exactly as before
   - The session result file produced from an opener is numbered **NNNN** (the opener's own number — the user is responsible for a correctly incremented session number); never re-derive the next number from the file listing when an opener is present
+  - A blank template is at `.github\.artifacts\session-opener-template.md`
+
+  **Opener format** (five sections; Constraints and Expected Artifacts are optional):
+  ```
+  ## Meta
+  - Story: <story-name>
+  - Session: NNNN
+  - Short description: <2-4 word kebab-case>
+
+  ## Background
+  1–3 sentences of context — what led to this session.
+
+  ## Goals
+  Numbered list — what "done" looks like. Each goal should be verifiable.
+
+  ## Constraints          ← omit if none
+  Specific rules: output paths, naming, language, things to avoid.
+
+  ## Expected Artifacts   ← omit for pure discussion sessions
+  List of files to produce, with path and one-line description.
+  ```
 
   **Archiving:** when the user says *"archive the current chapter"* (optionally *"as \<name\>"*):
   1. Move all session files currently in the story root into `archives\archive-NNN[-optional-name]\` (3-digit archive counter, optional suffix).
@@ -150,7 +171,7 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
 
   **Directory layout example:**
   ```
-  .github\session-results\
+  .github\stories\
     result-pattern\
       session-0004-new-story-discussion.md   ← active, continues after archive
       archives\
@@ -161,4 +182,5 @@ The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `
           conclusion.md                       ← optional, only if requested
   ```
 
-- **Session save trigger** — whenever the user says *"save this session"*, *"write a summary"*, *"log this"*, or similar: always propose a filename following the pattern above and ask for confirmation before writing. Example: *"Shall I save this as `.github\session-results\result-pattern\session-0001-make-or-buy-summary.md`?"*
+- **Session save trigger** — whenever the user says *"save this session"*, *"write a summary"*, *"log this"*, or similar: always propose a filename following the pattern above and ask for confirmation before writing. Example: *"Shall I save this as `.github\stories\result-pattern\session-0001-make-or-buy-summary.md`?"*
+  - **Story Method reference** — the complete human-readable description is at `.github\.artifacts\story-method.md`
