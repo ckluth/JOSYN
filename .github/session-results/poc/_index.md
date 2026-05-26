@@ -62,3 +62,4 @@
 | 0024 | session-0024-xmldoc-english-retranslation-summary.md | Decision reversed: all XML doc comments translated from German → English; 44 files, ~476 lines; all 6 solutions build clean |
 | 0025 | session-0025-propagate-callstack-audit-summary.md | Full codebase `Result.Propagate` audit; 10 violations fixed across 5 files; 238 tests green |
 | 0026 | session-0026-poc-grooming-closure-summary.md | Grooming phase closure (sessions 0015–0025): test counts, conventions locked, open items unchanged from Ariadne v5 |
+| 0027 | session-0027-frontend-test-refactor-summary.md | Collapsed 3-project Frontend test setup into 1: `FindJobFunction` now takes `IEnumerable<Type>`; fixture assemblies deleted |

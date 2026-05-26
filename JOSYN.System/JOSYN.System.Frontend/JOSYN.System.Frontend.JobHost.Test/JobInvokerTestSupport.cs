@@ -1,5 +1,6 @@
 using JOSYN.Foundation.ResultPattern;
 using JOSYN.System.Shared.Contract;
+using JOSYN.System.Frontend.JobHost.Attributes;
 
 namespace JOSYN.System.Frontend.JobHost.Test;
 
@@ -29,4 +30,24 @@ internal sealed class FailingGetArgumentsProtocol : IJosynApplicationProtocol
 
     public Task<Result> PutRawResult(string result) => Task.FromResult(Result.Success);
     public Task<Result> PutError(string serializedError) => Task.FromResult(Result.Success);
+}
+
+// ── Job stubs ─────────────────────────────────────────────────────────────────
+
+internal static class StubVoidJob
+{
+    [JobEntryPoint]
+    public static void Run() { }
+}
+
+internal static class StubJobAlpha
+{
+    [JobEntryPoint]
+    public static void Run() { }
+}
+
+internal static class StubJobBeta
+{
+    [JobEntryPoint]
+    public static void Run() { }
 }

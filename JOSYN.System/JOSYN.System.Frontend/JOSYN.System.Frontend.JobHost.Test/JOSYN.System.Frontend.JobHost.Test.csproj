@@ -18,7 +18,5 @@
 	</ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\JOSYN.System.Frontend.JobHost\JOSYN.System.Frontend.JobHost.csproj"/>
-		<ProjectReference Include="..\JOSYN.System.Frontend.JobHost.Test.Fixtures.Single\JOSYN.System.Frontend.JobHost.Test.Fixtures.Single.csproj"/>
-		<ProjectReference Include="..\JOSYN.System.Frontend.JobHost.Test.Fixtures.Multi\JOSYN.System.Frontend.JobHost.Test.Fixtures.Multi.csproj"/>
 	</ItemGroup>
 </Project>

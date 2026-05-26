@@ -18,17 +18,23 @@ internal static class JobInvoker
     {
         try
         {
-            //
-            // Assembly laden
-            // 
             var findEntrypointAssembly = FindEntryPointAssembly(entrypointType);
             if (!findEntrypointAssembly.Succeeded)
                 return Result.Propagate(findEntrypointAssembly.ToResult());
 
+            return await InvokeJob(japClient, findEntrypointAssembly.Value.GetExportedTypes());
+        }
+        catch (Exception ex) { return ex; }
+    }
+
+    internal static async Task<Result> InvokeJob(IJosynApplicationProtocol japClient, IEnumerable<Type> types)
+    {
+        try
+        {
             //
             // Einsprungs-Methode finden
-            // 
-            var findJobFunc = FindJobFunction(findEntrypointAssembly.Value);
+            //
+            var findJobFunc = FindJobFunction(types);
             if (!findJobFunc.Succeeded)
                 return Result.Propagate(findJobFunc.ToResult());
 
@@ -36,7 +42,6 @@ internal static class JobInvoker
             // Aufrufsargumente erzeugen
             //
             var getInvocationArgs = await CreateInvocationArguments(findJobFunc.Value, japClient);
-
             if (!getInvocationArgs.Succeeded)
                 return Result.Propagate(getInvocationArgs.ToResult());
             var invocationArgs = getInvocationArgs.Value;
@@ -56,17 +61,11 @@ internal static class JobInvoker
 
             //
             // Jetzt noch das Result verarbeiten
-            //            
+            //
             var processJobResult = await ProcessJobResult(res, findJobFunc.Value, japClient);
             return !processJobResult.Succeeded ? Result.Propagate(processJobResult) : Result.Success;
-
         }
-        catch (Exception ex)
-        {
-            // due to the consistent result-pattern-usage above,
-            // it will never come to this point...
-            return ex;
-        }
+        catch (Exception ex) { return ex; }
     }
 
     #region private
@@ -115,18 +114,18 @@ internal static class JobInvoker
         catch (Exception ex) { return ex; }
     }
 
-    private static Result<MethodInfo> FindJobFunction(Assembly asm)
+    internal static Result<MethodInfo> FindJobFunction(IEnumerable<Type> types)
     {
         try
         {
-            var methods = asm.GetExportedTypes()
+            var methods = types
                 .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static))
                 .Where(method => method.GetCustomAttribute<JobEntryPointAttribute>() is not null).ToList();
 
             return methods.Count switch
             {
-                0 => Result.Error($"Keine Methode mit dem Attibut [{nameof(JobEntryPointAttribute)}] in [{asm.FullName}] gefunden."),
-                > 1 => Result.Error($"Mehrere Methoden mit dem Attibut [{nameof(JobEntryPointAttribute)}] in [{asm.FullName}] gefunden."),
+                0 => Result.Error($"Keine Methode mit dem Attibut [{nameof(JobEntryPointAttribute)}] gefunden."),
+                > 1 => Result.Error($"Mehrere Methoden mit dem Attibut [{nameof(JobEntryPointAttribute)}] gefunden."),
                 _ => methods.First()
             };
         }
