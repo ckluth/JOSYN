@@ -177,6 +177,7 @@ if (!result.Succeeded)
 | `result.Exception` | Ursprüngliche Exception, falls vorhanden |
 | `result.Callers` | Liste der Propagierungs-Frames |
 | `result.CallStackAsString` | Lesbarer Callstack für Logging |
+| `result.ToString()` | `[Erfolgreich]` bzw. `[Erfolgreich] {Wert}` oder Fehlermeldung + Callstack |
 | `Result.Propagate(result)` | Fügt aktuellen Aufrufer zur Kette hinzu |
 | `result.ToResult()` | `Result<T>` → `Result` (nur für Failures) |
 | `result.ToResult<T>()` | Konvertiert Failure in anderen `Result<T>`-Typ |

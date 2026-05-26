@@ -5,6 +5,18 @@ Format orientiert sich an [Keep a Changelog](https://keepachangelog.com/de/1.0.0
 
 ---
 
+## [Unreleased]
+
+### Hinzugefügt
+
+- `ToString()`-Override auf `Result` und `Result<T>`:
+  - Erfolg: `[Erfolgreich]` bzw. `[Erfolgreich] {Wert}`
+  - Fehler: `[Fehlgeschlagen] {Fehlermeldung}`, gefolgt von Aufrufkette und ggf. Ausnahme
+  - Nützlich für Debugging, IDE-Watches und Test-Assertions
+- 28 neue Unit-Tests für `ToString()` (insgesamt nun 141)
+
+---
+
 ## [1.0.0-preview01] — 2026-05-24
 
 Erste stabile Kandidatenversion unter dem neuen Namen `JOSYN.Foundation.ResultPattern`

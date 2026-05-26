@@ -118,4 +118,13 @@ public sealed record Result<TValue> : IResult<Result<TValue>, TValue>
 
     /// <summary>Creates a failed result without caller information. Used internally by the ToResult() overloads.</summary>
     internal static Result<TValue> FailSilent(string error, Exception? exception = null) => new(default, error, exception);
+
+    /// <summary>
+    /// Returns a human-readable representation for debugging and logging.
+    /// <list type="bullet">
+    ///   <item><description>Success: <c>[Erfolgreich] {Value}</c></description></item>
+    ///   <item><description>Failure: status line, propagation chain, and exception if present.</description></item>
+    /// </list>
+    /// </summary>
+    public override string ToString() => ResultHelper.FormatResult(Succeeded, ErrorMessage, Callers, Exception, Value?.ToString());
 }
