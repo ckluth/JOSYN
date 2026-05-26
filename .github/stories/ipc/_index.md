@@ -13,10 +13,13 @@
 
 ## Open Questions
 
-- **Async request handler** — current handler is `Func<byte[], byte[]>` (synchronous); must be made async before building anything meaningful on top of this layer
 - **Single-in-flight protocol** — strictly sequential, no request IDs; multi-in-flight support would require protocol redesign
-- **`ClientPipes`/`ServerPipes` as `record`** — should be `sealed class`; currently typed as record which is semantically wrong
+- ~~**`ClientPipes`/`ServerPipes` as `record`**~~ — ✅ **already fixed**; both are `sealed class` in current code
 - **NuGet pack** — `JOSYN.Foundation.JIP` not yet packed; consumers currently reference via `PackageReference` without a local package in place
+
+## Resolved
+
+- **Async request handler** — ✅ fixed; `Func<byte[], byte[]>` → `Func<byte[], Task<byte[]>>` applied throughout `PipesServer`, `JipServer`, `JipDispatcher`, and demo handlers; confirmed in `archive-001/ipc-discussion-session-002.md`
 
 ## Sessions
 

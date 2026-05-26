@@ -6,16 +6,18 @@ JOSYN ("JobSystem Next") is a **physical multi-repo monorepo** in its genesis/Po
 
 ```
 JOSYN/
-├── JOSYN.Core/
-│   ├── JOSYN.Core.ResultPattern/   ← foundation; referenced by everything
-│   ├── JOSYN.Core.PropertyBag/     ← record serializer; depends on ResultPattern
-│   └── JOSYN.Core.IPC/             ← named-pipe IPC; depends on ResultPattern
-├── JOSYN.JobRunner/                ← placeholder
-└── JOSYN.System/
-    └── JOSYN.SessionServer/        ← placeholder
+├── JOSYN.Foundation/
+│   ├── JOSYN.Foundation.ResultPattern/   ← foundation; referenced by everything
+│   ├── JOSYN.Foundation.PropertyBag/     ← record serializer; depends on ResultPattern
+│   └── JOSYN.Foundation.JIP/             ← named-pipe IPC; depends on ResultPattern
+├── JOSYN.System/
+│   ├── JOSYN.System.Frontend/            ← job host / job invoker
+│   ├── JOSYN.System.Backend/             ← JAP server
+│   └── JOSYN.System.Shared/              ← shared contracts, logging
+└── .local-build/                         ← root-level build scripts
 ```
 
-Each logical repo under `JOSYN.Core/` is self-contained with its own `.slnx` solution, `nuget.config`, and a `.local-build\` scripts folder.
+Each logical repo under `JOSYN.Foundation/` is self-contained with its own `.slnx` solution, `nuget.config`, and a `.local-build\` scripts folder.
 
 ## Build, Test & Pack
 
@@ -36,7 +38,7 @@ Build outputs go to `C:\Temp\VS.OUT\JOSYN\<ProjectName>\` (set in `Directory.Bui
 
 ## The Result Pattern — used everywhere
 
-`JOSYN.Core.ResultPattern` is the single most important convention. **No exceptions are thrown up the call stack.** Every operation returns `Result` (void) or `Result<T>`.
+`JOSYN.Foundation.ResultPattern` is the single most important convention. **No exceptions are thrown up the call stack.** Every operation returns `Result` (void) or `Result<T>`.
 
 ```csharp
 // Success
@@ -102,13 +104,13 @@ await PipesClient.DisconnectAsync(pipes);
 The `shouldCancel: Func<bool>?` parameter is converted internally to a polling `CancellationToken`. Callers pass a simple predicate; no `CancellationToken` management required.
 
 **Known PoC limitations** (see `.github\stories\ipc\session-0003-poc-assessment-conclusion.md` for full analysis):
-- Request handler is currently synchronous (`Func<byte[], byte[]>`) — async handlers needed before building on top of this.
 - Protocol is single-in-flight (strictly sequential, no request IDs).
-- `ClientPipes` / `ServerPipes` are typed as `record` but should be `sealed class`.
+
+**Note:** async handlers (`Func<byte[], Task<byte[]>>`) and `sealed class` for `ClientPipes`/`ServerPipes` are already in place.
 
 ## Key Conventions
 
-- **Static entry points** — `PipesServer`, `PipesClient`, `PipesProtocol`, and `PropertyBag` are all static classes. Interfaces (`IPipesServer`, etc.) exist as API-contract documentation using C# 11 `static abstract` members.
+- **Static entry points** — `PipesServer`, `PipesClient`, `PipesProtocol`, `JipServer`, `JipClient`, `JipDispatcher`, and `PropertyBag` are all static classes (or `sealed class` for the pipes types). Interfaces (`IPipesServer`, etc.) exist as API-contract documentation using C# 11 `static abstract` members.
 - **Namespace pragma** — files whose folder path doesn't match their namespace use `#pragma warning disable/restore IDE0130` around the `namespace` declaration.
 - **Local NuGet feed** — inter-repo dependencies are resolved via `..\..\Local Packages\` (each `nuget.config` points here). Pack a dependency before referencing it from another logical repo.
 - **Error messages are in German** — maintain this for consistency (`"Verbindung durch Aufrufer abgebrochen."`, `"kein Callstack"`, etc.).

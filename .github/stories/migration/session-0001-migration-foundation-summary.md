@@ -64,8 +64,8 @@ The IPC story has documented open issues. Decision: **fix before migrating** —
 
 | Issue | Scope | Notes |
 |-------|-------|-------|
-| Async request handler | `Func<byte[], byte[]>` → `Func<byte[], Task<byte[]>>` | Significant; cascades through PipesServer, JipServer, JipDispatcher |
-| `ClientPipes`/`ServerPipes` as `record` | Change to `sealed class` | Simple, semantically correct |
+| ~~Async request handler~~ | ~~`Func<byte[], byte[]>` → `Func<byte[], Task<byte[]>>`~~ | ✅ **Already fixed** — applied in `evolution/ipc-issue-blocking-requesthandler`; confirmed by code inspection 2026-05-26 |
+| ~~`ClientPipes`/`ServerPipes` as `record`~~ | ~~Change to `sealed class`~~ | ✅ **Already fixed** — both are `sealed class` in current code; confirmed 2026-05-26 |
 | JIP NuGet not packed | Run `.local-build/pack.cmd` for JIP | Simple |
 | Single-in-flight protocol | Document as known limitation for PoC v2 | No protocol redesign planned |
 
@@ -91,8 +91,8 @@ The IPC story has documented open issues. Decision: **fix before migrating** —
 
 | Session | Scope |
 |---------|-------|
-| 0002 | IPC async handler rewrite (most complex fix) |
-| 0003 | `ClientPipes`/`ServerPipes` → sealed class; pack JIP NuGet; build-all / test-all; seal JOSYN (tag + final commit) |
+| ~~0002~~ | ~~IPC async handler rewrite~~ — **cancelled; already fixed** |
+| 0002 | `ClientPipes`/`ServerPipes` → sealed class; pack JIP NuGet; build-all / test-all; seal JOSYN (tag + final commit) |
 
 ### Phase 2 — Physical migration
 
