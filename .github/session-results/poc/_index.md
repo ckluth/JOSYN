@@ -63,3 +63,4 @@
 | 0025 | session-0025-propagate-callstack-audit-summary.md | Full codebase `Result.Propagate` audit; 10 violations fixed across 5 files; 238 tests green |
 | 0026 | session-0026-poc-grooming-closure-summary.md | Grooming phase closure (sessions 0015–0025): test counts, conventions locked, open items unchanged from Ariadne v5 |
 | 0027 | session-0027-frontend-test-refactor-summary.md | Collapsed 3-project Frontend test setup into 1: `FindJobFunction` now takes `IEnumerable<Type>`; fixture assemblies deleted |
+| 0028 | session-0028-locallog-tests-generation.md | 38 unit tests for `JOSYN.System.Shared.Log`: 22 I/O-based (LocalLogTests) + 16 pure (FormatEntry); `FormatEntry` promoted to `internal` |
