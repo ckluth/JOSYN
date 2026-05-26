@@ -59,7 +59,7 @@ public static class LocalLog
 
     // -------------------------------------------------------------------------
 
-    private static string FormatEntry(string level, string message, string? callStack = null, string? exceptionDetails = null)
+    internal static string FormatEntry(string level, string message, string? callStack = null, string? exceptionDetails = null)
     {
         var sb = new StringBuilder();
         sb.AppendLine($"[{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}] [{level}]");
